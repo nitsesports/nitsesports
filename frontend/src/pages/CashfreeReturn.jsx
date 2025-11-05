@@ -14,7 +14,8 @@ export default function CashfreeReturn() {
       if (!orderId) return;
 
       try {
-        const res = await fetch(`/api/verify-cashfree-order/${orderId}`);
+        const API_BASE = import.meta.env.VITE_BACKEND_URL;
+        const res = await fetch(`${API_BASE}/api/verify-cashfree-order/${orderId}`);
         const data = await res.json();
 
         if (data.success && data.status === "PAID") {

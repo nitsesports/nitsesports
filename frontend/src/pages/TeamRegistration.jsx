@@ -11,6 +11,7 @@ import { supabase } from "@/lib/supabase.js";
 import { gameConfig, getGameConfig } from "@/data/gameConfig.js";
 
 const TeamRegistration = () => {
+  const API_BASE = import.meta.env.VITE_BACKEND_URL;
   const { eventId, gameId } = useParams();
   const navigate = useNavigate();
   const gameInfo = getGameConfig(gameId);
@@ -132,7 +133,7 @@ const TeamRegistration = () => {
     
     const returnUrl = `${window.location.origin}/cashfree-return?order_id={order_id}`;
 
-    const resp = await fetch("/api/create-cashfree-order", {
+    const resp = await fetch(`${API_BASE}/api/create-cashfree-order`, {
   method: "POST",
   headers: { "Content-Type": "application/json" },
   body: JSON.stringify({
