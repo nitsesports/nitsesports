@@ -97,11 +97,15 @@ const About = () => {
                 <div className="flex gap-4">
                   <div className="flex-shrink-0 w-20 font-orbitron font-bold text-secondary">2025</div>
                   <div>
-                    <h3 className="font-orbitron font-semibold text-lg mb-2">First Major Tournament</h3>
-                    <p className="text-muted-foreground">
-                      Hosted our first inter-college esports tournament with over 200+ participants from across the
-                      region, establishing ourselves as a major player in the collegiate esports scene.
-                    </p>
+                    <h3 className="font-orbitron font-semibold text-lg mb-2">
+  Lock & Load Esports Module
+</h3>
+<p className="text-muted-foreground">
+  Successfully hosted <span className="font-semibold text-primary">Lock & Load</span> — NIT SILCHAR esports module featuring <span className="font-semibold">BGMI, Valorant, CODM,</span> and <span className="font-semibold">MLBB</span>.
+  With over <span className="font-semibold">500+ participants</span> from across the region, the event marked a new milestone
+  in our journey to elevate the collegiate esports scene.
+</p>
+
                   </div>
                   
                 </div>
@@ -131,7 +135,7 @@ const About = () => {
                 </div>
                 <div className="text-center">
                   <h3 className="font-semibold mb-2">Social Media</h3>
-                  <p className="text-muted-foreground"><Link to={"https://www.instagram.com/nits.esports/"}>esports@nits</Link></p>
+                  <p className="text-muted-foreground"><Link to={"https://www.instagram.com/nits.esports/"}>nits.esports</Link></p>
                 </div>
               </div>
             </CardContent>

@@ -17,7 +17,7 @@ const Footer = () => {
               </span>
             </div>
             <p className="text-sm text-muted-foreground">
-              Official esports club of NIT Silchar. Join the competition.
+              Official Esports Club of NIT Silchar. Join the competition.
             </p>
           </div>
 

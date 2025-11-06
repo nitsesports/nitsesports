@@ -27,29 +27,35 @@ export default function IntroOverlay({ onClose, persist = true, logoSrc = DEFAUL
   }, [visible]);
 
   useEffect(() => {
-    let raf = null;
-    let start = null;
-    const duration = 3000;
+  let raf = null;
+  let start = null;
+  const duration = 3000;
 
-    function step(timestamp) {
-      if (!start) start = timestamp;
-      const t = Math.min(1, (timestamp - start) / duration);
-      const eased = 1 - Math.pow(1 - t, 3);
-      setProgress(Math.floor(eased * 100));
+  function step(timestamp) {
+    if (!start) start = timestamp;
+    const t = Math.min(1, (timestamp - start) / duration);
+    const eased = 1 - Math.pow(1 - t, 3);
+    setProgress(Math.floor(eased * 100));
 
-      if (t < 1) {
-        raf = requestAnimationFrame(step);
-      } else {
-        
-        setTimeout(() => {
-          setVisible(false);
-        }, 500); 
-      }
+    if (t < 1) {
+      raf = requestAnimationFrame(step);
+    } else {
+      setTimeout(() => {
+        if (persist) {
+          localStorage.setItem(STORAGE_KEY, "1"); // ✅ save intro-seen flag
+        }
+        setVisible(false);
+        onClose?.(); // ✅ triggers parent state update
+      }, 500);
     }
+  }
 
-    raf = requestAnimationFrame(step);
-    return () => { if (raf) cancelAnimationFrame(raf); };
-  }, [persist, onClose]);
+  raf = requestAnimationFrame(step);
+  return () => {
+    if (raf) cancelAnimationFrame(raf);
+  };
+}, [persist, onClose]);
+
 
   return (
     <AnimatePresence>
