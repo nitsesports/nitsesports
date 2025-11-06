@@ -62,7 +62,7 @@ const Gallery = () => {
   };
 
   return (
-    <div className="min-h-screen pt-24 pb-12 bg-background">
+    <div className="min-h-screen pt-24 pb-12 bg-transparent">
       <div className="container mx-auto px-4">
         {/* Header */}
         <div className="text-center mb-12">

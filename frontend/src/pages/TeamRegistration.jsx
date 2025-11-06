@@ -133,7 +133,7 @@ const TeamRegistration = () => {
     
     const returnUrl = `${window.location.origin}/cashfree-return?order_id={order_id}`;
 
-    const resp = await fetch(`${API_BASE}/api/create-cashfree-order`, {
+    const resp = await fetch("https://pkmwppswhaluzwbgkkoe.supabase.co/functions/v1/create-cashfree-order", {
   method: "POST",
   headers: { "Content-Type": "application/json" },
   body: JSON.stringify({

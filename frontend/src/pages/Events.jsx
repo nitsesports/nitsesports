@@ -10,6 +10,7 @@ import { supabase } from "@/lib/supabase.js";
 import { useState } from "react";
 
 const Events = () => {
+   const [isMuted, setIsMuted] = useState(true);
   const [toastMessage, setToastMessage] = useState("");
   const navigate = useNavigate();
 
@@ -32,14 +33,14 @@ const Events = () => {
   };
 
   const games = [
-    { id: "bgmi", name: "BGMI", image: "https://res.cloudinary.com/dboqkwvhv/image/upload/v1761372612/bgmi_lxvrnt.jpg", brochure: "https://example.com/brochures/bgmi" },
-    { id: "codm", name: "COD Mobile", image: "https://res.cloudinary.com/dboqkwvhv/image/upload/v1761372611/cod_kwjbkq.avif", brochure: "https://example.com/brochures/codm" },
-    { id: "valorant", name: "Valorant", image: "https://res.cloudinary.com/dboqkwvhv/image/upload/v1761372668/valorant_qxje8q.jpg", brochure: "https://example.com/brochures/valorant" },
-    { id: "ml", name: "Mobile Legends", image: "https://res.cloudinary.com/dboqkwvhv/image/upload/v1761372633/ml_h8honj.jpg", brochure: "https://example.com/brochures/ml" },
-    { id: "freefire", name: "Free Fire", image: "https://res.cloudinary.com/dboqkwvhv/image/upload/v1761372616/freefire_uutecs.jpg", brochure: "https://example.com/brochures/freefire" },
-    { id: "fifa", name: "FIFA 25", image: "https://res.cloudinary.com/dboqkwvhv/image/upload/v1761372618/FIFA_tzgbj9.jpg", brochure: "https://example.com/brochures/fifa" },
-    { id: "bulletchoe", name: "Bullet Echo", image: "https://res.cloudinary.com/dboqkwvhv/image/upload/v1761372614/bullet_echo_ai4ekj.jpg", brochure: "https://example.com/brochures/bulletchoe" },
-    { id: "clashroyale", name: "Clash Royale", image: "https://res.cloudinary.com/dboqkwvhv/image/upload/v1761372615/clash_royale_q1nbd7.jpg", brochure: "https://example.com/brochures/clashroyale" },
+    { id: "bgmi", name: "BGMI", image: "https://res.cloudinary.com/dboqkwvhv/image/upload/v1761372612/bgmi_lxvrnt.jpg", brochure: "https://gamma.app/docs/VANGUARD-ARENA-i71v4n1968gk240", prize: 30000 },
+    // { id: "codm", name: "COD Mobile", image: "https://res.cloudinary.com/dboqkwvhv/image/upload/v1761372611/cod_kwjbkq.avif", brochure: "https://example.com/brochures/codm" },
+    { id: "freefire", name: "Free Fire", image: "https://res.cloudinary.com/dboqkwvhv/image/upload/v1761372616/freefire_uutecs.jpg", brochure: "https://gamma.app/docs/VANGUARD-ARENA-aei2y0ivstdkaww?mode=doc", prize: 20000 },
+    { id: "valorant", name: "Valorant", image: "https://res.cloudinary.com/dboqkwvhv/image/upload/v1761372668/valorant_qxje8q.jpg", brochure: "https://gamma.app/docs/Vanguard-Arena--zrpooho817957yj?mode=doc", prize: 10000 },
+    { id: "ml", name: "Mobile Legends", image: "https://res.cloudinary.com/dboqkwvhv/image/upload/v1761372633/ml_h8honj.jpg", brochure: "https://gamma.app/docs/TECNOESIS-CUP-mlbb-h5oottx9xnwqnet?mode=doc", prize: 10000 },
+    // { id: "fifa", name: "FIFA 25", image: "https://res.cloudinary.com/dboqkwvhv/image/upload/v1761372618/FIFA_tzgbj9.jpg", brochure: "https://example.com/brochures/fifa" },
+    // { id: "bulletchoe", name: "Bullet Echo", image: "https://res.cloudinary.com/dboqkwvhv/image/upload/v1761372614/bullet_echo_ai4ekj.jpg", brochure: "https://example.com/brochures/bulletchoe" },
+    // { id: "clashroyale", name: "Clash Royale", image: "https://res.cloudinary.com/dboqkwvhv/image/upload/v1761372615/clash_royale_q1nbd7.jpg", brochure: "https://example.com/brochures/clashroyale" },
   ];
 
   const allEvents = listEvents();
@@ -60,8 +61,8 @@ const Events = () => {
 
   const stats = [
     { value: "2000+", label: "Players" },
-    { value: "₹50,000", label: "Prize pool" },
-    { value: "8", label: "Competitions" },
+    { value: "₹70,000", label: "Prize pool" },
+    { value: "4", label: "Competitions" },
   ];
 
   return (
@@ -70,16 +71,17 @@ const Events = () => {
       <section className="font-orbitron relative z-10 font-bold -mt-24">
         {/* Background Video Container */}
         <div className="absolute start-0 top-0 -z-10 size-full">
-          <video
-            autoPlay
-            className="size-full object-cover"
-            loop
-            muted
-            playsInline
-          >
-            <source src={esportsVideo} type="video/mp4" />
-            Your browser does not support HTML video.
-          </video>
+          {/* ... video and mute button */}
+        <video
+className="absolute inset-0 w-full h-full object-cover z-0"
+src="https://res.cloudinary.com/dtbak3q8e/video/upload/v1762464945/1031_2_1_1_wpgqk0.mp4"
+autoPlay
+loop
+muted={isMuted}
+playsInline
+/>
+
+          
           {/* Overlay gradient for better text visibility */}
           <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-black/60" />
         </div>
@@ -141,9 +143,13 @@ const Events = () => {
                 </div>
                 <CardHeader className="flex items-center justify-between">
                   <CardTitle className="font-orbitron">{g.name}</CardTitle>
-                  {/* <div className=" font-orbitron text-sm text-muted-foreground font-semibold">
-                    Prize pool: <span className="font-orbitron   text-yellow-700/100 font-bold">₹2,000</span>
-                  </div> */}
+                  <div className=" font-orbitron text-sm text-muted-foreground font-semibold">
+                    Prize pool: <span className="font-orbitron text-amber-400 drop-shadow-[0_0_6px_rgba(251,191,36,0.6)] font-bold">
+  ₹{g.prize.toLocaleString("en-IN")}
+</span>
+
+
+                  </div>
                 </CardHeader>
                 <CardContent>
                   <div>
