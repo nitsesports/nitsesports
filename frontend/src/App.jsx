@@ -31,6 +31,7 @@ import IntroOverlay, { hasSeenIntro } from "./components/IntroOverlay.jsx";
 import PlexusBackground from "./components/PlexusBackground.jsx";
 import SEO from "./components/SEO.jsx";
 import GamingCursor from "./components/GamingCursor.jsx";
+import AuthCallback from "./pages/AuthCallback.jsx";
 
 const queryClient = new QueryClient();
 
@@ -141,6 +142,7 @@ function MainRoutes() {
         <Route path="/login" element={<Login />} />
         <Route path="/PaymentSuccess" element={<PaymentSuccess />} />
         <Route path="/PaymentFail" element={<PaymentFail />} />
+        <Route path="/auth/callback" element={<AuthCallback />} />
 
         <Route path="/events/:eventId/register/:gameId" element={<RequireAuth><TeamRegistration /></RequireAuth>} />
         <Route path="/registration-confirmation/:registrationId" element={<RequireAuth><RegistrationConfirmation /></RequireAuth>} />
