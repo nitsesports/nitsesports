@@ -92,16 +92,17 @@ const Login = () => {
   const onGoogleLogin = async () => {
     setLoadingGoogle(true);
     try {
-      const { error } = await supabase.auth.signInWithOAuth({
+      const { dataerror } = await supabase.auth.signInWithOAuth({
         provider: "google",
         options: {
+          redirectTo: "https://www.nitsesports.in/auth/callback",
           queryParams: {
             access_type: "offline",
             prompt: "consent",
           },
         },
       });
-      if (error) throw error;
+      if (data.error) throw data.error;
     } catch (err) {
       toast.error("Google login failed");
       console.error(err);
