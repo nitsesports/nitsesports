@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Link, useNavigate } from "react-router-dom";
 import { listEvents } from "@/data/eventsStore";
 import lockImg from "@/assets/valorant.jpg";
-import esportsVideo from "@/assets/esports.mp4";
+import vanguard from "@/assets/vanguard.mp4";
 import { supabase } from "@/lib/supabase.js";
 import { useState } from "react";
 
@@ -72,14 +72,16 @@ const Events = () => {
         {/* Background Video Container */}
         <div className="absolute start-0 top-0 -z-10 size-full">
           {/* ... video and mute button */}
-        <video
-className="absolute inset-0 w-full h-full object-cover z-0"
-src="https://res.cloudinary.com/dtbak3q8e/video/upload/v1762464945/1031_2_1_1_wpgqk0.mp4"
-autoPlay
-loop
-muted={isMuted}
-playsInline
+<video
+  key="hero-video"
+  className="absolute inset-0 w-full h-full object-cover z-0"
+  src={"https://res.cloudinary.com/dtbak3q8e/video/upload/v1736246495/1031_2_1_1_wpgqk0.mp4"}
+  autoPlay
+  loop
+  muted
+  playsInline
 />
+
 
           
           {/* Overlay gradient for better text visibility */}
@@ -92,7 +94,7 @@ playsInline
             {/* Date Tag */}
             <div className="rounded-[9px] bg-gradient-to-r from-[#4E442D] to-yellow-700/50 px-2.5 py-1.5">
               <p className="text-sm leading-tight tracking-tight text-white uppercase md:text-base">
-                Nov 17 - Nov 23 2025
+                Nov 20 - Nov 23 2025
               </p>
             </div>
 
