@@ -15,9 +15,7 @@ export default function CashfreeReturn() {
 
       try {
         const API_BASE = import.meta.env.VITE_BACKEND_URL;
-        const res = await fetch(
-  `https://pkmwppswhaluzwbgkkoe.supabase.co/functions/v1/verify-cashfree-order?orderId=${orderId}`
-);
+        const res = await fetch(`${API_BASE}/api/verify-cashfree-order/${orderId}`);
 
         const data = await res.json();
 
