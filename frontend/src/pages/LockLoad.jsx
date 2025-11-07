@@ -7,7 +7,6 @@ import bgmiImg from "@/assets/bgmi.jpg";
 import codImg from "@/assets/cod.jpg";
 import mlImg from "@/assets/ml.jpg";
 import freefireImg from "@/assets/freefire.jpg";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 const games = [
   { id: "bgmi", name: "BGMI", image: bgmiImg },
@@ -19,11 +18,10 @@ const games = [
 
 const LockLoad = () => {
   const [toastMessage, setToastMessage] = useState("");
-  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const showToast = (msg) => {
     setToastMessage(msg);
-    setTimeout(() => setToastMessage(""), 3000); // hide after 3s
+    setTimeout(() => setToastMessage(""), 3000); 
   };
 
   return (
@@ -66,42 +64,30 @@ const LockLoad = () => {
                 </div>
               </CardHeader>
               <CardContent>
-                <div>
-                  <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-                    <DialogContent className="sm:max-w-md">
-                      <DialogHeader>
-                        <DialogTitle className="font-orbitron text-center">Coming Soon!</DialogTitle>
-                      </DialogHeader>
-                      <div className="py-4 text-center text-muted-foreground">
-                        <p>The leaderboard for this game is not prepared yet. Please check back later.</p>
-                      </div>
-                    </DialogContent>
-                  </Dialog>
-                  {g.id === 'bgmi' || g.id === 'freefire' || g.id === 'ml' || g.id === 'codm' ? (
-                    <Link to={`/events/lock-load/leaderboard/${g.id}`}>
-                      <Button variant="outline" className="w-full font-orbitron">
-                        View Leaderboard
-                      </Button>
-                    </Link>
-                  ) : (
-                    <Button
-                      variant="outline"
-                      className="w-full font-orbitron"
-                      onClick={() => setIsModalOpen(true)}
-                    >
+                {["bgmi", "freefire", "ml", "codm"].includes(g.id) ? (
+                  <Link to={`/events/lock-load/leaderboard/${g.id}`}>
+                    <Button variant="outline" className="w-full font-orbitron">
                       View Leaderboard
                     </Button>
-                  )}
-                </div>
+                  </Link>
+                ) : (
+                  <Button
+                    variant="outline"
+                    className="w-full font-orbitron"
+                    onClick={() => showToast("🚫 Leaderboard not available. Please check back later.")}
+                  >
+                    View Leaderboard
+                  </Button>
+                )}
               </CardContent>
             </Card>
           ))}
         </div>
       </div>
 
-      {/* Toast notification */}
+      {/* 🟣 Esports Toast */}
       {toastMessage && (
-        <div className="fixed bottom-5 right-5 bg-yellow-400 text-black px-5 py-3 rounded-lg shadow-lg animate-fade-in-out z-50">
+        <div className="fixed bottom-6 right-6 px-6 py-3 rounded-lg shadow-[0_0_15px_rgba(0,255,255,0.6)] border border-cyan-400 bg-black/90 text-cyan-300 font-orbitron tracking-wide text-sm animate-fade-slide z-50">
           {toastMessage}
         </div>
       )}
