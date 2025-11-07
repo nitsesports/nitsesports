@@ -80,6 +80,7 @@ autoPlay
 loop
 muted={isMuted}
 playsInline
+
 />
 <button
 onClick={() => setIsMuted(!isMuted)}
