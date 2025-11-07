@@ -103,6 +103,9 @@ const TeamRegistration = () => {
     if (!formData.teamName) return "Team name is required";
     if (!formData.teamLeaderName) return "Team leader name is required";
     if (!formData.teamLeaderContact) return "Team leader contact is required";
+    if (!formData.teamLeaderContact) return "Team leader contact is required";
+    if (!/^\d{10}$/.test(formData.teamLeaderContact))
+    return "Team leader contact must be a valid 10-digit number";
     if (!formData.teamLeaderDiscord) return "Team leader Discord tag is required";
     if (!formData.playerInGameNames[0]) return "Team leader in-game name is required";
     if (emailIsNits && !formData.scholarIds[0]) {

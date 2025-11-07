@@ -3,7 +3,7 @@ import { Toaster } from "@/components/ui/toaster.jsx";
 import { Toaster as Sonner } from "@/components/ui/sonner.jsx";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
+import { BrowserRouter, Routes, Route, useLocation, useParams } from "react-router-dom";
 import Navigation from "./components/Navigation.jsx";
 import Footer from "./components/Footer.jsx";
 import Home from "./pages/Home.jsx";
@@ -29,9 +29,95 @@ import RegistrationConfirmation from "./pages/RegistrationConfirmation.jsx";
 import CashfreeReturn from "./pages/CashfreeReturn.jsx";
 import IntroOverlay, { hasSeenIntro } from "./components/IntroOverlay.jsx";
 import PlexusBackground from "./components/PlexusBackground.jsx";
+import SEO from "./components/SEO.jsx";
 import GamingCursor from "./components/GamingCursor.jsx";
 
 const queryClient = new QueryClient();
+
+function RouteSEO() {
+  const location = useLocation();
+  const path = location.pathname;
+  const origin = typeof window !== 'undefined' ? window.location.origin : '';
+  const canonical = typeof window !== 'undefined' ? window.location.href : undefined;
+
+  const defaultImage = `${origin}/placeholder.svg`;
+
+  const noindex = [
+    /^\/login$/,
+    /^\/admin/,
+    /^\/PaymentSuccess$/i,
+    /^\/PaymentFail$/i,
+    /^\/cashfree-return$/,
+    /^\/registration-confirmation\//,
+    /^\/events\/[^/]+\/register\//,
+  ].some(r => r.test(path));
+
+  const map = {
+    "/": {
+      title: "NIT Silchar Esports Club — Competitive Gaming Community",
+      description: "Official esports club of NIT Silchar. Join tournaments, view schedules, and climb the leaderboards.",
+    },
+    "/events": {
+      title: "Events & Tournaments — NIT Silchar Esports Club",
+      description: "Explore upcoming esports events, tournaments, and competitions at NIT Silchar.",
+    },
+    "/schedule": {
+      title: "Schedule — NIT Silchar Esports Club",
+      description: "View the latest match schedules and event timelines for our esports tournaments.",
+    },
+    "/team": {
+      title: "Our Team & Community — NIT Silchar Esports Club",
+      description: "Meet the players, organizers, and community behind NIT Silchar Esports Club.",
+    },
+    "/gallery": {
+      title: "Gallery — NIT Silchar Esports Club",
+      description: "Photos and highlights from tournaments and events at NIT Silchar Esports Club.",
+    },
+    "/merchandise": {
+      title: "Merchandise — NIT Silchar Esports Club",
+      description: "Official esports club merchandise for fans and players at NIT Silchar.",
+    },
+    "/about": {
+      title: "About — NIT Silchar Esports Club",
+      description: "Learn about the mission and activities of the NIT Silchar Esports Club.",
+    },
+  };
+
+  const meta = map[path] || {
+    title: "NIT Silchar Esports Club",
+    description: "Esports tournaments, leaderboards, schedules, and community at NIT Silchar.",
+  };
+
+  const robots = noindex ? "noindex, nofollow" : "index, follow";
+
+  const structuredData = path === "/" ? [
+    {
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      "name": "NIT Silchar Esports Club",
+      ...(origin ? { "url": origin } : {}),
+      "logo": `${origin}/placeholder.svg`
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      ...(origin ? { "url": origin } : {}),
+      "name": "NIT Silchar Esports Club"
+    }
+  ] : undefined;
+
+  return (
+    <SEO
+      title={meta.title}
+      description={meta.description}
+      image={defaultImage}
+      robots={robots}
+      canonical={canonical}
+      structuredData={structuredData}
+    />
+  );
+}
+
 
 function MainRoutes() {
   const location = useLocation();
@@ -83,6 +169,7 @@ const App = () => {
         <BrowserRouter>
           <PlexusBackground/>
           {/* <GamingCursor /> */}
+           <RouteSEO />
           <div className="relative min-h-screen bg-gradient-to-b from-[#050505]/30 via-[#0a0a1f]/20 to-[#000000]/20 text-white flex flex-col z-30">
             <Navigation />
             <MainRoutes />
