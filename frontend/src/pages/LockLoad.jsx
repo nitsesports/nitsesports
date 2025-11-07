@@ -21,7 +21,7 @@ const LockLoad = () => {
 
   const showToast = (msg) => {
     setToastMessage(msg);
-    setTimeout(() => setToastMessage(""), 3000); // hide after 3s
+    setTimeout(() => setToastMessage(""), 3000); 
   };
 
   return (
