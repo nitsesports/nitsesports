@@ -10,8 +10,8 @@ import { supabase } from "@/lib/supabase.js";
 import { gameConfig, getGameConfig } from "@/data/gameConfig.js";
 
 /* 🔥 NEW: Failover setup */
-const PRIMARY_API = "http://nitsesportsbackend-env.eba-e3acmnk2.us-east-1.elasticbeanstalk.com";
-const SECONDARY_API = "https://nitsesportsbackend.vercel.app";
+const PRIMARY_API = "https://nitsesportsbackend.vercel.app";
+const SECONDARY_API = "https://nitsesportsbackend.onrender.com";
 
 /* 🔥 NEW: Helper function for failover fetch */
 async function safeFetch(path, options = {}) {
