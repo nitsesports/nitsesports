@@ -3,8 +3,8 @@ import { useSearchParams, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
 /* 🔥 NEW: Failover backend setup */
-const PRIMARY_API = "http://nitsesportsbackend-env.eba-e3acmnk2.us-east-1.elasticbeanstalk.com";
-const SECONDARY_API = "https://nitsesportsbackend.vercel.app";
+const PRIMARY_API = "https://nitsesportsbackend.vercel.app";
+const SECONDARY_API = "https://nitsesportsbackend.onrender.com";
 
 /* 🔥 NEW: Universal failover-safe fetch */
 async function safeFetch(path, options = {}) {
