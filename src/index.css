@@ -262,3 +262,39 @@ All colors MUST be HSL.
   animation: fade-slide 3s ease-in-out forwards;
 }
 
+/* ===============================
+   GALLERY MARQUEE — PC ONLY
+================================ */
+
+@media (min-width: 1024px) {
+  .gallery-marquee-wrapper {
+    overflow: hidden;
+    width: 100%;
+  }
+
+  .gallery-marquee {
+    display: flex;
+    gap: 1rem;
+    width: max-content;
+    animation: gallery-marquee-scroll 22s linear infinite;
+  }
+
+  .gallery-item {
+    min-width: 280px;
+    flex-shrink: 0;
+  }
+
+  .gallery-marquee-wrapper:hover .gallery-marquee {
+    animation-play-state: paused;
+  }
+}
+
+@keyframes gallery-marquee-scroll {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
