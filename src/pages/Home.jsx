@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { motion } from "framer-motion";
 import { useRef } from "react";
 
-import HeroAnimation from "@/components/NewHero/HeroAnimation.jsx";
+import HeroAnimation from "@/components/newHero/HeroAnimation.jsx";
 
 const galleryImages = [
   {
