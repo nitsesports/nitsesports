@@ -7,11 +7,45 @@ import { listEvents } from "@/data/eventsStore";
 import lockImg from "@/assets/valorant.jpg";
 import vanguard from "@/assets/vanguard.mp4";
 import { supabase } from "@/lib/supabase.js";
-import { useState } from "react";
+import { useState ,useEffect} from "react";
+import { useRef } from "react";
+
+
+
 
 const Events = () => {
-   const [isMuted, setIsMuted] = useState(true);
+  const REGISTRATION_START = new Date("2026-01-01T00:00:00");
   const [toastMessage, setToastMessage] = useState("");
+  const [videoLoaded, setVideoLoaded] = useState(false);
+  const videoRef = useRef(null);
+  const [timeLeft, setTimeLeft] = useState("");
+
+useEffect(() => {
+  const updateTimer = () => {
+    const now = new Date();
+    const diff = REGISTRATION_START - now;
+
+    if (diff <= 0) {
+      setTimeLeft("");
+      return;
+    }
+
+    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+    const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
+    const minutes = Math.floor((diff / (1000 * 60)) % 60);
+    const seconds = Math.floor((diff / 1000) % 60);
+
+    setTimeLeft(
+      `${days}d ${hours}h ${minutes}m ${seconds}s`
+    );
+  };
+
+  updateTimer();
+  const interval = setInterval(updateTimer, 1000);
+  return () => clearInterval(interval);
+}, []);
+
+
   const navigate = useNavigate();
 
   const showToast = (msg) => {
@@ -42,10 +76,10 @@ const Events = () => {
 
   const games = [
     { id: "bgmi", name: "BGMI", image: "https://res.cloudinary.com/dboqkwvhv/image/upload/v1761372612/bgmi_lxvrnt.jpg", brochure: "https://gamma.app/docs/VANGUARD-ARENA-i71v4n1968gk240", prize: 25000 },
-    { id: "rc", name: "Real Cricket", image: "https://res.cloudinary.com/dboqkwvhv/image/upload/v1766304221/KRAFTON.jpg_ms0hab.webp", brochure: "https://example.com/brochures/codm", prize: 5000 },
-    { id: "freefire", name: "Free Fire", image: "https://res.cloudinary.com/dboqkwvhv/image/upload/v1761372616/freefire_uutecs.jpg", brochure: "https://gamma.app/docs/VANGUARD-ARENA-aei2y0ivstdkaww?mode=doc", prize: 10000 },
-    { id: "valorant", name: "Valorant", image: "https://res.cloudinary.com/dboqkwvhv/image/upload/v1761372668/valorant_qxje8q.jpg", brochure: "https://gamma.app/docs/Vanguard-Arena--zrpooho817957yj?mode=doc", prize: 10000 },
-    { id: "ml", name: "Mobile Legends", image: "https://res.cloudinary.com/dboqkwvhv/image/upload/v1761372633/ml_h8honj.jpg", brochure: "https://gamma.app/docs/TECNOESIS-CUP-mlbb-h5oottx9xnwqnet?mode=doc", prize: 10000 },
+    { id: "rc", name: "Real Cricket", image: "https://res.cloudinary.com/dboqkwvhv/image/upload/v1766304221/KRAFTON.jpg_ms0hab.webp", brochure: "https://gamma.app/docs/VANGUARD-xpmguxeg1uuld3q", prize: 5000 },
+    { id: "freefire", name: "Free Fire", image: "https://res.cloudinary.com/dboqkwvhv/image/upload/v1761372616/freefire_uutecs.jpg", brochure: "https://gamma.app/docs/VANGUARD-ARENA-aei2y0ivstdkaww", prize: 15000 },
+    { id: "valorant", name: "Valorant", image: "https://res.cloudinary.com/dboqkwvhv/image/upload/v1761372668/valorant_qxje8q.jpg", brochure: "https://gamma.app/docs/Vanguard-Arena-zrpooho817957yj", prize: 10000 },
+    { id: "ml", name: "Mobile Legends", image: "https://res.cloudinary.com/dboqkwvhv/image/upload/v1761372633/ml_h8honj.jpg", brochure: "https://gamma.app/docs/TECNOESIS-CUP-mlbb-h5oottx9xnwqnet", prize: 10000 },
     // { id: "fifa", name: "FIFA 25", image: "https://res.cloudinary.com/dboqkwvhv/image/upload/v1761372618/FIFA_tzgbj9.jpg", brochure: "https://example.com/brochures/fifa" },
     // { id: "bulletchoe", name: "Bullet Echo", image: "https://res.cloudinary.com/dboqkwvhv/image/upload/v1761372614/bullet_echo_ai4ekj.jpg", brochure: "https://example.com/brochures/bulletchoe" },
     // { id: "clashroyale", name: "Clash Royale", image: "https://res.cloudinary.com/dboqkwvhv/image/upload/v1761372615/clash_royale_q1nbd7.jpg", brochure: "https://example.com/brochures/clashroyale" },
@@ -69,7 +103,7 @@ const Events = () => {
 
   const stats = [
     { value: "1000+", label: "Players" },
-    { value: "₹60,000", label: "Prize pool" },
+    { value: "₹65,000", label: "Prize pool" },
     { value: "5", label: "Competitions" },
   ];
 
@@ -80,15 +114,31 @@ const Events = () => {
         {/* Background Video Container */}
         <div className="absolute start-0 top-0 -z-10 size-full">
           {/* ... video and mute button */}
+<img
+  src="https://res.cloudinary.com/dtbak3q8e/image/upload/v1767018186/WhatsApp_Image_2025-12-29_at_7.31.30_PM_laliwu.jpg"
+  alt="Vanguard Arena"
+  className={`absolute inset-0 w-full h-full object-cover z-10 transition-opacity duration-700 ${
+    videoLoaded ? "opacity-0" : "opacity-100"
+  }`}
+/>
+
 <video
-  key="hero-video"
-  className="absolute inset-0 w-full h-full object-cover z-0"
-  src={"https://res.cloudinary.com/dtbak3q8e/video/upload/v1736246495/1031_2_1_1_wpgqk0.mp4"}
+  ref={videoRef}
+  className="absolute inset-0 w-full h-full object-cover z-0 "
+  src="https://res.cloudinary.com/dtbak3q8e/video/upload/v1736246495/1031_2_1_1_wpgqk0.mp4"
   autoPlay
   loop
   muted
   playsInline
+  preload="auto"
+  onPlay={() => setVideoLoaded(true)}
+  onLoadedData={() => {
+    // 🔥 force play on mobile
+    videoRef.current?.play().catch(() => {});
+  }}
 />
+
+
 
 
           
@@ -132,7 +182,19 @@ const Events = () => {
 
             {/* Tagline */}
             <div className="max-w-[802px] text-center">
-              <p className="text-sm leading-tight text-white uppercase md:text-[21px] font-semibold drop-shadow-md">
+              <p
+  className="
+    text-sm leading-tight uppercase font-semibold
+    text-white md:text-[21px]
+
+    bg-black/40 md:bg-transparent
+    px-3 py-2 rounded-md
+    drop-shadow-md
+
+    max-w-[90%] mx-auto
+  "
+>
+
                 Rise Above The Competition. Vanguard Arena Features the World's Best Gaming Talent
               </p>
             </div>
@@ -168,9 +230,22 @@ const Events = () => {
                         View Details
                       </Button>
                     </a>
-                    <Button className="w-full font-orbitron" onClick={() => handleRegisterClick(g)}>
-                      Register Team
-                    </Button>
+<Button
+  className="w-full font-orbitron"
+  onClick={() =>
+    new Date() < REGISTRATION_START
+      ? showToast("Registrations open on 01 January 2026")
+      : handleRegisterClick(g)
+  }
+>
+  Register Team
+</Button>
+
+
+
+
+
+                    
                   </div>
                 </CardContent>
               </Card>

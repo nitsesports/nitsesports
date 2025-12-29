@@ -6,12 +6,19 @@ import { Badge } from "@/components/ui/badge.jsx";
 import { supabase } from "@/lib/supabase.js";
 import { CheckCircle2 } from "lucide-react";
 
+const WHATSAPP_GROUP_LINKS = {
+  bgmi: "https://chat.whatsapp.com/JT1LmygDBmcJUODP2DhhuS",
+  rc: "https://chat.whatsapp.com/D3izu54NpVi69H6eVNzAsu",
+  
+};
+
 const RegistrationConfirmation = () => {
   const { registrationId } = useParams();
   const navigate = useNavigate();
   const location = useLocation();
   const [registration, setRegistration] = useState(null);
   const [loading, setLoading] = useState(true);
+  const whatsappLink = registration ? WHATSAPP_GROUP_LINKS[registration.game_id.toLowerCase()] : null;
 
   useEffect(() => {
     const fetchRegistration = async () => {
@@ -74,9 +81,30 @@ const RegistrationConfirmation = () => {
             <div className="flex justify-center">
               <CheckCircle2 className="w-16 h-16 text-green-500" />
             </div>
+            
             <CardTitle className="font-orbitron text-3xl text-green-500">
               Registration Confirmed!
             </CardTitle>
+            {whatsappLink && (
+  <div className="bg-emerald-500/10 border border-emerald-500/30 rounded-lg p-4 space-y-2">
+    <p className="text-sm text-emerald-600 font-medium">
+      📢 Join the official WhatsApp group for <strong>{registration.game_id.toUpperCase()}</strong>
+    </p>
+
+    <a
+      href={whatsappLink}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="inline-flex items-center gap-2 text-sm font-semibold text-white bg-emerald-600 hover:bg-emerald-700 px-4 py-2 rounded-md transition"
+    >
+      Join WhatsApp Group
+    </a>
+
+    <p className="text-xs text-muted-foreground">
+      Important updates, match schedules, and announcements will be shared here.
+    </p>
+  </div>
+)}
           </CardHeader>
 
           <CardContent className="space-y-6">
@@ -179,6 +207,9 @@ const RegistrationConfirmation = () => {
               </Button>
             </div>
           </CardContent>
+          {/* WhatsApp Group */}
+
+
         </Card>
       </div>
     </div>
