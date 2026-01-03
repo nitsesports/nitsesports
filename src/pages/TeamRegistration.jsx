@@ -34,8 +34,7 @@ const TeamRegistration = () => {
 
   const [loading, setLoading] = useState(false);
   const [collegeType, setCollegeType] = useState("nits");
-  const substituteCount = gameInfo.substituteCount || 0;
-const totalRequiredPlayers = playerCount + substituteCount;
+const totalRequiredPlayers = gameInfo.playerCount + gameInfo.substituteCount;
   const [formData, setFormData] = useState({
     email: "",
     teamName: "",

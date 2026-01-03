@@ -10,7 +10,7 @@ export const gameConfig = {
     id: "rc",
     name: "Real Cricket",
     playerCount: 1,
-
+    substituteCount: 0,
     price: { nits: 0, other: 0 },
   },
   valorant: {
@@ -24,12 +24,14 @@ export const gameConfig = {
     id: "freefire",
     name: "Free Fire",
     playerCount: 4,
+    substituteCount: 1,
     price: { nits: 100, other: 200 },
   },
   codm: {
     id: "codm",
     name: "COD Mobile",
     playerCount: 5,
+    substituteCount: 1,
     price: { nits: 100, other: 250 },
   },
   ml: {
@@ -55,6 +57,7 @@ export const gameConfig = {
     id: "clashroyale",
     name: "Clash Royale",
     playerCount: 1,
+    substituteCount: 1,
     price: { nits: 100, other: 250 },
   },
   
