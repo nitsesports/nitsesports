@@ -34,7 +34,8 @@ const TeamRegistration = () => {
 
   const [loading, setLoading] = useState(false);
   const [collegeType, setCollegeType] = useState("nits");
-const totalRequiredPlayers = gameInfo.playerCount + gameInfo.substituteCount;
+  const substituteCount = gameInfo.substituteCount;
+const totalRequiredPlayers = gameInfo.playerCount + substituteCount;
   const [formData, setFormData] = useState({
     email: "",
     teamName: "",
@@ -392,7 +393,7 @@ console.log("✅ Payment Session ID:", paymentSessionId);
                         <Input
                           required
                           value={formData.playerInGameNames[playerIndex] || ""}
-                          onChange={(e) => handlePlayerChange(playerIndex, "In-Game Name and Id (Separated with #)", e.target.value)}
+                          onChange={(e) => handlePlayerChange(playerIndex, "inGameName", e.target.value)}
                           placeholder="In-Game Name and Id (Separated with #)"
                         />
                       </div>
