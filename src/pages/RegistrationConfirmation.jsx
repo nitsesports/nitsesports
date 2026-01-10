@@ -8,7 +8,7 @@ import { CheckCircle2 } from "lucide-react";
 
 const WHATSAPP_GROUP_LINKS = {
   bgmi: "https://chat.whatsapp.com/JT1LmygDBmcJUODP2DhhuS",
-  rc: "https://chat.whatsapp.com/D3izu54NpVi69H6eVNzAsu",
+  rc: "https://chat.whatsapp.com/D1oKopa4iM61eEPIj83owa",
   
 };
 

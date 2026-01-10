@@ -393,7 +393,7 @@ console.log("✅ Payment Session ID:", paymentSessionId);
                         <Input
                           required
                           value={formData.playerInGameNames[playerIndex] || ""}
-                          onChange={(e) => handlePlayerChange(playerIndex, "In-Game Name and Id (Separated with #)", e.target.value)}
+                          onChange={(e) => handlePlayerChange(playerIndex, "inGameName", e.target.value)}
                           placeholder="In-Game Name and Id (Separated with #)"
                         />
                       </div>
