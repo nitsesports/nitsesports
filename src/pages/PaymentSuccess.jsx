@@ -15,6 +15,10 @@ const WHATSAPP_GROUP_LINKS = [
     name: "MLBB",
     link: "https://chat.whatsapp.com/Ejo9p6BASMULwXiPa8vEfI",
   },
+  {
+    name: "FIFA",
+    link: "https://chat.whatsapp.com/LbiWkF4HfT56Oeh3LeafSw",
+  },
 ];
 
 export default function PaymentSuccess() {
