@@ -72,7 +72,9 @@ const Navigation = () => {
                 <Link to="/admin">Dashboard</Link>
               </Button>
             ) : (
-              <Button variant="outline" onClick={handleLogout}>Logout</Button>
+              <Button asChild variant={isActive('/dashboard') ? 'default' : 'ghost'} className="font-inter rounded-full px-3">
+                <Link to="/dashboard">Dashboard</Link>
+              </Button>
             )}
           </div>
 
@@ -94,17 +96,45 @@ const Navigation = () => {
                 </Button>
               ))}
 
-              {!user ? (
-                <Button asChild variant={isActive('/login') ? 'default' : 'ghost'} className="w-full justify-start">
-                  <Link to="/login" onClick={() => setIsOpen(false)}>Login</Link>
-                </Button>
-              ) : user.email === allowedEmail ? (
-                <Button asChild className="w-full justify-start">
-                  <Link to="/admin" onClick={() => setIsOpen(false)}>Dashboard</Link>
-                </Button>
-              ) : (
-                <Button className="w-full" onClick={() => { setIsOpen(false); handleLogout(); }}>Logout</Button>
-              )}
+{!user ? (
+  <Button
+    asChild
+    variant={isActive('/login') ? 'default' : 'ghost'}
+    className="w-full justify-start"
+  >
+    <Link to="/login" onClick={() => setIsOpen(false)}>Login</Link>
+  </Button>
+) : user.email === allowedEmail ? (
+  <Button
+    asChild
+    variant={isActive('/admin') ? 'default' : 'ghost'}
+    className="w-full justify-start"
+  >
+    <Link to="/admin" onClick={() => setIsOpen(false)}>Dashboard</Link>
+  </Button>
+) : (
+  <>
+    <Button
+      asChild
+      variant={isActive('/dashboard') ? 'default' : 'ghost'}
+      className="w-full justify-start"
+    >
+      <Link to="/dashboard" onClick={() => setIsOpen(false)}>Dashboard</Link>
+    </Button>
+
+    <Button
+      variant="ghost"
+      className="w-full justify-start text-red-400"
+      onClick={() => {
+        setIsOpen(false);
+        handleLogout();
+      }}
+    >
+      Logout
+    </Button>
+  </>
+)}
+
             </div>
           </div>
         </div>

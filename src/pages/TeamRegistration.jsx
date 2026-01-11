@@ -197,7 +197,7 @@ const TeamRegistration = () => {
                 player_in_game_names: formData.playerInGameNames,
                 scholar_ids: formData.scholarIds,
                 amount: price,
-                payment_status: "free",
+                payment_status: "completed",
                 created_at: new Date().toISOString(),
               },
             ])

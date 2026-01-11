@@ -9,6 +9,14 @@ import { supabase } from "@/lib/supabase.js";
 
 const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID;
 
+// Debug: Get current origin for Google OAuth setup
+const getCurrentOrigin = () => {
+  if (typeof window !== "undefined") {
+    return window.location.origin;
+  }
+  return "unknown";
+};
+
 const Login = () => {
   const [role, setRole] = useState("user");
   const [email, setEmail] = useState("");
@@ -54,44 +62,65 @@ const redirect =
     const loadGoogleOneTap = async () => {
       if (!window.google || !GOOGLE_CLIENT_ID) return;
 
-      const nonce = btoa(String.fromCharCode(...crypto.getRandomValues(new Uint8Array(32))));
-      const encoder = new TextEncoder();
-      const encodedNonce = encoder.encode(nonce);
-      const hashBuffer = await crypto.subtle.digest("SHA-256", encodedNonce);
-      const hashArray = Array.from(new Uint8Array(hashBuffer));
-      const hashedNonce = hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
-
-      window.google.accounts.id.initialize({
-        client_id: GOOGLE_CLIENT_ID,
-        callback: async (response) => {
-          try {
-            const { data, error } = await supabase.auth.signInWithIdToken({
-              provider: "google",
-              token: response.credential,
-              nonce,
-            });
-            if (error) throw error;
-            toast.success("Signed in with Google");
-
-const target = redirect;
-sessionStorage.removeItem("post_login_redirect");
-
-navigate(target, { replace: true });
-
-          } catch (err) {
-            toast.error("Google sign-in failed");
-            console.error(err);
-          }
-        },
-        nonce: hashedNonce,
-        use_fedcm_for_prompt: false,
-      });
-
       try {
-        window.google.accounts.id.prompt();
+        // Suppress GSI Logger console messages
+        if (window.__GOOGLE_INITIALIZATION_STARTED__) return;
+        window.__GOOGLE_INITIALIZATION_STARTED__ = true;
+
+        // Log current origin for debugging
+        const currentOrigin = getCurrentOrigin();
+        console.log(
+          `%c[NITS Esports Auth] %cCurrent Origin: ${currentOrigin}`,
+          "background: #10b981; color: white; padding: 2px 6px; border-radius: 3px; font-weight: bold;",
+          "color: #10b981; font-weight: bold;"
+        );
+        console.log(
+          "%c[NITS Esports Auth] If Google Sign-In shows origin error, add this URL to Google Cloud Console:",
+          "color: #f59e0b; font-weight: bold;"
+        );
+        console.log(`%c${currentOrigin}`, "color: #3b82f6; font-weight: bold; font-size: 14px;");
+
+        const nonce = btoa(String.fromCharCode(...crypto.getRandomValues(new Uint8Array(32))));
+        const encoder = new TextEncoder();
+        const encodedNonce = encoder.encode(nonce);
+        const hashBuffer = await crypto.subtle.digest("SHA-256", encodedNonce);
+        const hashArray = Array.from(new Uint8Array(hashBuffer));
+        const hashedNonce = hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
+
+        window.google.accounts.id.initialize({
+          client_id: GOOGLE_CLIENT_ID,
+          callback: async (response) => {
+            try {
+              const { data, error } = await supabase.auth.signInWithIdToken({
+                provider: "google",
+                token: response.credential,
+                nonce,
+              });
+              if (error) throw error;
+              toast.success("Signed in with Google");
+
+              const target = redirect;
+              sessionStorage.removeItem("post_login_redirect");
+
+              navigate(target, { replace: true });
+
+            } catch (err) {
+              toast.error("Google sign-in failed");
+              console.error(err);
+            }
+          },
+          nonce: hashedNonce,
+          use_fedcm_for_prompt: false,
+        });
+
+        try {
+          window.google.accounts.id.prompt();
+        } catch (err) {
+          // Origin not authorized - expected during Google Cloud setup
+          console.debug("Google One Tap unavailable - domain needs authorization in Google Cloud Console");
+        }
       } catch (err) {
-        // FedCM not available in this environment
-        console.debug("Google One Tap not available");
+        console.error("Error loading Google One Tap:", err);
       }
     };
 
@@ -264,7 +293,7 @@ navigate(target, { replace: true });
             </div>
 
             {/* Google Sign In */}
-            <div className="pt-2">
+            <div className="pt-2 space-y-3">
               <Button variant="outline" className="w-full" onClick={onGoogleLogin} disabled={loadingGoogle}>
                 {loadingGoogle ? (
                   <div className="flex items-center gap-2">
@@ -275,7 +304,7 @@ navigate(target, { replace: true });
                   "Continue with Google"
                 )}
               </Button>
-              <p className="text-xs text-center text-muted-foreground mt-1">
+              <p className="text-xs text-center text-muted-foreground">
                 You can also use Google One Tap for instant login
               </p>
             </div>

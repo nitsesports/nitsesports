@@ -45,7 +45,7 @@ export const gameConfig = {
     id: "fifa",
     name: "FIFA",
     playerCount: 1,
-    price: { nits: 100, other: 200 },
+    price: { nits: 50, other: 100 },
   },
   bulletchoe: {
     id: "bulletchoe",

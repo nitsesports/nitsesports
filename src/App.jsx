@@ -23,6 +23,9 @@ import PaymentSuccess from "./pages/PaymentSuccess.jsx";
 import PaymentFail from "./pages/PaymentFail.jsx";
 import RequireAuth from "./auth/RequireAuth";
 import RequireAdmin from "./auth/RequireAdmin";
+import Dashboard from "./pages/Dashboard.jsx";
+import FreeFire from "./pages/FreeFire.jsx";
+
 import VanguardArena from "./pages/Gamingbonanza.jsx";
 import TeamRegistration from "./pages/TeamRegistration.jsx";
 import RegistrationConfirmation from "./pages/RegistrationConfirmation.jsx";
@@ -124,9 +127,10 @@ function RouteSEO() {
 function MainRoutes() {
   const location = useLocation();
   const isHome = location.pathname === "/";
+  const isDashboard = location.pathname.startsWith("/dashboard");
 
   return (
-    <main className={`flex-1 ${isHome ? "pt-0" : "pt-16"}`}>
+    <main className={`flex-1 ${isHome ? "pt-0" : isDashboard ? "pt-0" : "pt-16"}`}>
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/events" element={<Events />} />
@@ -144,6 +148,11 @@ function MainRoutes() {
         <Route path="/PaymentSuccess" element={<PaymentSuccess />} />
         <Route path="/PaymentFail" element={<PaymentFail />} />
         <Route path="/auth/callback" element={<AuthCallback />} />
+        <Route path="/fic/freefire" element={<FreeFire />} />
+
+        {/* Dashboard Routes */}
+        <Route path="/dashboard" element={<RequireAuth><Dashboard /></RequireAuth>} />
+        
 
         <Route path="/events/:eventId/register/:gameId" element={<RequireAuth><TeamRegistration /></RequireAuth>} />
         <Route path="/registration-confirmation/:registrationId" element={<RequireAuth><RegistrationConfirmation /></RequireAuth>} />

@@ -80,7 +80,7 @@ useEffect(() => {
     //{ id: "freefire", name: "Free Fire", image: "https://res.cloudinary.com/dboqkwvhv/image/upload/v1761372616/freefire_uutecs.jpg", brochure: "https://gamma.app/docs/VANGUARD-ARENA-aei2y0ivstdkaww", prize: 10000 },
     { id: "valorant", name: "Valorant", image: "https://res.cloudinary.com/dboqkwvhv/image/upload/v1761372668/valorant_qxje8q.jpg", brochure: "https://gamma.app/docs/Vanguard-Arena-zrpooho817957yj", prize: 10000 },
     { id: "ml", name: "Mobile Legends", image: "https://res.cloudinary.com/dboqkwvhv/image/upload/v1761372633/ml_h8honj.jpg", brochure: "https://gamma.app/docs/TECNOESIS-CUP-mlbb-h5oottx9xnwqnet", prize: 5000 },
-     { id: "fifa", name: "FIFA 25", image: "https://res.cloudinary.com/dboqkwvhv/image/upload/v1761372618/FIFA_tzgbj9.jpg", brochure: "https://example.com/brochures/fifa" ,prize: 5000 },
+     { id: "fifa", name: "FIFA 25", image: "https://res.cloudinary.com/dboqkwvhv/image/upload/v1761372618/FIFA_tzgbj9.jpg", brochure: "https://example.com/brochures/fifa",prize: 5000 },
     // { id: "bulletchoe", name: "Bullet Echo", image: "https://res.cloudinary.com/dboqkwvhv/image/upload/v1761372614/bullet_echo_ai4ekj.jpg", brochure: "https://example.com/brochures/bulletchoe" },
     // { id: "clashroyale", name: "Clash Royale", image: "https://res.cloudinary.com/dboqkwvhv/image/upload/v1761372615/clash_royale_q1nbd7.jpg", brochure: "https://example.com/brochures/clashroyale" },
   ];
@@ -152,7 +152,7 @@ useEffect(() => {
             {/* Date Tag */}
             <div className="rounded-[9px] bg-gradient-to-r from-[#4E442D] to-yellow-700/50 px-2.5 py-1.5">
               <p className="text-sm leading-tight tracking-tight text-white uppercase md:text-base">
-                Jan 14 - Jan 17 2026
+                Jan 14 - Jan 18 2026
               </p>
             </div>
 
@@ -231,7 +231,7 @@ useEffect(() => {
                       </Button>
                     </a>
 <Button
-    className="w-full font-orbitron"
+  className="w-full font-orbitron"
   onClick={() =>
     new Date() < REGISTRATION_START
       ? showToast("Registrations open on 01 January 2026")
@@ -240,16 +240,7 @@ useEffect(() => {
 >
   Register Team
 </Button>
-
-
-
-
-
-
-
-
-                    
-                  </div>
+</div>
                 </CardContent>
               </Card>
             ))}

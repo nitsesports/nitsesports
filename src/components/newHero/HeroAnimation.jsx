@@ -35,10 +35,12 @@ export default function HeroAnimation() {
   const pixelsRef = useRef([]);
   const paddlesRef = useRef([]);
   const ballRef = useRef({});
+  const animationIdRef = useRef(null);
 
   useEffect(() => {
     const canvas = canvasRef.current;
 
+    if (!canvas) return;
 
     const resizeCanvas = () => {
       const parent = canvas.parentElement;
@@ -186,6 +188,8 @@ export default function HeroAnimation() {
       const ball = ballRef.current;
       const canvas = canvasRef.current;
 
+      if (!canvas || !ball) return;
+
       ball.x += ball.dx;
       ball.y += ball.dy;
 
@@ -223,6 +227,9 @@ export default function HeroAnimation() {
 
     const draw = () => {
       const canvas = canvasRef.current;
+
+      if (!canvas) return;
+
       const ctx = canvas.getContext("2d");
 
       ctx.clearRect(0, 0, canvas.width, canvas.height); // TRANSPARENT BG
@@ -245,14 +252,19 @@ export default function HeroAnimation() {
     const loop = () => {
       update();
       draw();
-      requestAnimationFrame(loop);
+      animationIdRef.current = requestAnimationFrame(loop);
     };
 
     resizeCanvas();
     window.addEventListener("resize", resizeCanvas);
     loop();
 
-    return () => window.removeEventListener("resize", resizeCanvas);
+    return () => {
+      window.removeEventListener("resize", resizeCanvas);
+      if (animationIdRef.current) {
+        cancelAnimationFrame(animationIdRef.current);
+      }
+    };
   }, []);
 
   return (
