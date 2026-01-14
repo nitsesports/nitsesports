@@ -22,7 +22,7 @@ const Events = () => {
   const [showClosedPopup, setShowClosedPopup] = useState(false);
   const videoRef = useRef(null);
   const [timeLeft, setTimeLeft] = useState("");
-  const CLOSED_GAMES = new Set(["rc", "bgmi"]);
+  const CLOSED_GAMES = new Set(["rc", "bgmi","valorant"]);
 
 useEffect(() => {
   const updateTimer = () => {
@@ -84,10 +84,11 @@ useEffect(() => {
 
   const games = [
     { id: "ml", name: "Mobile Legends", image: "https://res.cloudinary.com/dboqkwvhv/image/upload/v1761372633/ml_h8honj.jpg", brochure: "https://gamma.app/docs/TECNOESIS-CUP-mlbb-h5oottx9xnwqnet", prize: 5000 },
-      { id: "valorant", name: "Valorant", image: "https://res.cloudinary.com/dboqkwvhv/image/upload/v1761372668/valorant_qxje8q.jpg", brochure: "https://gamma.app/docs/Vanguard-Arena-zrpooho817957yj", prize: 5000 },
     { id: "fifa", name: "FIFA 25", image: "https://res.cloudinary.com/dboqkwvhv/image/upload/v1761372618/FIFA_tzgbj9.jpg", brochure: "https://example.com/brochures/fifa",prize: 5000 },
     { id: "bgmi", name: "BGMI", image: "https://res.cloudinary.com/dboqkwvhv/image/upload/v1761372612/bgmi_lxvrnt.jpg", brochure: "https://gamma.app/docs/VANGUARD-ARENA-i71v4n1968gk240", prize: 25000 },
     { id: "rc", name: "Real Cricket", image: "https://res.cloudinary.com/dboqkwvhv/image/upload/v1766304221/KRAFTON.jpg_ms0hab.webp", brochure: "https://gamma.app/docs/VANGUARD-xpmguxeg1uuld3q", prize: 5000 },
+      { id: "valorant", name: "Valorant", image: "https://res.cloudinary.com/dboqkwvhv/image/upload/v1761372668/valorant_qxje8q.jpg", brochure: "https://gamma.app/docs/Vanguard-Arena-zrpooho817957yj", prize: 5000 },
+    
     //{ id: "freefire", name: "Free Fire", image: "https://res.cloudinary.com/dboqkwvhv/image/upload/v1761372616/freefire_uutecs.jpg", brochure: "https://gamma.app/docs/VANGUARD-ARENA-aei2y0ivstdkaww", prize: 10000 },
   
     // { id: "bulletchoe", name: "Bullet Echo", image: "https://res.cloudinary.com/dboqkwvhv/image/upload/v1761372614/bullet_echo_ai4ekj.jpg", brochure: "https://example.com/brochures/bulletchoe" },
