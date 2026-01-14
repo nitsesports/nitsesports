@@ -159,7 +159,7 @@ useEffect(() => {
             {/* Date Tag */}
             <div className="rounded-[9px] bg-gradient-to-r from-[#4E442D] to-yellow-700/50 px-2.5 py-1.5">
               <p className="text-sm leading-tight tracking-tight text-white uppercase md:text-base">
-                Jan 14 - Jan 18 2026
+                Jan 15 - Jan 18 2026
               </p>
             </div>
 
