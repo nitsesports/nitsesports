@@ -51,7 +51,7 @@ const TeamRegistration = () => {
 
   // Check if email is NITS student
   const isNitsEmail = (email) => {
-            const nitsEmailPattern = /^[a-zA-Z0-9_]+_(ug|pg)_\d{2}@[a-zA-Z0-9]+\.nits\.ac\.in$/;
+    const nitsEmailPattern = /^[a-zA-Z0-9_]+_(ug|pg)_\d{2}@[a-zA-Z0-9]+\.nits\.ac\.in$/;
     return nitsEmailPattern.test(email);
   };
 

@@ -8,7 +8,9 @@ import lockImg from "@/assets/valorant.jpg";
 import vanguard from "@/assets/vanguard.mp4";
 import { supabase } from "@/lib/supabase.js";
 import { useState ,useEffect} from "react";
+import RegistrationClosedModal from "@/components/RegistrationClosedModal.jsx";
 import { useRef } from "react";
+
 
 
 
@@ -17,6 +19,7 @@ const Events = () => {
   const REGISTRATION_START = new Date("2026-01-01T00:00:00");
   const [toastMessage, setToastMessage] = useState("");
   const [videoLoaded, setVideoLoaded] = useState(false);
+  const [showClosedPopup, setShowClosedPopup] = useState(false);
   const videoRef = useRef(null);
   const [timeLeft, setTimeLeft] = useState("");
 
@@ -54,6 +57,10 @@ useEffect(() => {
   };
 
  const handleRegisterClick = async (g) => {
+    if (g.id === "rc") {
+    setShowClosedPopup(true);
+    return;
+  }
   try {
     const { data } = await supabase.auth.getSession();
     const target = `/events/vanguardarena/register/${g.id}`;
@@ -316,6 +323,10 @@ useEffect(() => {
           {toastMessage}
         </div>
       )}
+      <RegistrationClosedModal
+  open={showClosedPopup}
+  onClose={() => setShowClosedPopup(false)}
+/>
     </div>
   );
 };
