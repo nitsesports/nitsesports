@@ -41,7 +41,7 @@ const redirect =
   };
 
   const getEmailValidationMessage = (emailValue) => {
-    const nitsEmailPattern = /^[a-zA-Z0-9_]+_ug_\d{2}@[a-zA-Z0-9]+\.nits\.ac\.in$/;
+       const nitsEmailPattern = /^[a-zA-Z0-9_]+_(ug|pg)_\d{2}@[a-zA-Z0-9]+\.nits\.ac\.in$/;
     const generalEmailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (nitsEmailPattern.test(emailValue)) return { valid: true, message: "NITS institute email" };
     if (generalEmailPattern.test(emailValue)) return { valid: true, message: "External email" };
