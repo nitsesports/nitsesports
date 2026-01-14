@@ -2,7 +2,7 @@ import * as DialogPrimitive from "@radix-ui/react-dialog";
 import { Button } from "@/components/ui/button";
 import { Instagram } from "lucide-react";
 
-const WHATSAPP_LINK = "https://chat.whatsapp.com/JuD3YkZ5b1F2X9FqYz1K9H";
+const WHATSAPP_LINK = "https://chat.whatsapp.com/DAEBfNCeTy8FoLhxaQ5qN1";
 const INSTAGRAM_LINK = "https://www.instagram.com/nits.esports/";
 
 const RegistrationClosedModal = ({ open, onClose }) => {

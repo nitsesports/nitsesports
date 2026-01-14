@@ -22,7 +22,7 @@ const Events = () => {
   const [showClosedPopup, setShowClosedPopup] = useState(false);
   const videoRef = useRef(null);
   const [timeLeft, setTimeLeft] = useState("");
-
+  const CLOSED_GAMES = ["rc", "bgmi", "ml","valorant"];
 useEffect(() => {
   const updateTimer = () => {
     const now = new Date();
@@ -55,12 +55,11 @@ useEffect(() => {
     setToastMessage(msg);
     setTimeout(() => setToastMessage(""), 3000);
   };
-
  const handleRegisterClick = async (g) => {
-    if (g.id === "rc") {
-    setShowClosedPopup(true);
-    return;
-  }
+ if (CLOSED_GAMES.includes(g.id)) {
+  setShowClosedPopup(true);
+  return;
+}
   try {
     const { data } = await supabase.auth.getSession();
     const target = `/events/vanguardarena/register/${g.id}`;
