@@ -136,12 +136,72 @@ const EventSchedule = () => {
                 },
                 {
                   date: 'Jan 15, 2026',
-                  time: '12:20 AM - 12:40 AM',
+                  time: '12:20 AM - 01:00 AM',
                   matchups: [
                     ' C1 vs C4 ',
                     ' C2 vs C3 ',
                     ' D1 vs D4 ',
                     ' D2 vs D3 ',
+                  ],
+                },
+                                {
+                  date: 'Jan 16, 2026',
+                  time: '9:00 AM - 9:40 AM',
+                  matchups: [
+                    ' E1 vs E2 ',
+                    ' E3 vs E4 ',
+                    ' F1 vs F2 ',
+                    ' F3 vs F4 ',
+                  ],
+                },
+                {
+                  date: 'Jan 16, 2026',
+                  time: '9:40 AM - 10:20 AM',
+                  matchups: [
+                    ' E1 vs E3 ',
+                    ' E2 vs E4 ',
+                    ' F1 vs F3 ',
+                    ' F2 vs F4 ',
+                  ],
+                },
+                {
+                  date: 'Jan 16, 2026',
+                  time: '10:20 AM - 11:00 AM',
+                  matchups: [
+                    ' E1 vs E4 ',
+                    ' E2 vs E3 ',
+                    ' F1 vs F4 ',
+                    ' F2 vs F3 ',
+                  ],
+                },
+                {
+                  date: 'Jan 16, 2026',
+                  time: '11:00 AM - 11:40 AM',
+                  matchups: [
+                    ' G1 vs G2 ',
+                    ' G3 vs G4 ',
+                    ' H1 vs H2 ',
+                    ' H3 vs H4 ',
+                  ],
+                },
+                {
+                  date: 'Jan 16, 2026',
+                  time: '11:40 AM - 12:20 PM',
+                  matchups: [
+                    ' G1 vs G3 ',
+                    ' G2 vs G4 ',
+                    ' H1 vs H3 ',
+                    ' H2 vs H4 ',
+                  ],
+                },
+                {
+                  date: 'Jan 16, 2026',
+                  time: '12:20 PM - 01:00 PM',
+                  matchups: [
+                    ' G1 vs G4 ',
+                    ' G2 vs G3 ',
+                    ' H1 vs H4 ',
+                    ' H2 vs H3 ',
                   ],
                 },
               ],
@@ -277,6 +337,57 @@ const EventSchedule = () => {
             </button>
           ))}
         </div>
+        {activeGameId === 'bgmi' && (
+  <Card className="mb-6 border border-primary/30 bg-primary/5">
+    <CardContent className="p-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+      <div>
+        <h2 className="font-orbitron text-xl font-bold">
+          BGMI Group Division
+        </h2>
+        <p className="text-sm text-muted-foreground mt-1">
+          View official group allocation for BGMI teams
+        </p>
+      </div>
+
+      <a
+        href="https://drive.google.com/file/d/1m8imgZHWoOW8a3UDjoygJuehLS-e9-El/view?usp=sharing"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        <Button>
+          View Group Division (PDF)
+        </Button>
+      </a>
+    </CardContent>
+  </Card>
+)}
+{/* MLBB GROUP DIVISION */}
+{activeGameId === 'ml' && (
+  <Card className="mb-6 border border-primary/30 bg-primary/5">
+    <CardContent className="p-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+      <div>
+        <h2 className="font-orbitron text-xl font-bold">
+          MLBB Group Division
+        </h2>
+        <p className="text-sm text-muted-foreground mt-1">
+          View official group allocation for Mobile Legends teams
+        </p>
+      </div>
+
+      <a
+        href="https://drive.google.com/file/d/14e34Lwe8pRZVjcNcNdowoZ6P1EKRqG_w/view?usp=sharing"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        <Button>
+          View Group Division (PDF)
+        </Button>
+      </a>
+    </CardContent>
+  </Card>
+)}
+
+
 
         {/* DAY-WISE SCHEDULE */}
         {days.map((day) => {
