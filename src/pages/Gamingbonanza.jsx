@@ -2,19 +2,19 @@ import React, { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card.jsx";
 import { Button } from "@/components/ui/button.jsx";
+import { ChevronLeft } from "lucide-react";
 
 import { supabase } from "@/lib/supabase.js";
 
 const games = [
-  { id: "bgmi", name: "BGMI", image: "https://res.cloudinary.com/dboqkwvhv/image/upload/v1761372612/bgmi_lxvrnt.jpg", brochure: "https://example.com/brochures/bgmi" },
-  { id: "codm", name: "COD Mobile", image: "https://res.cloudinary.com/dboqkwvhv/image/upload/v1761372611/cod_kwjbkq.avif", brochure: "https://example.com/brochures/codm" },
-  { id: "valorant", name: "Valorant", image: "https://res.cloudinary.com/dboqkwvhv/image/upload/v1761372668/valorant_qxje8q.jpg", brochure: "https://example.com/brochures/valorant" },
-  { id: "ml", name: "Mobile Legends", image: "https://res.cloudinary.com/dboqkwvhv/image/upload/v1761372633/ml_h8honj.jpg", brochure: "https://example.com/brochures/ml" },
-  { id: "freefire", name: "Free Fire", image: "https://res.cloudinary.com/dboqkwvhv/image/upload/v1761372616/freefire_uutecs.jpg", brochure: "https://example.com/brochures/freefire" },
-  { id: "fifa", name: "FIFA 25", image: "https://res.cloudinary.com/dboqkwvhv/image/upload/v1761372618/FIFA_tzgbj9.jpg", brochure: "https://example.com/brochures/fifa" },
-  { id: "bulletchoe", name: "Bullet Echo", image: "https://res.cloudinary.com/dboqkwvhv/image/upload/v1761372614/bullet_echo_ai4ekj.jpg", brochure: "https://example.com/brochures/bulletchoe" },
-  { id: "clashroyale", name: "Clash Royale", image: "https://res.cloudinary.com/dboqkwvhv/image/upload/v1761372615/clash_royale_q1nbd7.jpg", brochure: "https://example.com/brochures/clashroyale" },
+  { id: "bgmi", name: "BGMI", image: "https://res.cloudinary.com/dboqkwvhv/image/upload/v1761372612/bgmi_lxvrnt.jpg", brochure: "https://gamma.app/docs/VANGUARD-ARENA-i71v4n1968gk240", prize: 25000 },
+  { id: "rc", name: "Real Cricket 24", image: "https://res.cloudinary.com/dboqkwvhv/image/upload/v1766304221/KRAFTON.jpg_ms0hab.webp", brochure: "https://gamma.app/docs/VANGUARD-xpmguxeg1uuld3q", prize: 5000 },
+  { id: "valorant", name: "Valorant", image: "https://res.cloudinary.com/dboqkwvhv/image/upload/v1761372668/valorant_qxje8q.jpg", brochure: "https://gamma.app/docs/Vanguard-Arena-zrpooho817957yj", prize: 5000 },
+  { id: "ml", name: "Mobile Legends", image: "https://res.cloudinary.com/dboqkwvhv/image/upload/v1761372633/ml_h8honj.jpg", brochure: "https://gamma.app/docs/TECNOESIS-CUP-mlbb-h5oottx9xnwqnet", prize: 5000 },
+  { id: "fifa", name: "FIFA 25", image: "https://res.cloudinary.com/dboqkwvhv/image/upload/v1761372618/FIFA_tzgbj9.jpg", brochure: "https://gamma.app/docs/TECNOESIS-CUP-mlbb-h5oottx9xnwqnet", prize: 5000 },
 ];
+
+const CLOSED_GAMES = new Set(["rc", "bgmi", "valorant", "ml"]);
 
 const VanguardArena = () => {
   const [toastMessage, setToastMessage] = useState("");
@@ -42,6 +42,18 @@ const VanguardArena = () => {
 
   return (
     <div className="min-h-screen pt-24 pb-12 relative">
+      {/* Back Button */}
+      <div className="container mx-auto px-4 mb-6">
+        <Button
+          variant="outline"
+          className="flex items-center gap-2 font-orbitron"
+          onClick={() => navigate("/events")}
+        >
+          <ChevronLeft className="h-4 w-4" />
+          Back to Events
+        </Button>
+      </div>
+
       {/* Hero banner */}
       <div className="w-full px-4">
         <div className="mx-auto rounded-xl overflow-hidden shadow-xl max-w-[1400px]">
@@ -76,7 +88,7 @@ const VanguardArena = () => {
               <CardHeader className="flex items-center justify-between">
                 <CardTitle className="font-orbitron">{g.name}</CardTitle>
                 <div className="text-sm text-muted-foreground">
-                  Prize pool: <span className="font-orbitron font-semibold">₹2,000</span>
+                  Prize pool: <span className="font-orbitron font-semibold text-amber-400 drop-shadow-[0_0_6px_rgba(251,191,36,0.6)]">₹{g.prize.toLocaleString("en-IN")}</span>
                 </div>
               </CardHeader>
               <CardContent>
@@ -86,9 +98,21 @@ const VanguardArena = () => {
                       View Details
                     </Button>
                   </a>
-                  <Button className="w-full font-orbitron" onClick={() => handleRegisterClick(g)}>
-                    Register Team
-                  </Button>
+                  {CLOSED_GAMES.has(g.id) ? (
+                    <Button
+                      className="w-full font-orbitron bg-purple-600 hover:bg-purple-700"
+                      onClick={() => navigate(`/events/vanguardarena/leaderboard/${g.id}`)}
+                    >
+                      View Leaderboard
+                    </Button>
+                  ) : (
+                    <Button
+                      className="w-full font-orbitron"
+                      onClick={() => handleRegisterClick(g)}
+                    >
+                      Register Team
+                    </Button>
+                  )}
                 </div>
               </CardContent>
             </Card>
