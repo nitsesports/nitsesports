@@ -82,21 +82,62 @@ useEffect(() => {
   }
 };
 
-  const games = [
-    { id: "ml", name: "Mobile Legends", image: "https://res.cloudinary.com/dboqkwvhv/image/upload/v1761372633/ml_h8honj.jpg", brochure: "https://gamma.app/docs/TECNOESIS-CUP-mlbb-h5oottx9xnwqnet", prize: 5000 },
-    { id: "fifa", name: "FIFA 25", image: "https://res.cloudinary.com/dboqkwvhv/image/upload/v1761372618/FIFA_tzgbj9.jpg", brochure: "https://example.com/brochures/fifa",prize: 5000 },
-    { id: "bgmi", name: "BGMI", image: "https://res.cloudinary.com/dboqkwvhv/image/upload/v1761372612/bgmi_lxvrnt.jpg", brochure: "https://gamma.app/docs/VANGUARD-ARENA-i71v4n1968gk240", prize: 25000 },
-    { id: "rc", name: "Real Cricket", image: "https://res.cloudinary.com/dboqkwvhv/image/upload/v1766304221/KRAFTON.jpg_ms0hab.webp", brochure: "https://gamma.app/docs/VANGUARD-xpmguxeg1uuld3q", prize: 5000 },
-      { id: "valorant", name: "Valorant", image: "https://res.cloudinary.com/dboqkwvhv/image/upload/v1761372668/valorant_qxje8q.jpg", brochure: "https://gamma.app/docs/Vanguard-Arena-zrpooho817957yj", prize: 5000 },
-    
-    //{ id: "freefire", name: "Free Fire", image: "https://res.cloudinary.com/dboqkwvhv/image/upload/v1761372616/freefire_uutecs.jpg", brochure: "https://gamma.app/docs/VANGUARD-ARENA-aei2y0ivstdkaww", prize: 10000 },
-  
-    // { id: "bulletchoe", name: "Bullet Echo", image: "https://res.cloudinary.com/dboqkwvhv/image/upload/v1761372614/bullet_echo_ai4ekj.jpg", brochure: "https://example.com/brochures/bulletchoe" },
-    // { id: "clashroyale", name: "Clash Royale", image: "https://res.cloudinary.com/dboqkwvhv/image/upload/v1761372615/clash_royale_q1nbd7.jpg", brochure: "https://example.com/brochures/clashroyale" },
+const handleUpcomingEventRegister = async (eventId, gameId) => {
+  try {
+    const { data } = await supabase.auth.getSession();
+    const target = `/events/${eventId}/register/${gameId}`;
+
+    if (!data?.session) {
+      // ✅ store intended page
+      sessionStorage.setItem("post_login_redirect", target);
+
+      // ✅ go to login (NO state)
+      navigate("/login");
+      return;
+    }
+
+    // user already logged in
+    navigate(target);
+  } catch (err) {
+    showToast("Auth check failed");
+  }
+};
+
+  const liveEvents = [
+    {
+      id: "vanguardarena",
+      title: "Vanguard Arena",
+      date: "Jan 15 - Jan 18, 2026",
+      location: "Online",
+      status: "live",
+      prize: "₹45,000",
+      image: "https://res.cloudinary.com/dboqkwvhv/image/upload/v1768466009/tempImage4DyI6t_ekzmcw.jpg",
+      teams: 25,
+      games: [
+        { id: "ml", name: "Mobile Legends", image: "https://res.cloudinary.com/dboqkwvhv/image/upload/v1761372633/ml_h8honj.jpg", brochure: "https://gamma.app/docs/TECNOESIS-CUP-mlbb-h5oottx9xnwqnet", prize: 5000 },
+        { id: "fifa", name: "FIFA 25", image: "https://res.cloudinary.com/dboqkwvhv/image/upload/v1761372618/FIFA_tzgbj9.jpg", brochure: "https://example.com/brochures/fifa", prize: 5000 },
+        { id: "bgmi", name: "BGMI", image: "https://res.cloudinary.com/dboqkwvhv/image/upload/v1761372612/bgmi_lxvrnt.jpg", brochure: "https://gamma.app/docs/VANGUARD-ARENA-i71v4n1968gk240", prize: 25000 },
+        { id: "rc", name: "Real Cricket", image: "https://res.cloudinary.com/dboqkwvhv/image/upload/v1766304221/KRAFTON.jpg_ms0hab.webp", brochure: "https://gamma.app/docs/VANGUARD-xpmguxeg1uuld3q", prize: 5000 },
+        { id: "valorant", name: "Valorant", image: "https://res.cloudinary.com/dboqkwvhv/image/upload/v1761372668/valorant_qxje8q.jpg", brochure: "https://gamma.app/docs/Vanguard-Arena-zrpooho817957yj", prize: 5000 },
+      ]
+    }
   ];
 
-  const allEvents = listEvents();
-  const liveEvents = allEvents.filter((e) => e.status === "live");
+  const upcomingEvents = [
+    {
+      id: "freefiretournament",
+      title: "Freefire Tournament",
+      date: "Jan 20 - Jan 23, 2026",
+      location: "Online",
+      status: "upcoming",
+      prize: "₹5,000",
+      image: "https://res.cloudinary.com/dboqkwvhv/image/upload/v1761372616/freefire_uutecs.jpg",
+      teams: 20,
+      games: [
+        { id: "freefire", name: "Free Fire", image: "https://res.cloudinary.com/dboqkwvhv/image/upload/v1761372616/freefire_uutecs.jpg", brochure: "https://gamma.app/docs/VANGUARD-ARENA-aei2y0ivstdkaww", prize: 5000 },
+      ]
+    }
+  ];
 
   const pastEvents = [
     {
@@ -214,74 +255,120 @@ useEffect(() => {
 
       <div className="container mx-auto px-4 pt-12">
 
-        {/* Gaming Cards Section */}
+        {/* Live Events Section */}
         <section className="mb-16">
-          <h2 className="font-orbitron text-2xl font-bold mb-6">Games</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {games.map((g) => (
-              <Card key={g.id} className="glass-card electric-border overflow-hidden">
-                <div className="relative h-40">
-  <img
-    src={g.image}
-    alt={g.name}
-    className="w-full h-full object-cover"
-  />
-
-  {/* 🔴 CLOSED BADGE — TOP RIGHT CORNER */}
-  {CLOSED_GAMES.has(g.id) && (
-    <Badge
-      className="
-        absolute top-3 right-3
-        bg-red-600 text-white
-        font-orbitron text-xs
-        px-2 py-1
-        shadow-lg
-      "
-    >
-      Closed
-    </Badge>
-  )}
-</div>
-
-<CardHeader className="flex items-center justify-between">
-  <div className="flex items-center gap-2">
-    <CardTitle className="font-orbitron">{g.name}</CardTitle>
-
-
-  </div>
-
-  <div className="font-orbitron text-sm text-muted-foreground font-semibold">
-    Prize pool:{" "}
-    <span className="font-orbitron text-amber-400 drop-shadow-[0_0_6px_rgba(251,191,36,0.6)] font-bold">
-      ₹{g.prize.toLocaleString("en-IN")}
-    </span>
-  </div>
-</CardHeader>
-
-                <CardContent>
+          <h2 className="font-orbitron text-3xl font-bold mb-8 flex items-center gap-2">
+            <Trophy className="h-8 w-8 text-accent" />
+            Live Events
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {liveEvents?.map((event) => (
+              <Card key={event.id} className="glass-card border-secondary/20 hover:border-secondary/50 transition-all overflow-hidden group">
+                <div className="relative h-44 overflow-hidden">
+                  <img
+                    src={event.image}
+                    alt={event.title}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-background to-transparent" />
+                  <Badge className="absolute top-4 right-4 bg-green-600/90 font-orbitron">
+                    Live
+                  </Badge>
+                </div>
+                <CardHeader>
+                  <CardTitle className="font-orbitron text-xl">{event.title}</CardTitle>
+                  <div className="text-sm text-muted-foreground space-y-2 mt-2">
+                    <div className="flex items-center gap-2 text-sm">
+                      <Calendar className="h-4 w-4 text-primary" />
+                      {event.date}
+                    </div>
+                    <div className="flex items-center gap-2 text-sm">
+                      <MapPin className="h-4 w-4 text-primary" />
+                      {event.location}
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="flex justify-between items-center">
+                    <div className="flex items-center gap-2">
+                      <Users className="h-4 w-4 text-secondary" />
+                      <span className="text-sm">{event.teams} Games</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Trophy className="h-4 w-4 text-accent" />
+                      <span className="text-sm font-semibold">{event.prize}</span>
+                    </div>
+                  </div>
                   <div>
-                    <a href={g.brochure} target="_blank" rel="noopener noreferrer">
-                      <Button variant="outline" className="w-full font-orbitron mb-2">
-                        View Details
-                      </Button>
-                    </a>
-<Button
-  className={`w-full font-orbitron ${
-    CLOSED_GAMES.has(g.id) ? "opacity-80" : ""
-  }`}
-  onClick={() => handleRegisterClick(g)}
->
-  {CLOSED_GAMES.has(g.id) ? "Registration Closed" : "Register Team"}
-</Button>
-
-</div>
+                    <Link to={`/events/vanguardarena`}>
+                      <Button className="w-full font-orbitron">Games & Registration</Button>
+                    </Link>
+                  </div>
                 </CardContent>
               </Card>
             ))}
           </div>
         </section>
 
-      
+        {/* Upcoming Events Section */}
+        <section className="mb-16">
+          <h2 className="font-orbitron text-3xl font-bold mb-8 flex items-center gap-2">
+            <Trophy className="h-8 w-8 text-accent" />
+            Upcoming Events
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {upcomingEvents?.map((event) => (
+              <Card key={event.id} className="glass-card border-secondary/20 hover:border-secondary/50 transition-all overflow-hidden group">
+                <div className="relative h-44 overflow-hidden">
+                  <img
+                    src={event.image}
+                    alt={event.title}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-background to-transparent" />
+                  <Badge className="absolute top-4 right-4 bg-blue-600/90 font-orbitron">
+                    Upcoming
+                  </Badge>
+                </div>
+                <CardHeader>
+                  <CardTitle className="font-orbitron text-xl">{event.title}</CardTitle>
+                  <div className="text-sm text-muted-foreground space-y-2 mt-2">
+                    <div className="flex items-center gap-2 text-sm">
+                      <Calendar className="h-4 w-4 text-primary" />
+                      {event.date}
+                    </div>
+                    <div className="flex items-center gap-2 text-sm">
+                      <MapPin className="h-4 w-4 text-primary" />
+                      {event.location}
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="flex justify-between items-center">
+                    <div className="flex items-center gap-2">
+                      <Users className="h-4 w-4 text-secondary" />
+                      <span className="text-sm">{event.games.length} Game{event.games.length !== 1 ? 's' : ''}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Trophy className="h-4 w-4 text-accent" />
+                      <span className="text-sm font-semibold">{event.prize}</span>
+                    </div>
+                  </div>
+                  <div>
+                    <Button
+                      className="w-full font-orbitron"
+                      onClick={() => handleUpcomingEventRegister(event.id, event.games[0].id)}
+                    >
+                      Register Now
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </section>
+
+
         <section>
           <h2 className="font-orbitron text-3xl font-bold mb-8 flex items-center gap-2">
             <Trophy className="h-8 w-8 text-accent" />

@@ -273,7 +273,12 @@ const LeaderboardMl = ({ eventId, game, canEdit }) => {
 
   useEffect(() => {
     if (!isSupabaseConfigured()) {
-      setMlGroupData(cloneGroupRows(mobileLegendsGroupData));
+      // For demo/development: show empty leaderboard instead of hardcoded data
+      const emptyGroupData = GROUP_LETTERS.reduce((acc, letter) => {
+        acc[letter] = [];
+        return acc;
+      }, {});
+      setMlGroupData(emptyGroupData);
       setLastSavedAt(null);
       setIsDirty(false);
       return;
@@ -313,7 +318,12 @@ const LeaderboardMl = ({ eventId, game, canEdit }) => {
           }
           setLastSavedAt(snapshot.updatedAt ?? null);
         } else {
-          setMlGroupData(cloneGroupRows(mobileLegendsGroupData));
+          // No saved data found - show empty leaderboard instead of hardcoded data
+          const emptyGroupData = GROUP_LETTERS.reduce((acc, letter) => {
+            acc[letter] = [];
+            return acc;
+          }, {});
+          setMlGroupData(emptyGroupData);
           setMlBracket(buildMlBracketFromGroups());
           setLastSavedAt(snapshot?.updatedAt ?? null);
         }
