@@ -213,7 +213,51 @@ const EventSchedule = () => {
             {
               id: "valorant",
               name: "Valorant",
-              schedule: [],
+              schedule: [
+                {
+                  date: "Jan 15, 2026",
+                  
+                  matchups: [
+                   "No Matches Scheduled "
+                  ],
+                },
+                {
+                  date: "Jan 16, 2026",
+                  time: "02:00 PM - 03:00 PM",
+                  matchups: [
+                    " Quarterfinals ",
+                  ],
+                },
+                {
+                  date: "Jan 16, 2026",
+                  time: "03:00 PM - 04:00 PM",
+                  matchups: [
+                    " Loser bracket round 1 and Winners bracket semi ",
+                  ],
+                },
+                {
+                  date: "Jan 16, 2026",
+                  time: "03:00 PM - 04:00 PM",
+                  matchups: [
+                    "Loser bracket round 2 and and winner bracket finals"
+                  ],
+                },
+                {
+                  date: "Jan 16, 2026",
+                  time: "06:00 PM - 07:00 PM",
+                  matchups: [
+                    "Loser Bracket Round 3"
+                  ],
+                },
+                {
+                  date: "Jan 16, 2026",
+                  time: "07:00 PM - 08:00 PM",
+                  matchups: [
+                    " Loser Bracket Finals"
+                  ],
+                },
+
+              ],
             },
           ],
         }
