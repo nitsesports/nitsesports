@@ -14,7 +14,7 @@ const defaultTeams = [
 "Prashun_27", "Tigers", "Kakashi", "STRIKERS",
 "Nakul", "Shadow Scorchers", "Team CSK", "RCB",
 "Brutal 11", "What about me", "Destroyers", "Smashers",
-"CSK1", "The Green Flags", "CricFire"
+"CSK1", "The Green Flags", "Subhasish Saikia", "CricFire"
 ];
 
 const RCBracket = ({ canEdit = false }) => {
