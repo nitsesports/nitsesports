@@ -217,9 +217,28 @@ const RCBracket = ({ canEdit = false }) => {
           match.id === matchId ? { ...match, scoreA, scoreB } : match
         );
 
-        // Get winners from semifinals and update finals
+        // Get winners and losers from semifinals
         const winner1 = getWinner(updatedSemifinals[0]);
+        const loser1 = updatedSemifinals[0].scoreA === updatedSemifinals[0].scoreB
+          ? "TBD"
+          : updatedSemifinals[0].scoreA > updatedSemifinals[0].scoreB
+            ? updatedSemifinals[0].teamB
+            : updatedSemifinals[0].teamA;
+
         const winner2 = getWinner(updatedSemifinals[1]);
+        const loser2 = updatedSemifinals[1].scoreA === updatedSemifinals[1].scoreB
+          ? "TBD"
+          : updatedSemifinals[1].scoreA > updatedSemifinals[1].scoreB
+            ? updatedSemifinals[1].teamB
+            : updatedSemifinals[1].teamA;
+
+        // Update 3rd place match with semifinal losers
+        const updatedPlacementMatches = { ...prev.placementMatches };
+        updatedPlacementMatches.thirdPlace = {
+          ...updatedPlacementMatches.thirdPlace,
+          teamA: loser1 || "TBD",
+          teamB: loser2 || "TBD"
+        };
 
         return {
           ...prev,
@@ -228,12 +247,44 @@ const RCBracket = ({ canEdit = false }) => {
             ...prev.finals,
             teamA: winner1 || "TBD",
             teamB: winner2 || "TBD"
-          }
+          },
+          placementMatches: updatedPlacementMatches
         };
       } else if (stage === "finals") {
         return {
           ...prev,
           finals: { ...prev.finals, scoreA, scoreB }
+        };
+      } else if (stage === "thirdPlace") {
+        return {
+          ...prev,
+          placementMatches: {
+            ...prev.placementMatches,
+            thirdPlace: { ...prev.placementMatches.thirdPlace, scoreA, scoreB }
+          }
+        };
+      } else if (stage === "fifthSixthBracket") {
+        const updatedFifthSixth = prev.placementMatches.fifthSixthBracket.map(match =>
+          match.id === matchId ? { ...match, scoreA, scoreB } : match
+        );
+
+        // Get winners from first two matches
+        const winner1 = getWinner(updatedFifthSixth[0]);
+        const winner2 = getWinner(updatedFifthSixth[1]);
+
+        // Update final 5-6 match with winners
+        updatedFifthSixth[2] = {
+          ...updatedFifthSixth[2],
+          teamA: winner1 || "TBD",
+          teamB: winner2 || "TBD"
+        };
+
+        return {
+          ...prev,
+          placementMatches: {
+            ...prev.placementMatches,
+            fifthSixthBracket: updatedFifthSixth
+          }
         };
       }
       return prev;
