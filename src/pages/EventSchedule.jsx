@@ -48,27 +48,51 @@ const EventSchedule = () => {
               name: "BGMI",
               schedule: [
                 {
-                  date: "Jan 15, 2026",
-                  time: "6:00 PM",
+                  date: "Jan 16, 2026",
+                  time: "5:00 PM",
                   matchups: [
                     "M1 — Group A — Erangel",
                     "M1 — Group B — Erangel",
                   ],
                 },
                 {
-                  date: "Jan 15, 2026",
-                  time: "6:40 PM",
+                  date: "Jan 16, 2026",
+                  time: "5:40 PM",
                   matchups: [
                     "M2 — Group A — Erangel",
                     "M2 — Group B — Erangel",
                   ],
                 },
                 {
-                  date: "Jan 15, 2026",
-                  time: "7:20 PM",
+                  date: "Jan 16, 2026",
+                  time: "6:20 PM",
                   matchups: [
                     "M3 — Group A — Miramar",
                     "M3 — Group B — Miramar",
+                  ],
+                },
+                {
+                  date: "Jan 16, 2026",
+                  time: "7:00 PM",
+                  matchups: [
+                    "M1 — Group C — Erangel",
+                    "M1 — Group D — Erangel",
+                  ],
+                },
+                {
+                  date: "Jan 16, 2026",
+                  time: "7:40 PM",
+                  matchups: [
+                    "M2 — Group C — Erangel",
+                    "M2 — Group D — Erangel",
+                  ],
+                },
+                {
+                  date: "Jan 16, 2026",
+                  time: "8:20 PM",
+                  matchups: [
+                    "M3 — Group C — Miramar",
+                    "M3 — Group D — Miramar",
                   ],
                 },
               ],
