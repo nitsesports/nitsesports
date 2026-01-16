@@ -165,26 +165,27 @@ const RCBracket = ({ canEdit = false }) => {
   const handleScoreChange = (colIndex, matchIndex, scoreA, scoreB) => {
     if (!canEdit) return;
 
-    setBracket(prev => {
-      const newBracket = { ...prev };
-      // Update the current match score
-      newBracket.columns[colIndex].matches[matchIndex] = {
-        ...newBracket.columns[colIndex].matches[matchIndex],
-        scoreA,
-        scoreB
-      };
+    const newBracket = { ...bracket };
+    // Update the current match score
+    newBracket.columns[colIndex].matches[matchIndex] = {
+      ...newBracket.columns[colIndex].matches[matchIndex],
+      scoreA,
+      scoreB
+    };
 
-      // Propagate winners to next rounds
-      const tempFinalStage = { ...finalStage }; // Reference for final updates
-      const updatedBracket = propagateWinnersToNextRound(newBracket, colIndex, tempFinalStage);
+    // Create a temp finalStage for propagation
+    const tempFinalStage = { ...finalStage };
 
-      // If quarterfinals were updated, update finals state
-      if (colIndex === newBracket.columns.length - 1) {
-        setFinalStage(tempFinalStage);
-      }
+    // Propagate winners to next rounds
+    const updatedBracket = propagateWinnersToNextRound(newBracket, colIndex, tempFinalStage);
 
-      return updatedBracket;
-    });
+    // Update both bracket and finals
+    setBracket(updatedBracket);
+
+    // If quarterfinals were updated, update finals state
+    if (colIndex === newBracket.columns.length - 1) {
+      setFinalStage(tempFinalStage);
+    }
   };
 
   const handleFinalScoreChange = (stage, matchId, scoreA, scoreB) => {
