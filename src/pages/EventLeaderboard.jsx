@@ -24,6 +24,7 @@ import LeaderboardMl from "@/components/leaderboards/LeaderboardMl";
 import LeaderboardCodm from "@/components/leaderboards/LeaderboardCodm";
 import LeaderboardSimple from "@/components/leaderboards/LeaderboardSimple";
 import RCBracket from "@/components/bracket/RCBracket";
+import LeaderboardValorant from "../components/leaderboards/LeaderboardValorant";
 
 // This is the mock event data, kept in the parent component
 const lockLoadHero = "https://cdn.builder.io/api/v1/image/assets%2F778be80571eb4edd92c70f9fecab8fab%2F21e5721d76704013a2fd522cdf0daa0e?format=webp&width=1600";
@@ -233,6 +234,7 @@ const EventLeaderboard = () => {
       case "codm":
         return <LeaderboardCodm eventId={eventId} game={selectedGame} canEdit={canEdit} />;
       case "valorant":
+        return <LeaderboardValorant eventId={eventId} game={selectedGame} canEdit={canEdit} />;
       default:
         // Use the simple component for Valorant or any other game
         // that just needs to display its `rankings` array.

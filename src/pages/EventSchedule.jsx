@@ -48,27 +48,51 @@ const EventSchedule = () => {
               name: "BGMI",
               schedule: [
                 {
-                  date: "Jan 15, 2026",
-                  time: "6:00 PM",
+                  date: "Jan 16, 2026",
+                  time: "5:00 PM",
                   matchups: [
                     "M1 — Group A — Erangel",
                     "M1 — Group B — Erangel",
                   ],
                 },
                 {
-                  date: "Jan 15, 2026",
-                  time: "6:40 PM",
+                  date: "Jan 16, 2026",
+                  time: "5:40 PM",
                   matchups: [
                     "M2 — Group A — Erangel",
                     "M2 — Group B — Erangel",
                   ],
                 },
                 {
-                  date: "Jan 15, 2026",
-                  time: "7:20 PM",
+                  date: "Jan 16, 2026",
+                  time: "6:20 PM",
                   matchups: [
                     "M3 — Group A — Miramar",
                     "M3 — Group B — Miramar",
+                  ],
+                },
+                {
+                  date: "Jan 16, 2026",
+                  time: "7:00 PM",
+                  matchups: [
+                    "M1 — Group C — Erangel",
+                    "M1 — Group D — Erangel",
+                  ],
+                },
+                {
+                  date: "Jan 16, 2026",
+                  time: "7:40 PM",
+                  matchups: [
+                    "M2 — Group C — Erangel",
+                    "M2 — Group D — Erangel",
+                  ],
+                },
+                {
+                  date: "Jan 16, 2026",
+                  time: "8:20 PM",
+                  matchups: [
+                    "M3 — Group C — Miramar",
+                    "M3 — Group D — Miramar",
                   ],
                 },
               ],
@@ -213,7 +237,51 @@ const EventSchedule = () => {
             {
               id: "valorant",
               name: "Valorant",
-              schedule: [],
+              schedule: [
+                {
+                  date: "Jan 15, 2026",
+                  
+                  matchups: [
+                   "No Matches Scheduled "
+                  ],
+                },
+                {
+                  date: "Jan 16, 2026",
+                  time: "02:00 PM - 03:00 PM",
+                  matchups: [
+                    " Quarterfinals ",
+                  ],
+                },
+                {
+                  date: "Jan 16, 2026",
+                  time: "03:00 PM - 04:00 PM",
+                  matchups: [
+                    " Loser bracket round 1 and Winners bracket semi ",
+                  ],
+                },
+                {
+                  date: "Jan 16, 2026",
+                  time: "03:00 PM - 04:00 PM",
+                  matchups: [
+                    "Loser bracket round 2 and and winner bracket finals"
+                  ],
+                },
+                {
+                  date: "Jan 16, 2026",
+                  time: "06:00 PM - 07:00 PM",
+                  matchups: [
+                    "Loser Bracket Round 3"
+                  ],
+                },
+                {
+                  date: "Jan 16, 2026",
+                  time: "07:00 PM - 08:00 PM",
+                  matchups: [
+                    " Loser Bracket Finals"
+                  ],
+                },
+
+              ],
             },
           ],
         }
