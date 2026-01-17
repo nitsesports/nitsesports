@@ -1,10 +1,13 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import BracketView from "./BracketView.jsx";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card.jsx";
 import { Badge } from "@/components/ui/badge.jsx";
 import { Button } from "@/components/ui/button.jsx";
 import { Input } from "@/components/ui/input.jsx";
-import { Trash2, Plus, Edit2, Check, X, ChevronDown } from "lucide-react";
+import { Trash2, Plus, Edit2, Check, X, ChevronDown, Save } from "lucide-react";
+import { useToast } from "@/hooks/use-toast.js";
+import { saveBracketData, fetchBracketData } from "@/data/bracketService.js";
+import { useParams } from "react-router-dom";
 
 const defaultTeams = [
   "One man army", "Mani", "Kanya rasi 007", "Backtracker",
@@ -18,11 +21,18 @@ const defaultTeams = [
 ];
 
 const RCBracket = ({ canEdit = false }) => {
+  const params = useParams();
+  const { toast } = useToast();
+  const eventId = params.eventId;
+  const gameId = params.gameId;
+
   const [expandedColumn, setExpandedColumn] = useState(null);
   const [teams, setTeams] = useState(defaultTeams);
   const [newTeamName, setNewTeamName] = useState("");
   const [editingTeamIndex, setEditingTeamIndex] = useState(null);
   const [editingTeamValue, setEditingTeamValue] = useState("");
+  const [isSaving, setIsSaving] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   
   const [bracket, setBracket] = useState(() => {
     const rounds = generateInitialBracket(defaultTeams);
@@ -44,6 +54,65 @@ const RCBracket = ({ canEdit = false }) => {
       ]
     }
   });
+
+  // Load saved bracket data on mount
+  useEffect(() => {
+    const loadBracketData = async () => {
+      if (!eventId || !gameId) {
+        setIsLoading(false);
+        return;
+      }
+
+      try {
+        const savedData = await fetchBracketData(eventId, gameId);
+        if (savedData) {
+          setTeams(savedData.teams || defaultTeams);
+          if (savedData.bracket) setBracket(savedData.bracket);
+          if (savedData.finalStage) setFinalStage(savedData.finalStage);
+        }
+      } catch (err) {
+        console.error("Error loading bracket data:", err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadBracketData();
+  }, [eventId, gameId]);
+
+  // Save bracket data to Supabase
+  const handleSaveData = async () => {
+    if (!eventId || !gameId) {
+      toast({
+        title: "Error",
+        description: "Event ID or Game ID is missing",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsSaving(true);
+    try {
+      await saveBracketData(eventId, gameId, {
+        teams,
+        bracket,
+        finalStage,
+      });
+      toast({
+        title: "Success",
+        description: "Bracket data saved to Supabase",
+      });
+    } catch (err) {
+      console.error("Error saving bracket data:", err);
+      toast({
+        title: "Error",
+        description: err.message || "Failed to save bracket data",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSaving(false);
+    }
+  };
 
   function generateInitialBracket(teamList) {
     const cols = [
@@ -311,47 +380,34 @@ const RCBracket = ({ canEdit = false }) => {
       icon: "⭐"
     }
   ];
-  const getTop6 = () => {
-  const first =
-    finalStage.finals.scoreA !== finalStage.finals.scoreB
-      ? finalStage.finals.scoreA > finalStage.finals.scoreB
-        ? finalStage.finals.teamA
-        : finalStage.finals.teamB
-      : "TBD";
 
-  const second =
-    first === finalStage.finals.teamA
-      ? finalStage.finals.teamB
-      : finalStage.finals.teamA;
-
-  const third =
-    finalStage.placementMatches.thirdPlace.scoreA >
-    finalStage.placementMatches.thirdPlace.scoreB
-      ? finalStage.placementMatches.thirdPlace.teamA
-      : finalStage.placementMatches.thirdPlace.teamB;
-
-  const fourth =
-    third === finalStage.placementMatches.thirdPlace.teamA
-      ? finalStage.placementMatches.thirdPlace.teamB
-      : finalStage.placementMatches.thirdPlace.teamA;
-
-  const fifth =
-    finalStage.placementMatches.fifthSixthBracket[2].scoreA >
-    finalStage.placementMatches.fifthSixthBracket[2].scoreB
-      ? finalStage.placementMatches.fifthSixthBracket[2].teamA
-      : finalStage.placementMatches.fifthSixthBracket[2].teamB;
-
-  const sixth =
-    fifth === finalStage.placementMatches.fifthSixthBracket[2].teamA
-      ? finalStage.placementMatches.fifthSixthBracket[2].teamB
-      : finalStage.placementMatches.fifthSixthBracket[2].teamA;
-
-  return { first, second, third, fourth, fifth, sixth };
-};
-
+  if (isLoading) {
+    return (
+      <Card className="glass-card border-border/30 bg-black/50">
+        <CardHeader>
+          <CardTitle className="font-orbitron">Loading bracket data...</CardTitle>
+        </CardHeader>
+      </Card>
+    );
+  }
 
   return (
     <div className="space-y-6">
+      {/* Admin Controls */}
+      {canEdit && (
+        <div className="bg-gradient-to-r from-yellow-600/20 to-yellow-600/5 border border-yellow-500/30 rounded-lg p-4 flex items-center justify-between">
+          <p className="text-sm text-yellow-400 font-semibold">✓ Admin Mode: You can edit and save bracket data</p>
+          <Button
+            onClick={handleSaveData}
+            disabled={isSaving}
+            className="bg-yellow-600 hover:bg-yellow-700 disabled:opacity-50"
+          >
+            <Save className="w-4 h-4 mr-2" />
+            {isSaving ? "Saving..." : "Save Data"}
+          </Button>
+        </div>
+      )}
+
       {/* Column Headers - Top Tab Navigation */}
       <div className="grid grid-cols-3 gap-3">
         {columns.map((col) => (
@@ -464,10 +520,6 @@ const RCBracket = ({ canEdit = false }) => {
             <p className="text-sm text-muted-foreground mt-2">32 teams compete to reach final 4</p>
           </CardHeader>
           <CardContent className="space-y-6">
-            {canEdit && (
-              <p className="text-sm text-yellow-400">✓ Admin Mode: You can update match scores</p>
-            )}
-            
             {/* Bracket Columns */}
             <div className="bg-black/30 border border-border/20 rounded-lg p-6 overflow-x-auto">
               <BracketView 
@@ -506,10 +558,6 @@ const RCBracket = ({ canEdit = false }) => {
             <p className="text-sm text-muted-foreground mt-2">Semifinals, Championship, and Placement Matches</p>
           </CardHeader>
           <CardContent className="space-y-6">
-            {canEdit && (
-              <p className="text-sm text-yellow-400">✓ Admin Mode: You can update final stage scores</p>
-            )}
-
             {/* Semifinals */}
             <div className="space-y-4">
               <h4 className="font-orbitron text-lg text-cyan-400">Semifinals (4 Teams → 2 Teams)</h4>
