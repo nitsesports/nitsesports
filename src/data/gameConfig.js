@@ -25,7 +25,7 @@ export const gameConfig = {
     name: "Free Fire",
     playerCount: 4,
     substituteCount: 1,
-    price: { nits: 1, other: 2 },
+    price: { nits: 100, other: 200 },
   },
   codm: {
     id: "codm",
