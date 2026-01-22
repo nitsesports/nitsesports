@@ -6,6 +6,8 @@ import { motion } from "framer-motion";
 import { useRef } from "react";
 
 import HeroAnimation from "@/components/newHero/HeroAnimation.jsx";
+import Sponsors from "@/components/Sponsors.jsx";
+
 
 const galleryImages = [
   {
@@ -35,8 +37,8 @@ const galleryImages = [
 ];
 
 const Home = () => {
-  const introRef = useRef(null);        
-  const nextSectionRef = useRef(null);  
+  const introRef = useRef(null);
+  const nextSectionRef = useRef(null);
 
   const scrollToNext = () => {
     introRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -98,47 +100,47 @@ const Home = () => {
       </section>
 
       {/* ⭐ NEW TITLE + SUBTITLE + BUTTONS SECTION */}
-<motion.section
-  ref={introRef}
-  className="py-20 text-center px-6"
-  initial="hidden"
-  whileInView="visible"
-  viewport={{ once: true, amount: 0.2 }}
-  variants={staggerContainer}
->
-  {/* Subtitle */}
-  <motion.p
-    variants={fadeInVariants}
-    className="text-lg sm:text-xl text-gray-300 max-w-2xl mx-auto mb-10"
-  >
-    Join the most competitive gaming community in NIT Silchar.
-    <br />
-    Level up your skills and dominate the leaderboard.
-  </motion.p>
-
-  {/* Buttons Row */}
-  <motion.div
-    variants={fadeInVariants}
-    className="flex flex-col sm:flex-row gap-4 justify-center"
-  >
-    <Link to="/events">
-      <Button size="lg" className="glow-primary px-8 py-6 text-lg font-orbitron">
-        View Events
-        <ArrowRight className="ml-2 h-5 w-5" />
-      </Button>
-    </Link>
-
-    <Link to="/team">
-      <Button
-        size="lg"
-        variant="outline"
-        className="px-8 py-6 text-lg font-orbitron border-primary/50 hover:bg-primary/10"
+      <motion.section
+        ref={introRef}
+        className="py-20 text-center px-6"
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true, amount: 0.2 }}
+        variants={staggerContainer}
       >
-        Join Community
-      </Button>
-    </Link>
-  </motion.div>
-</motion.section>
+        {/* Subtitle */}
+        <motion.p
+          variants={fadeInVariants}
+          className="text-lg sm:text-xl text-gray-300 max-w-2xl mx-auto mb-10"
+        >
+          Join the most competitive gaming community in NIT Silchar.
+          <br />
+          Level up your skills and dominate the leaderboard.
+        </motion.p>
+
+        {/* Buttons Row */}
+        <motion.div
+          variants={fadeInVariants}
+          className="flex flex-col sm:flex-row gap-4 justify-center"
+        >
+          <Link to="/events">
+            <Button size="lg" className="glow-primary px-8 py-6 text-lg font-orbitron">
+              View Events
+              <ArrowRight className="ml-2 h-5 w-5" />
+            </Button>
+          </Link>
+
+          <Link to="/team">
+            <Button
+              size="lg"
+              variant="outline"
+              className="px-8 py-6 text-lg font-orbitron border-primary/50 hover:bg-primary/10"
+            >
+              Join Community
+            </Button>
+          </Link>
+        </motion.div>
+      </motion.section>
 
 
       {/* ⭐ WHY JOIN US SECTION */}
@@ -197,39 +199,39 @@ const Home = () => {
             Explore moments from our tournaments, events, and community gatherings
           </motion.p>
 
-                    {/* Mobile & Tablet (normal grid) */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8 lg:hidden">
-              {galleryImages.map((image) => (
+          {/* Mobile & Tablet (normal grid) */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8 lg:hidden">
+            {galleryImages.map((image) => (
+              <div
+                key={image.id}
+                className="group relative overflow-hidden rounded-lg h-48 cursor-pointer"
+              >
+                <img
+                  src={image.src}
+                  alt={image.alt}
+                  className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
+                />
+              </div>
+            ))}
+          </div>
+
+          {/* PC ONLY — marquee */}
+          <div className="gallery-marquee-wrapper mb-8 hidden lg:block">
+            <div className="gallery-marquee">
+              {galleryImages.concat(galleryImages).map((image, index) => (
                 <div
-                  key={image.id}
-                  className="group relative overflow-hidden rounded-lg h-48 cursor-pointer"
+                  key={index}
+                  className="gallery-item relative overflow-hidden rounded-lg h-48 cursor-pointer"
                 >
                   <img
                     src={image.src}
                     alt={image.alt}
-                    className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
+                    className="w-full h-full object-cover"
                   />
                 </div>
               ))}
             </div>
-
-            {/* PC ONLY — marquee */}
-            <div className="gallery-marquee-wrapper mb-8 hidden lg:block">
-              <div className="gallery-marquee">
-                {galleryImages.concat(galleryImages).map((image, index) => (
-                  <div
-                    key={index}
-                    className="gallery-item relative overflow-hidden rounded-lg h-48 cursor-pointer"
-                  >
-                    <img
-                      src={image.src}
-                      alt={image.alt}
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                ))}
-              </div>
-            </div>
+          </div>
 
 
           <Link to="/gallery">
@@ -241,7 +243,13 @@ const Home = () => {
         </div>
       </motion.section>
 
+
+
+      {/* ⭐ SPONSORS SECTION */}
+      <Sponsors />
+
       {/* ⭐ FINAL CTA */}
+
       <motion.section
         className="py-20 bg-gradient-to-r from-primary/10 via-secondary/10 to-accent/10"
         initial="hidden"
@@ -272,7 +280,7 @@ const Home = () => {
         </div>
       </motion.section>
 
-    </div>
+    </div >
   );
 };
 
