@@ -108,10 +108,10 @@ const Events = () => {
     {
       id: "freefiretournament",
       title: "Freefire Tournament",
-      date: "Jan 25 - Jan 26, 2026",
+      date: "Jan 31, 2026",
       location: "Online",
       status: "upcoming",
-      prize: "₹5,000",
+      prize: "₹3,000",
       image:
         "https://res.cloudinary.com/dboqkwvhv/image/upload/v1761372616/freefire_uutecs.jpg",
       teams: 60,
