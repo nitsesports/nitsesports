@@ -1,13 +1,25 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card.jsx";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card.jsx";
 import { Button } from "@/components/ui/button.jsx";
 import { Input } from "@/components/ui/input.jsx";
 import { Label } from "@/components/ui/label.jsx";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select.jsx";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select.jsx";
 import { toast } from "sonner";
 import { supabase } from "@/lib/supabase.js";
 import { gameConfig, getGameConfig } from "@/data/gameConfig.js";
+import kraftonLogo from "@/assets/krafton_logo.png";
 
 /* 🔥 NEW: Failover setup */
 const PRIMARY_API = "https://nitsesportsbackend.vercel.app";
@@ -45,13 +57,14 @@ const TeamRegistration = () => {
     teamLeaderDiscord: "",
     alternateContact: "",
     players: new Array(totalRequiredPlayers).fill(""),
-  playerInGameNames: new Array(totalRequiredPlayers).fill(""),
-  scholarIds: new Array(totalRequiredPlayers).fill(""),
+    playerInGameNames: new Array(totalRequiredPlayers).fill(""),
+    scholarIds: new Array(totalRequiredPlayers).fill(""),
   });
 
   // Check if email is NITS student
   const isNitsEmail = (email) => {
-    const nitsEmailPattern = /^[a-zA-Z0-9_]+_(ug|pg)_\d{2}@[a-zA-Z0-9]+\.nits\.ac\.in$/;
+    const nitsEmailPattern =
+      /^[a-zA-Z0-9_]+_(ug|pg)_\d{2}@[a-zA-Z0-9]+\.nits\.ac\.in$/;
     return nitsEmailPattern.test(email);
   };
 
@@ -87,7 +100,8 @@ const TeamRegistration = () => {
     );
   }
 
-  const price = collegeType === "nits" ? gameInfo.price.nits : gameInfo.price.other;
+  const price =
+    collegeType === "nits" ? gameInfo.price.nits : gameInfo.price.other;
 
   const handleInputChange = (field, value) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -123,16 +137,17 @@ const TeamRegistration = () => {
     if (!formData.teamLeaderContact) return "Team leader contact is required";
     if (!formData.teamLeaderContact) return "Team leader contact is required";
     if (!/^\d{10}$/.test(formData.teamLeaderContact))
-    return "Team leader contact must be a valid 10-digit number";
-    if (!formData.playerInGameNames[0]) return "Team leader in-game name is required";
+      return "Team leader contact must be a valid 10-digit number";
+    if (!formData.playerInGameNames[0])
+      return "Team leader in-game name is required";
     if (emailIsNits && !formData.scholarIds[0]) {
       return "Team leader scholar ID is required for NITS students";
     }
 
-    
     for (let i = 1; i < playerCount; i++) {
       if (!formData.players[i]) return `Player ${i + 1} name is required`;
-      if (!formData.playerInGameNames[i]) return `Player ${i + 1} in-game name is required`;
+      if (!formData.playerInGameNames[i])
+        return `Player ${i + 1} in-game name is required`;
       if (emailIsNits && !formData.scholarIds[i]) {
         return `Player ${i + 1} scholar ID is required for NITS students`;
       }
@@ -141,25 +156,27 @@ const TeamRegistration = () => {
     for (let i = playerCount; i < totalRequiredPlayers; i++) {
       const hasName = formData.players[i];
       const hasIGN = formData.playerInGameNames[i];
-      
+
       if (hasName || hasIGN) {
-        if (!hasName || !hasIGN) return `Please complete all fields for Substitute ${i - playerCount + 1}`;
-        if (emailIsNits && !formData.scholarIds[i]) return `Scholar ID required for Substitute ${i - playerCount + 1}`;
+        if (!hasName || !hasIGN)
+          return `Please complete all fields for Substitute ${i - playerCount + 1}`;
+        if (emailIsNits && !formData.scholarIds[i])
+          return `Scholar ID required for Substitute ${i - playerCount + 1}`;
       }
     }
 
     return null;
   };
 
- const handleSubmit = async () => {
-  const error = validateForm();
-      if (error) {
-        toast.error(error);
-        return;
-      }
-  setLoading(true);
+  const handleSubmit = async () => {
+    const error = validateForm();
+    if (error) {
+      toast.error(error);
+      return;
+    }
+    setLoading(true);
 
-  try {
+    try {
       const payload = {
         event_id: eventId,
         game_id: gameId,
@@ -217,7 +234,9 @@ const TeamRegistration = () => {
           }
 
           toast.success("✅ Registration successful!");
-          navigate(`/registration-confirmation/${data[0].id}`, { replace: true });
+          navigate(`/registration-confirmation/${data[0].id}`, {
+            replace: true,
+          });
           return;
         } catch (err) {
           console.error("Registration error", err);
@@ -245,17 +264,17 @@ const TeamRegistration = () => {
         return;
       }
 
-if (!response.success || !response.payment_session_id) {
-  console.error("Create order failed", response);
-  toast.error(response?.error || "Failed to create payment session");
-  setLoading(false);
-  return;
-}
+      if (!response.success || !response.payment_session_id) {
+        console.error("Create order failed", response);
+        toast.error(response?.error || "Failed to create payment session");
+        setLoading(false);
+        return;
+      }
 
-const paymentSessionId = response.payment_session_id;
-console.log("✅ Payment Session ID:", paymentSessionId);
+      const paymentSessionId = response.payment_session_id;
+      console.log("✅ Payment Session ID:", paymentSessionId);
 
-// ✅ Avoid duplicate script loads
+      // ✅ Avoid duplicate script loads
       if (!window.Cashfree) {
         const script = document.createElement("script");
         script.src = "https://sdk.cashfree.com/js/v3/cashfree.js";
@@ -289,58 +308,114 @@ console.log("✅ Payment Session ID:", paymentSessionId);
     );
   }
 
-
-
   return (
     <div className="min-h-screen pt-24 pb-12">
       <div className="container mx-auto px-4 max-w-2xl">
+        {/* Sponsor Branding */}
+        <div className="flex justify-center mb-8">
+  <div className="backdrop-blur-md bg-white/20 dark:bg-black/30 rounded-2xl px-8 py-5 shadow-lg">
+    <img
+      src={kraftonLogo}
+      alt="Krafton Sponsor"
+      className="h-24 md:h-28 lg:h-32 object-contain drop-shadow-xl"
+    />
+  </div>
+</div>
         <Card className="glass-card border-primary/20">
           <CardHeader>
-            <CardTitle className="font-orbitron text-3xl">{gameInfo.name} Registration</CardTitle>
+            <CardTitle className="font-orbitron text-3xl">
+              {gameInfo.name} Registration
+            </CardTitle>
           </CardHeader>
           <CardContent className="space-y-6">
             {/* Basic Info */}
             <div className="space-y-4">
-              <h3 className="font-orbitron text-lg font-semibold">Basic Information</h3>
-              
+              <h3 className="font-orbitron text-lg font-semibold">
+                Basic Information
+              </h3>
+
               <div>
                 <Label>Email ID *</Label>
-                <Input required type="email" value={formData.email} onChange={(e) => handleInputChange("email", e.target.value)} placeholder="your@email.com" />
+                <Input
+                  required
+                  type="email"
+                  value={formData.email}
+                  onChange={(e) => handleInputChange("email", e.target.value)}
+                  placeholder="your@email.com"
+                />
               </div>
 
               <div>
                 <Label>Team Name *</Label>
-                <Input required value={formData.teamName} onChange={(e) => handleInputChange("teamName", e.target.value)} placeholder="Enter team name" />
+                <Input
+                  required
+                  value={formData.teamName}
+                  onChange={(e) =>
+                    handleInputChange("teamName", e.target.value)
+                  }
+                  placeholder="Enter team name"
+                />
               </div>
 
               <div>
                 <Label>Team Leader / Player 1 Name *</Label>
-                <Input required value={formData.teamLeaderName} onChange={(e) => handleInputChange("teamLeaderName", e.target.value)} placeholder="Leader name" />
+                <Input
+                  required
+                  value={formData.teamLeaderName}
+                  onChange={(e) =>
+                    handleInputChange("teamLeaderName", e.target.value)
+                  }
+                  placeholder="Leader name"
+                />
               </div>
 
               <div>
-                <Label>Team Leader In-Game Name ({gameInfo.name} #IN_GAME_ID) *</Label>
+                <Label>
+                  Team Leader In-Game Name ({gameInfo.name} #IN_GAME_ID) *
+                </Label>
                 {/* Fixed typo: e.g.value -> e.target.value */}
-                <Input required value={formData.playerInGameNames[0] || ""} onChange={(e) => handlePlayerChange(0, "inGameName", e.target.value)} placeholder="In-Game Name and Id (Separated with #)" />
+                <Input
+                  required
+                  value={formData.playerInGameNames[0] || ""}
+                  onChange={(e) =>
+                    handlePlayerChange(0, "inGameName", e.target.value)
+                  }
+                  placeholder="In-Game Name and Id (Separated with #)"
+                />
               </div>
 
               <div>
                 <Label>Team Leader Contact (WhatsApp) *</Label>
-                <Input required value={formData.teamLeaderContact} onChange={(e) => handleInputChange("teamLeaderContact", e.target.value)} placeholder="10-digit number" />
+                <Input
+                  required
+                  value={formData.teamLeaderContact}
+                  onChange={(e) =>
+                    handleInputChange("teamLeaderContact", e.target.value)
+                  }
+                  placeholder="10-digit number"
+                />
               </div>
 
               <div>
                 <Label>Alternate Contact (WhatsApp)</Label>
                 {/* This line was already correct */}
-                <Input value={formData.alternateContact} onChange={(e) => handleInputChange("alternateContact", e.target.value)} placeholder="10-digit number" />
+                <Input
+                  value={formData.alternateContact}
+                  onChange={(e) =>
+                    handleInputChange("alternateContact", e.target.value)
+                  }
+                  placeholder="10-digit number"
+                />
               </div>
 
               <div>
                 <Label>Team Leader Discord Tag</Label>
-                <Input 
-                  value={formData.teamLeaderDiscord} 
-                  onChange={(e) => handleInputChange("teamLeaderDiscord", e.target.value)} 
-                  placeholder="username#0000" 
+                <Input
+                  value={formData.teamLeaderDiscord}
+                  onChange={(e) =>
+                    handleInputChange("teamLeaderDiscord", e.target.value)
+                  }
+                  placeholder="username#0000"
                 />
               </div>
 
@@ -348,22 +423,35 @@ console.log("✅ Payment Session ID:", paymentSessionId);
               {collegeType === "nits" && (
                 <div>
                   <Label>Team Leader Scholar ID *</Label>
-                  <Input required value={formData.scholarIds[0] || ""} onChange={(e) => handlePlayerChange(0, "scholarId", e.target.value)} placeholder="Scholar ID" />
+                  <Input
+                    required
+                    value={formData.scholarIds[0] || ""}
+                    onChange={(e) =>
+                      handlePlayerChange(0, "scholarId", e.target.value)
+                    }
+                    placeholder="Scholar ID"
+                  />
                 </div>
               )}
             </div>
 
             {/* College Type */}
             <div className="space-y-4">
-              <h3 className="font-orbitron text-lg font-semibold">College Type</h3>
+              <h3 className="font-orbitron text-lg font-semibold">
+                College Type
+              </h3>
               {/* This Select is now disabled and its value is controlled by the email input */}
               <Select value={collegeType} disabled>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="nits">NITS Student (₹{gameInfo.price.nits})</SelectItem>
-                  <SelectItem value="other">Other College (₹{gameInfo.price.other})</SelectItem>
+                  <SelectItem value="nits">
+                    NITS Student (₹{gameInfo.price.nits})
+                  </SelectItem>
+                  <SelectItem value="other">
+                    Other College (₹{gameInfo.price.other})
+                  </SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -371,29 +459,52 @@ console.log("✅ Payment Session ID:", paymentSessionId);
             {/* Players Info - Starting from Player 2 */}
             {playerCount > 1 && (
               <div className="space-y-4">
-                <h3 className="font-orbitron text-lg font-semibold">Additional Players</h3>
+                <h3 className="font-orbitron text-lg font-semibold">
+                  Additional Players
+                </h3>
                 {Array.from({ length: playerCount - 1 }).map((_, i) => {
                   const playerIndex = i + 1;
                   return (
-                    <div key={playerIndex} className="border border-border/30 rounded-lg p-4 space-y-3">
-                      <h4 className="font-semibold text-sm">Player {playerIndex + 1}</h4>
+                    <div
+                      key={playerIndex}
+                      className="border border-border/30 rounded-lg p-4 space-y-3"
+                    >
+                      <h4 className="font-semibold text-sm">
+                        Player {playerIndex + 1}
+                      </h4>
 
                       <div>
-                        <Label className="text-xs">Player {playerIndex + 1} Name *</Label>
+                        <Label className="text-xs">
+                          Player {playerIndex + 1} Name *
+                        </Label>
                         <Input
                           required
                           value={formData.players[playerIndex] || ""}
-                          onChange={(e) => handlePlayerChange(playerIndex, "name", e.target.value)}
+                          onChange={(e) =>
+                            handlePlayerChange(
+                              playerIndex,
+                              "name",
+                              e.target.value,
+                            )
+                          }
                           placeholder="Player name"
                         />
                       </div>
 
                       <div>
-                        <Label className="text-xs">In-Game Name ({gameInfo.name} #IN_GAME_ID) *</Label>
+                        <Label className="text-xs">
+                          In-Game Name ({gameInfo.name} #IN_GAME_ID) *
+                        </Label>
                         <Input
                           required
                           value={formData.playerInGameNames[playerIndex] || ""}
-                          onChange={(e) => handlePlayerChange(playerIndex, "inGameName", e.target.value)}
+                          onChange={(e) =>
+                            handlePlayerChange(
+                              playerIndex,
+                              "inGameName",
+                              e.target.value,
+                            )
+                          }
                           placeholder="In-Game Name and Id (Separated with #)"
                         />
                       </div>
@@ -405,7 +516,13 @@ console.log("✅ Payment Session ID:", paymentSessionId);
                           <Input
                             required
                             value={formData.scholarIds[playerIndex] || ""}
-                            onChange={(e) => handlePlayerChange(playerIndex, "scholarId", e.target.value)}
+                            onChange={(e) =>
+                              handlePlayerChange(
+                                playerIndex,
+                                "scholarId",
+                                e.target.value,
+                              )
+                            }
                             placeholder="Scholar ID"
                           />
                         </div>
@@ -416,48 +533,73 @@ console.log("✅ Payment Session ID:", paymentSessionId);
               </div>
             )}
 
-{substituteCount > 0 && (
-  <div className="space-y-4 mt-8 pt-6 border-t border-dashed border-primary/30">
-    <h3 className="font-orbitron text-lg font-semibold text-primary/80">Substitutes (Optional)</h3>
-    {Array.from({ length: substituteCount }).map((_, i) => {
-      const playerIndex = playerCount + i; // Index starts after main players
-      return (
-        <div key={playerIndex} className="border border-primary/10 bg-primary/5 rounded-lg p-4 space-y-3">
-          <h4 className="font-semibold text-sm text-secondary">Substitute {i + 1}</h4>
-          
-          <div>
-            <Label className="text-xs">Name</Label>
-            <Input
-              value={formData.players[playerIndex] || ""}
-              onChange={(e) => handlePlayerChange(playerIndex, "name", e.target.value)}
-              placeholder="Full Name"
-            />
-          </div>
+            {substituteCount > 0 && (
+              <div className="space-y-4 mt-8 pt-6 border-t border-dashed border-primary/30">
+                <h3 className="font-orbitron text-lg font-semibold text-primary/80">
+                  Substitutes (Optional)
+                </h3>
+                {Array.from({ length: substituteCount }).map((_, i) => {
+                  const playerIndex = playerCount + i; // Index starts after main players
+                  return (
+                    <div
+                      key={playerIndex}
+                      className="border border-primary/10 bg-primary/5 rounded-lg p-4 space-y-3"
+                    >
+                      <h4 className="font-semibold text-sm text-secondary">
+                        Substitute {i + 1}
+                      </h4>
 
-          <div>
-            <Label className="text-xs">In-Game Name</Label>
-            <Input
-              value={formData.playerInGameNames[playerIndex] || ""}
-              onChange={(e) => handlePlayerChange(playerIndex, "inGameName", e.target.value)}
-              placeholder="IGN #ID"
-            />
-          </div>
+                      <div>
+                        <Label className="text-xs">Name</Label>
+                        <Input
+                          value={formData.players[playerIndex] || ""}
+                          onChange={(e) =>
+                            handlePlayerChange(
+                              playerIndex,
+                              "name",
+                              e.target.value,
+                            )
+                          }
+                          placeholder="Full Name"
+                        />
+                      </div>
 
-          {collegeType === "nits" && (
-            <div>
-              <Label className="text-xs">Scholar ID</Label>
-              <Input
-                value={formData.scholarIds[playerIndex] || ""}
-                onChange={(e) => handlePlayerChange(playerIndex, "scholarId", e.target.value)}
-                placeholder="Scholar ID"
-              />
-            </div>
-          )}
-        </div>
-      );
-    })}
-  </div>
-)}
+                      <div>
+                        <Label className="text-xs">In-Game Name</Label>
+                        <Input
+                          value={formData.playerInGameNames[playerIndex] || ""}
+                          onChange={(e) =>
+                            handlePlayerChange(
+                              playerIndex,
+                              "inGameName",
+                              e.target.value,
+                            )
+                          }
+                          placeholder="IGN #ID"
+                        />
+                      </div>
+
+                      {collegeType === "nits" && (
+                        <div>
+                          <Label className="text-xs">Scholar ID</Label>
+                          <Input
+                            value={formData.scholarIds[playerIndex] || ""}
+                            onChange={(e) =>
+                              handlePlayerChange(
+                                playerIndex,
+                                "scholarId",
+                                e.target.value,
+                              )
+                            }
+                            placeholder="Scholar ID"
+                          />
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
 
             {/* Price and Submit */}
             <div className="space-y-4 pt-4 border-t border-border/30">
@@ -482,7 +624,11 @@ console.log("✅ Payment Session ID:", paymentSessionId);
                   onClick={handleSubmit}
                   disabled={loading}
                 >
-                  {loading ? "Processing..." : price === 0 ? "Register" : `Pay ₹${price}`}
+                  {loading
+                    ? "Processing..."
+                    : price === 0
+                      ? "Register"
+                      : `Pay ₹${price}`}
                 </Button>
               </div>
             </div>
