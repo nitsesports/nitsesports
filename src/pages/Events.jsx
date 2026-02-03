@@ -108,7 +108,7 @@ const Events = () => {
     {
       id: "freefiretournament",
       title: "Freefire Tournament",
-      date: "06-07 FEBRUARY, 2026",
+      date: "Feb 06 - Feb 07, 2026",
       location: "Online",
       status: "upcoming",
       prize: "₹4,000",
