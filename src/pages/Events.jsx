@@ -204,10 +204,11 @@ const Events = () => {
   return (
     <div className="min-h-screen pb-12">
       {/* Hero Section with Video Background */}
+      {/*
       <section className="font-orbitron relative z-10 font-bold -mt-24">
-        {/* Background Video Container */}
+        {/* Background Video Container * /}
         <div className="absolute start-0 top-0 -z-10 size-full">
-          {/* ... video and mute button */}
+          {/* ... video and mute button * /}
           <img
             src="https://res.cloudinary.com/dtbak3q8e/image/upload/v1767018186/WhatsApp_Image_2025-12-29_at_7.31.30_PM_laliwu.jpg"
             alt="Vanguard Arena"
@@ -232,37 +233,37 @@ const Events = () => {
             }}
           />
 
-          {/* Overlay gradient for better text visibility */}
+          {/* Overlay gradient for better text visibility * /}
           <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-black/60" />
         </div>
 
-        {/* Main Content (Text and Stats) */}
+        {/* Main Content (Text and Stats) * /}
         <div className="px-4 pt-[200px] pb-[100px] lg:px-8 lg:py-[126px] xl:py-[120px] 2xl:py-[204px]">
           <div className="mx-auto flex w-fit max-w-6xl flex-col items-center gap-5 md:gap-8">
-            {/* Date Tag */}
+            {/* Date Tag * /}
             <div className="rounded-[9px] bg-gradient-to-r from-[#4E442D] to-yellow-700/50 px-2.5 py-1.5">
               <p className="text-sm leading-tight tracking-tight text-white uppercase md:text-base">
                 Jan 15 - Jan 18 2026
               </p>
             </div>
 
-            {/* Logo/Title Section */}
+            {/* Logo/Title Section * /}
             <h1 className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-black text-white drop-shadow-lg tracking-wider">
               Vanguard Arena
             </h1>
 
-            {/* Statistic Cards Container */}
+            {/* Statistic Cards Container * /}
             <div className="flex flex-wrap justify-center gap-x-2 gap-y-4">
               {stats.map((stat, index) => (
                 <div
                   key={index}
                   className="mb-2 flex w-fit flex-col items-center justify-center overflow-hidden rounded-[18px] bg-white/10 p-4 text-white backdrop-blur-2xl border border-white/20"
                 >
-                  {/* Statistic Value */}
+                  {/* Statistic Value * /}
                   <span className="font-orbitron font-[28px] md:text-[36px] lg:text-[64px] ">
                     {stat.value}
                   </span>
-                  {/* Statistic Label */}
+                  {/* Statistic Label * /}
                   <span className="font-base text-[12px] md:text-[14px] text-white/90">
                     {stat.label}
                   </span>
@@ -270,7 +271,7 @@ const Events = () => {
               ))}
             </div>
 
-            {/* Tagline */}
+            {/* Tagline * /}
             <div className="max-w-[802px] text-center">
               <p
                 className="
@@ -291,6 +292,7 @@ const Events = () => {
           </div>
         </div>
       </section>
+      */}
 
       <div className="container mx-auto px-4 pt-12">
         {/* Live Events Section */}
