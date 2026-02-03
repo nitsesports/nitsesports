@@ -311,16 +311,7 @@ const TeamRegistration = () => {
   return (
     <div className="min-h-screen pt-24 pb-12">
       <div className="container mx-auto px-4 max-w-2xl">
-        {/* Sponsor Branding */}
-        <div className="flex justify-center mb-8">
-  <div className="backdrop-blur-md bg-white/20 dark:bg-black/30 rounded-2xl px-8 py-5 shadow-lg">
-    <img
-      src={kraftonLogo}
-      alt="Krafton Sponsor"
-      className="h-24 md:h-28 lg:h-32 object-contain drop-shadow-xl"
-    />
-  </div>
-</div>
+
         <Card className="glass-card border-primary/20">
           <CardHeader>
             <CardTitle className="font-orbitron text-3xl">
