@@ -16,7 +16,7 @@ const FreeFire = () => {
 
   // FreeFire RUPYVERSE event data
   const ficFreeFire = {
-    id: "ficfreefire",
+    id: "freefiretournament",
     title: "RUPYVERSE",
     subtitle: "Free Fire Tournament by Finance and Investment Club",
     date: "06-07 February",
@@ -33,11 +33,11 @@ const FreeFire = () => {
       participants: "#",
       gameHead: { name: "Suryans Singh", phone: "6307843856" },
       format: "points",
-      
+
     },
     format: "4v4 Squad-based Battle Royale",
     conductedBy: "Finance and Investment Club",
-    docLink: "https://gamma.app/docs/VANGUARD-ARENA-aei2y0ivstdkaww",
+    docLink: "https://drive.google.com/file/d/1a3fib_qy2_43igEEjJhl44ZEG7jouOE5/view",
   };
 
   useEffect(() => {
@@ -51,7 +51,7 @@ const FreeFire = () => {
         const allowedEmail = import.meta.env.VITE_ADMIN_EMAIL;
         setUser(data.session?.user ?? null);
         if (data.session && (!allowedEmail || email === allowedEmail)) ok = true;
-      } catch {}
+      } catch { }
       if (mounted) setCanEdit(ok);
     };
     check();
@@ -65,7 +65,7 @@ const FreeFire = () => {
       mounted = false;
       try {
         sub.subscription.unsubscribe();
-      } catch {}
+      } catch { }
     };
   }, []);
 
@@ -104,8 +104,8 @@ const FreeFire = () => {
                     {ficFreeFire.status === "live"
                       ? "🔴 Live Now"
                       : ficFreeFire.status === "completed"
-                      ? "Completed"
-                      : "🔔 Coming Soon"}
+                        ? "Completed"
+                        : "🔔 Coming Soon"}
                   </Badge>
                   <Badge variant="outline">Prize ₹{ficFreeFire.prize}</Badge>
                   <Badge variant="outline">{ficFreeFire.participants} Teams</Badge>

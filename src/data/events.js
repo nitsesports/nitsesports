@@ -36,7 +36,7 @@ export const events = [
         prize: "5000",
         brochure: "https://gamma.app/docs/VANGUARD-xpmguxeg1uuld3q",
       },
-      
+
       {
         id: "valorant",
         name: "Valorant",
@@ -62,7 +62,7 @@ export const events = [
       {
         id: "fifa",
         name: "FIFA 25",
-        image:  "https://res.cloudinary.com/dboqkwvhv/image/upload/v1761372618/FIFA_tzgbj9.jpg",
+        image: "https://res.cloudinary.com/dboqkwvhv/image/upload/v1761372618/FIFA_tzgbj9.jpg",
         participants: "#",
         gameHead: { name: "Vaibhav Raj", phone: "8434307257" },
         format: "points",
@@ -70,16 +70,18 @@ export const events = [
         prize: "5000",
         brochure: "https://gamma.app/docs/TECNOESIS-CUP-mlbb-h5oottx9xnwqnet",
       },
-      
+
     ],
   },
   {
-    id: "ficfreefire",
+    id: "freefiretournament",
     title: "FreeFire Tournament",
-    date: "JAN 19, 2026 - JAN 22, 2026",
+    date: "Feb 06, 2026 - Feb 07, 2026",
+    startDate: "Feb 06, 2026",
+    endDate: "Feb 07, 2026",
     location: "Online",
     status: "upcoming",
-    prize: "₹10,000",
+    prize: "₹4,000",
     image: "https://cdn.builder.io/api/v1/image/assets%2F778be80571eb4edd92c70f9fecab8fab%2F8efd1aa0a2864beeb58f62fed4425fdd?format=webp&width=1200",
     games: [
       {
@@ -90,11 +92,11 @@ export const events = [
         gameHead: { name: "Suryans Singh", phone: "6307843856" },
         format: "points",
         rankings: [],
-        prize: 10000,
-        brochure: "https://gamma.app/docs/VANGUARD-ARENA-aei2y0ivstdkaww",
+        prize: 4000,
+        brochure: "https://drive.google.com/file/d/1a3fib_qy2_43igEEjJhl44ZEG7jouOE5/view",
       },
-      
-      
+
+
     ],
   },
 ];
