@@ -5,20 +5,8 @@ import { AlertTriangle } from "lucide-react";
 const WHATSAPP_GROUP_LINKS = [
   {
     name: "Free Fire",
-    link: "https://chat.whatsapp.com/D38uU249lJKJSTquoOgRrb",
-  },
-  {
-    name: "Valorant",
-    link: "https://chat.whatsapp.com/D3izu54NpVi69H6eVNzAsu",
-  },
-  {
-    name: "MLBB",
-    link: "https://chat.whatsapp.com/Ejo9p6BASMULwXiPa8vEfI",
-  },
-  {
-    name: "FIFA",
-    link: "https://chat.whatsapp.com/LbiWkF4HfT56Oeh3LeafSw",
-  },
+    link: "https://chat.whatsapp.com/H5dzGANOnmY6H2tqCYIngN?mode=gi_t",
+  }
 ];
 
 export default function PaymentSuccess() {
