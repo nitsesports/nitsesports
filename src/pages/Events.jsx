@@ -392,9 +392,7 @@ const Events = () => {
                   <div className="flex justify-between items-center">
                     <div className="flex items-center gap-2">
                       <Users className="h-4 w-4 text-secondary" />
-                      <span className="text-sm">
-                        {event.teams} Teams
-                      </span>
+                      <span className="text-sm">{event.teams} Teams</span>
                     </div>
                     <div className="flex items-center gap-2">
                       <Trophy className="h-4 w-4 text-accent" />
@@ -404,6 +402,19 @@ const Events = () => {
                     </div>
                   </div>
                   <div>
+                    <a
+                      href="https://drive.google.com/file/d/1a3fib_qy2_43igEEjJhl44ZEG7jouOE5/view"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      <Button
+                        variant="outline"
+                        className="w-full font-orbitron mb-2"
+                      >
+                        View Details
+                      </Button>
+                    </a>
+
                     <Button
                       className="w-full font-orbitron"
                       onClick={() =>
