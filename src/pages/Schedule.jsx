@@ -1,57 +1,71 @@
-import { Calendar, MapPin, Users, Trophy } from 'lucide-react';
+import { Calendar, MapPin, Users, Trophy } from "lucide-react";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Link } from 'react-router-dom';
-import { listEvents } from '@/data/eventsStore';
+} from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Link } from "react-router-dom";
+import { listEvents } from "@/data/eventsStore";
 
 const Schedule = () => {
   const ongoing = listEvents().filter(
-    (e) => e.status === 'live' && e.id !== 'ewc-2025'
+    (e) => e.status === "live" && e.id !== "ewc-2025",
   );
 
-  const vanguardArenaEvent = {
-    id: 'vanguard-arena',
-    title: 'Vanguard Arena',
-    date: 'Jan 15, 2026 - Jan 18, 2026',
-    startDate: 'Jan 15, 2026',
-    endDate: 'Jan 18, 2026',
-    location: 'Online',
-    participants: 168,
-    prize: '₹45,000',
+  const FreefireTournament = {
+    id: "freefiretournament",
+    title: "Freefire Tournament",
+    date: "Feb 06 - Feb 07, 2026",
+    startDate: "Feb 06, 2026",
+    endDate: "Feb 07, 2026",
+    location: "Online",
+    participants: 80,
+    prize: "₹4,000",
     image:
-      'https://res.cloudinary.com/dtbak3q8e/image/upload/v1767018186/WhatsApp_Image_2025-12-29_at_7.31.30_PM_laliwu.jpg',
-    status: 'live',
+      "https://res.cloudinary.com/dboqkwvhv/image/upload/v1761372616/freefire_uutecs.jpg",
+    status: "live",
+  };
+  const vanguardArenaEvent = {
+    id: "vanguard-arena",
+    title: "Vanguard Arena",
+    date: "Jan 15, 2026 - Jan 18, 2026",
+    startDate: "Jan 15, 2026",
+    endDate: "Jan 18, 2026",
+    location: "Online",
+    participants: 168,
+    prize: "₹45,000",
+    image:
+      "https://res.cloudinary.com/dboqkwvhv/image/upload/v1768466009/tempImage4DyI6t_ekzmcw.jpg",
+    status: "completed",
   };
 
   const lockEvent = {
-    id: 'lock-load',
-    title: 'Lock & Load',
-    date: 'Oct 12, 2025 - Oct 18, 2025',
-    startDate: 'Oct 12, 2025',
-    endDate: 'Oct 18, 2025',
-    location: 'Online',
+    id: "lock-load",
+    title: "Lock & Load",
+    date: "Oct 12, 2025 - Oct 18, 2025",
+    startDate: "Oct 12, 2025",
+    endDate: "Oct 18, 2025",
+    location: "Online",
     participants: 117,
-    prize: '₹10,000',
+    prize: "₹10,000",
     image:
-      'https://cdn.builder.io/api/v1/image/assets%2F778be80571eb4edd92c70f9fecab8fab%2F8efd1aa0a2864beeb58f62fed4425fdd?format=webp&width=1200',
-    status: 'completed',
+      "https://cdn.builder.io/api/v1/image/assets%2F778be80571eb4edd92c70f9fecab8fab%2F8efd1aa0a2864beeb58f62fed4425fdd?format=webp&width=1200",
+    status: "completed",
   };
 
   const displayEvents = [
     vanguardArenaEvent,
     lockEvent,
-    ...ongoing.filter((e) => !['lock-load', 'vanguard-arena'].includes(e.id)),
+    FreefireTournament,
+    ...ongoing.filter((e) => !["lock-load", "vanguard-arena","freefiretournament"].includes(e.id)),
   ];
 
-  const liveEvents = displayEvents.filter((e) => e.status === 'live');
-  const completedEvents = displayEvents.filter((e) => e.status === 'completed');
+  const liveEvents = displayEvents.filter((e) => e.status === "live");
+  const completedEvents = displayEvents.filter((e) => e.status === "completed");
   const EventCard = ({ event, badge, badgeColor }) => (
     <Card className="glass-card border-primary/20 hover:border-primary/50 transition-all overflow-hidden group">
       <div className="relative h-44 overflow-hidden">
@@ -95,9 +109,9 @@ const Schedule = () => {
         <Link to={`/events/${event.id}/schedule`}>
           <Button
             className="w-full font-orbitron my-2"
-            disabled={badge === 'Completed'}
+            disabled={badge === "Completed"}
           >
-            {badge === 'Completed' ? 'Event Ended' : 'Schedule'}
+            {badge === "Completed" ? "Event Ended" : "Schedule"}
           </Button>
         </Link>
       </CardContent>
