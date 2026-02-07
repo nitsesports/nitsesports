@@ -80,7 +80,7 @@ export const events = [
     startDate: "Feb 06, 2026",
     endDate: "Feb 07, 2026",
     location: "Online",
-    status: "upcoming",
+    status: "completed",
     prize: "₹4,000",
     image: "https://cdn.builder.io/api/v1/image/assets%2F778be80571eb4edd92c70f9fecab8fab%2F8efd1aa0a2864beeb58f62fed4425fdd?format=webp&width=1200",
     games: [
@@ -94,6 +94,69 @@ export const events = [
         rankings: [],
         prize: 4000,
         brochure: "https://drive.google.com/file/d/1a3fib_qy2_43igEEjJhl44ZEG7jouOE5/view",
+        schedule: [
+          {
+            date: "Feb 06, 2026",
+            time: "7:20 PM - 7:45 PM",
+            matchups: [
+              "Group A - Match 1 ",
+              "Group B - Match 1 "
+            ],
+          },
+          {
+            date: "Feb 06, 2026",
+            time: "7:50 PM - 8:15 PM",
+            matchups: [
+              "Group A - Match 2 ",
+              "Group B - Match 2 "
+            ],
+          },
+          {
+            date: "Feb 06, 2026",
+            time: "9:00 PM - 9:25 PM",
+            matchups: [
+              "Group A - Match 3 ",
+              "Group B - Match 3 "
+
+            ],
+          },
+          {
+            date: "Feb 06, 2026",
+            time: "9:30 PM - 9:55 PM",
+            matchups: [
+              "Group A - Match 4 ",
+              "Group B - Match 4 "
+            ],
+          },
+          {
+            date: "Feb 07, 2026",
+            time: "6:00 PM - 6:25 PM",
+            matchups: [
+              "Final - Match 1 "
+            ],
+          },
+          {
+            date: "Feb 07, 2026",
+            time: "6:30 PM - 6:55 PM",
+            matchups: [
+              "Final - Match 2 "
+            ],
+          },
+          {
+            date: "Feb 07, 2026",
+            time: "7:00 PM - 7:25 PM",
+            matchups: [
+              "Final - Match 3 "
+            ],
+          },
+          {
+            date: "Feb 07, 2026",
+            time: "7:30 PM - 7:55 PM",
+            matchups: [
+              "Final - Match 4 "
+            ],
+          },
+        ],
       },
 
 

@@ -24,7 +24,7 @@ const FreeFire = () => {
     colaboratedby: "NITS ESPORTS CLUB",
     //participants: "184",
     prize: "4,000",
-    status: "upcoming", // Change to "live" or "completed" to show leaderboard
+    status: "completed", // Change to "live" or "completed" to show leaderboard
     image: freefireImg,
     game: {
       id: "freefire",
@@ -198,6 +198,13 @@ const FreeFire = () => {
                     <span className="font-semibold text-white">Format:</span> {ficFreeFire.format}
                   </p>
                 </div>
+                <Button
+                  onClick={() => navigate(`/events/${ficFreeFire.id}/schedule`)}
+                  className="w-full font-orbitron mt-4"
+                  variant="secondary"
+                >
+                  View Match Schedule
+                </Button>
               </CardContent>
             </Card>
 

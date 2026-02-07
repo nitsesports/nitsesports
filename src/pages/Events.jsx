@@ -104,13 +104,15 @@ const Events = () => {
 
   const liveEvents = [];
 
-  const upcomingEvents = [
-    {
+  const upcomingEvents = [];
+
+  const pastEvents = [
+     {
       id: "freefiretournament",
       title: "Freefire Tournament",
       date: "Feb 06 - Feb 07, 2026",
       location: "Online",
-      status: "upcoming",
+      status: "past",
       prize: "₹4,000",
       image:
         "https://res.cloudinary.com/dboqkwvhv/image/upload/v1761372616/freefire_uutecs.jpg",
@@ -126,9 +128,6 @@ const Events = () => {
         },
       ],
     },
-  ];
-
-  const pastEvents = [
     {
       id: "vanguardarena",
       title: "Vanguard Arena",

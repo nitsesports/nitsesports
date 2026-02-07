@@ -27,7 +27,7 @@ const Schedule = () => {
     prize: "₹4,000",
     image:
       "https://res.cloudinary.com/dboqkwvhv/image/upload/v1761372616/freefire_uutecs.jpg",
-    status: "live",
+    status: "completed",
   };
   const vanguardArenaEvent = {
     id: "vanguard-arena",
@@ -61,7 +61,10 @@ const Schedule = () => {
     vanguardArenaEvent,
     lockEvent,
     FreefireTournament,
-    ...ongoing.filter((e) => !["lock-load", "vanguard-arena","freefiretournament"].includes(e.id)),
+    ...ongoing.filter(
+      (e) =>
+        !["lock-load", "vanguard-arena", "freefiretournament"].includes(e.id),
+    ),
   ];
 
   const liveEvents = displayEvents.filter((e) => e.status === "live");
