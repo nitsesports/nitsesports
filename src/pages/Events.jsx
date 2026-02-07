@@ -11,7 +11,6 @@ import { Badge } from "@/components/ui/badge";
 import { Link, useNavigate } from "react-router-dom";
 import { listEvents } from "@/data/eventsStore";
 import lockImg from "@/assets/valorant.jpg";
-import vanguard from "@/assets/vanguard.mp4";
 import { supabase } from "@/lib/supabase.js";
 import { useState, useEffect } from "react";
 import RegistrationClosedModal from "@/components/RegistrationClosedModal.jsx";
