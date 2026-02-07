@@ -138,6 +138,7 @@ function MainRoutes() {
         <Route path="/events/:eventId/leaderboard/:gameId" element={<EventLeaderboard />} />
         <Route path="/events/lock-load" element={<LockLoad />} />
         <Route path="/events/vanguardarena" element={<VanguardArena />} />
+        <Route path="/events/freefiretournament" element={<FreeFire />} />
         <Route path="/events/:eventId/schedule" element={<EventSchedule />} />
         <Route path="/schedule" element={<Schedule />} />
         <Route path="/team" element={<Team />} />
@@ -152,7 +153,7 @@ function MainRoutes() {
 
         {/* Dashboard Routes */}
         <Route path="/dashboard" element={<RequireAuth><Dashboard /></RequireAuth>} />
-        
+
 
         <Route path="/events/:eventId/register/:gameId" element={<RequireAuth><TeamRegistration /></RequireAuth>} />
         <Route path="/registration-confirmation/:registrationId" element={<RequireAuth><RegistrationConfirmation /></RequireAuth>} />
@@ -168,7 +169,7 @@ const App = () => {
   const [showIntro, setShowIntro] = useState(true);
 
   useEffect(() => {
-  
+
     const seen = hasSeenIntro();
     setShowIntro(!seen);
   }, []);
@@ -179,11 +180,11 @@ const App = () => {
         <Toaster />
         <Sonner />
         <BrowserRouter>
-          <PlexusBackground/>
+          <PlexusBackground />
           {/* <GamingCursor /> */}
-           <RouteSEO />
+          <RouteSEO />
           <div className="relative min-h-screen bg-gradient-to-b from-[#050505]/30 via-[#0a0a1f]/20 to-[#000000]/20 text-white flex flex-col z-30">
-        <ScrollToTop />
+            <ScrollToTop />
             <Navigation />
             <MainRoutes />
             <Footer />
