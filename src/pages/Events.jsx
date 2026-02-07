@@ -106,7 +106,7 @@ const Events = () => {
   const upcomingEvents = [];
 
   const pastEvents = [
-     {
+    {
       id: "freefiretournament",
       title: "Freefire Tournament",
       date: "Feb 06 - Feb 07, 2026",
@@ -115,7 +115,7 @@ const Events = () => {
       prize: "₹4,000",
       image:
         "https://res.cloudinary.com/dboqkwvhv/image/upload/v1761372616/freefire_uutecs.jpg",
-      teams: 60,
+      teams: 23,
       games: [
         {
           id: "freefire",
@@ -123,7 +123,7 @@ const Events = () => {
           image:
             "https://res.cloudinary.com/dboqkwvhv/image/upload/v1761372616/freefire_uutecs.jpg",
           brochure: "https://gamma.app/docs/VANGUARD-ARENA-aei2y0ivstdkaww",
-          prize: 5000,
+          prize: 4000,
         },
       ],
     },
@@ -354,78 +354,101 @@ const Events = () => {
             <Trophy className="h-8 w-8 text-accent" />
             Upcoming Events
           </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {upcomingEvents?.map((event) => (
-              <Card
-                key={event.id}
-                className="glass-card border-secondary/20 hover:border-secondary/50 transition-all overflow-hidden group"
-              >
-                <div className="relative h-44 overflow-hidden">
-                  <img
-                    src={event.image}
-                    alt={event.title}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-background to-transparent" />
-                  <Badge className="absolute top-4 right-4 bg-blue-600/90 font-orbitron">
-                    Upcoming
-                  </Badge>
-                </div>
-                <CardHeader>
-                  <CardTitle className="font-orbitron text-xl">
-                    {event.title}
-                  </CardTitle>
-                  <div className="text-sm text-muted-foreground space-y-2 mt-2">
-                    <div className="flex items-center gap-2 text-sm">
-                      <Calendar className="h-4 w-4 text-primary" />
-                      {event.date}
-                    </div>
-                    <div className="flex items-center gap-2 text-sm">
-                      <MapPin className="h-4 w-4 text-primary" />
-                      {event.location}
-                    </div>
+          {upcomingEvents.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {upcomingEvents.map((event) => (
+                <Card
+                  key={event.id}
+                  className="glass-card border-secondary/20 hover:border-secondary/50 transition-all overflow-hidden group"
+                >
+                  <div className="relative h-44 overflow-hidden">
+                    <img
+                      src={event.image}
+                      alt={event.title}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-background to-transparent" />
+                    <Badge className="absolute top-4 right-4 bg-blue-600/90 font-orbitron">
+                      Upcoming
+                    </Badge>
                   </div>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="flex justify-between items-center">
-                    <div className="flex items-center gap-2">
-                      <Users className="h-4 w-4 text-secondary" />
-                      <span className="text-sm">{event.teams} Teams</span>
+                  <CardHeader>
+                    <CardTitle className="font-orbitron text-xl">
+                      {event.title}
+                    </CardTitle>
+                    <div className="text-sm text-muted-foreground space-y-2 mt-2">
+                      <div className="flex items-center gap-2 text-sm">
+                        <Calendar className="h-4 w-4 text-primary" />
+                        {event.date}
+                      </div>
+                      <div className="flex items-center gap-2 text-sm">
+                        <MapPin className="h-4 w-4 text-primary" />
+                        {event.location}
+                      </div>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <Trophy className="h-4 w-4 text-accent" />
-                      <span className="text-sm font-semibold">
-                        {event.prize}
-                      </span>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="flex justify-between items-center">
+                      <div className="flex items-center gap-2">
+                        <Users className="h-4 w-4 text-secondary" />
+                        <span className="text-sm">{event.teams} Teams</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Trophy className="h-4 w-4 text-accent" />
+                        <span className="text-sm font-semibold">
+                          {event.prize}
+                        </span>
+                      </div>
                     </div>
-                  </div>
-                  <div>
-                    <a
-                      href="https://drive.google.com/file/d/1a3fib_qy2_43igEEjJhl44ZEG7jouOE5/view"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      <Button
-                        variant="outline"
-                        className="w-full font-orbitron mb-2"
+                    <div>
+                      <a
+                        href="https://drive.google.com/file/d/1a3fib_qy2_43igEEjJhl44ZEG7jouOE5/view"
+                        target="_blank"
+                        rel="noopener noreferrer"
                       >
-                        View Details
-                      </Button>
-                    </a>
+                        <Button
+                          variant="outline"
+                          className="w-full font-orbitron mb-2"
+                        >
+                          View Details
+                        </Button>
+                      </a>
 
-                    <Button
-                      className="w-full font-orbitron"
-                      onClick={() =>
-                        handleUpcomingEventRegister(event.id, event.games[0].id)
-                      }
-                    >
-                      Register Now
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+                      <Button
+                        className="w-full font-orbitron"
+                        onClick={() =>
+                          handleUpcomingEventRegister(
+                            event.id,
+                            event.games[0].id
+                          )
+                        }
+                      >
+                        Register Now
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          ) : (
+            <Card className="glass-card border-primary/20 p-8 text-center max-w-2xl mx-auto backdrop-blur-sm bg-black/40">
+              <CardContent className="flex flex-col items-center gap-6 pt-6">
+                <div className="h-20 w-20 rounded-full bg-primary/10 flex items-center justify-center border border-primary/20 shadow-[0_0_15px_rgba(255,215,0,0.1)]">
+                  <Calendar className="h-10 w-10 text-primary animate-pulse" />
+                </div>
+                <div className="space-y-3">
+                  <h3 className="font-orbitron text-3xl font-bold text-white tracking-wide">
+                    No Upcoming Events
+                  </h3>
+                  <p className="text-muted-foreground max-w-md mx-auto text-lg leading-relaxed">
+                    We are currently preparing for the next season of epic battles.
+                    Stay tuned for announcements regarding new tournaments and
+                    registration dates.
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+          )}
         </section>
 
         <section>
