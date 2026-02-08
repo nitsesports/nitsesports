@@ -59,6 +59,21 @@ const GROUP_B_DATA = [
   { team: "Rush in my blood", m1: { RP: 0, KP: 0 }, m2: { RP: 0, KP: 1 }, m3: { RP: 0, KP: 0 }, m4: { RP: 0, KP: 0 } },
 ];
 
+const FINALS_DATA = [
+  { team: "PSYKIC ESPORTS", group: "B", booyah: 2, placement: 47, kills: 72, total: 106 }, // m2, m4 booyah
+  { team: "NxR", group: "A", booyah: 1, placement: 30, kills: 62, total: 92 }, // m1 booyah
+  { team: "TEAM BABA", group: "A", booyah: 1, placement: 25, kills: 41, total: 66 }, // m3 booyah
+  { team: "TEAM X-TREME", group: "A", booyah: 0, placement: 18, kills: 32, total: 50 },
+  { team: "Eucalyptus Esports", group: "A", booyah: 0, placement: 23, kills: 23, total: 46 },
+  { team: "TEAM-EAGLE", group: "B", booyah: 0, placement: 20, kills: 20, total: 40 },
+  { team: "T._.AUS", group: "B", booyah: 0, placement: 21, kills: 6, total: 27 },
+  { team: "khiladi", group: "B", booyah: 0, placement: 14, kills: 13, total: 27 },
+  { team: "BlueChip United", group: "A", booyah: 0, placement: 9, kills: 14, total: 23 },
+  { team: "FALCON", group: "B", booyah: 0, placement: 10, kills: 12, total: 22 },
+  { team: "PUNJU SQUAD", group: "A", booyah: 0, placement: 10, kills: 12, total: 22 },
+  { team: "VELUMUDHRA", group: "B", booyah: 0, placement: 10, kills: 3, total: 13 },
+];
+
 const createGroupData = (data) => {
   return data.map((d, index) => {
     const matches = createEmptyFreeFireMatches();
@@ -91,7 +106,13 @@ const LeaderboardFreeFire = ({ eventId, game, canEdit }) => {
     A: createFreeFireGroupRows({ count: 12, startRank: 1, startTeamNumber: 1 }),
     B: createFreeFireGroupRows({ count: 12, startRank: 13, startTeamNumber: 13 }),
   }));
-  const [freefireFinalsRows, setFreefireFinalsRows] = useState([]);
+
+  const [freefireFinalsRows, setFreefireFinalsRows] = useState(() => {
+    return FINALS_DATA.map(r => ({
+      id: `finals-${r.team.replace(/\s+/g, '-')}`,
+      ...r
+    }));
+  });
 
   const [loadingPoints, setLoadingPoints] = useState(false);
   const [savingPoints, setSavingPoints] = useState(false);
@@ -115,43 +136,6 @@ const LeaderboardFreeFire = ({ eventId, game, canEdit }) => {
     });
     return withTotals.sort((a, b) => b.totalPoints - a.totalPoints);
   };
-
-  useEffect(() => {
-    const topA = getSortedGroupRows("A", freefireGroups).slice(0, 6);
-    const topB = getSortedGroupRows("B", freefireGroups).slice(0, 6);
-    const finalsTeams = [...topA, ...topB];
-
-    if (finalsTeams.length > 0) {
-      setFreefireFinalsRows((prevRows) => {
-        const newRows = finalsTeams.map((row) => ({
-          id: row.id ?? `finals-${row.team}`,
-          team: row.team,
-          group: "A",
-          booyah: 0,
-          placement: 0,
-          kills: 0,
-          total: 0,
-        }));
-
-        // Correct group assignment for display
-        newRows.forEach(nr => {
-          if (topB.some(b => b.team === nr.team)) nr.group = "B";
-          else nr.group = "A";
-        });
-
-        if (prevRows.length > 0) {
-          return newRows.map((newRow) => {
-            const prevRow = prevRows.find((p) => p.team === newRow.team);
-            if (prevRow) {
-              return { ...newRow, booyah: prevRow.booyah, placement: prevRow.placement, kills: prevRow.kills, total: prevRow.total };
-            }
-            return newRow;
-          });
-        }
-        return newRows;
-      });
-    }
-  }, [freefireGroups]);
 
   const updateFreefireMatchStat = useCallback(
     (group, originalIndex, matchKey, field, rawValue) => {
