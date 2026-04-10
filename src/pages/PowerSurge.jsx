@@ -56,7 +56,7 @@ const PowerSurge = () => {
         <div className="mx-auto rounded-xl overflow-hidden shadow-xl max-w-[1400px]">
           <div className="relative">
             <img
-              src="https://cdn.builder.io/api/v1/image/assets%2F778be80571eb4edd92c70f9fecab8fab%2Fb08a719e7a5748bd857bfb0fe32be8a0?format=webp&width=1600"
+              src="https://res.cloudinary.com/dboqkwvhv/image/upload/v1775813462/presents-2_xyjjrx.png"
               alt="Power Surge banner"
               className="w-full h-72 md:h-80 lg:h-96 object-cover brightness-75"
             />

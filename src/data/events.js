@@ -11,11 +11,11 @@ export const events = [
     title: "Power Surge",
     date: "April 11, 2026",
     startDate: "April 11, 2026",
-    endDate: "April 11, 2026",
+    endDate: "April 13, 2026",
     location: "Online",
     status: "upcoming",
     prize: "₹4,000",
-    image: "https://cdn.builder.io/api/v1/image/assets%2F778be80571eb4edd92c70f9fecab8fab%2F8efd1aa0a2864beeb58f62fed4425fdd?format=webp&width=1200",
+    image: "https://res.cloudinary.com/dboqkwvhv/image/upload/v1775813462/presents-2_xyjjrx.png",
     games: [
       {
         id: "bgmi",
