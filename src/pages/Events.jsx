@@ -101,9 +101,56 @@ const Events = () => {
     }
   };
 
-  const liveEvents = [];
-
   const upcomingEvents = [];
+
+  const liveEvents = [
+    {
+      id: "powersurge",
+      title: "Power Surge",
+      date: "April 11 - April 12, 2026",
+      location: "Online",
+      status: "upcoming",
+      prize: "₹4,000",
+      image:
+        "https://res.cloudinary.com/dboqkwvhv/image/upload/v1768466009/tempImage4DyI6t_ekzmcw.jpg",
+      teams: "TBD",
+      games: [
+        {
+          id: "ml",
+          name: "Mobile Legends",
+          image:
+            "https://res.cloudinary.com/dboqkwvhv/image/upload/v1761372633/ml_h8honj.jpg",
+          brochure: "https://gamma.app/docs/TECNOESIS-CUP-mlbb-h5oottx9xnwqnet",
+          prize: 750,
+        },
+        {
+          id: "bgmi",
+          name: "BGMI",
+          image:
+            "https://res.cloudinary.com/dboqkwvhv/image/upload/v1761372612/bgmi_lxvrnt.jpg",
+          brochure: "https://gamma.app/docs/VANGUARD-ARENA-i71v4n1968gk240",
+          prize: 1250,
+        },
+        {
+          id: "freefire",
+          name: "Free Fire",
+          image:
+            "https://res.cloudinary.com/dboqkwvhv/image/upload/v1761372612/bgmi_lxvrnt.jpg",
+          brochure: "https://gamma.app/docs/VANGUARD-ARENA-i71v4n1968gk240",
+          prize: 1250,
+        },
+        {
+          id: "clashroyale",
+          name: "Clash Royale",
+          image:
+            "https://res.cloudinary.com/dboqkwvhv/image/upload/v1761372612/bgmi_lxvrnt.jpg",
+          brochure: "https://gamma.app/docs/VANGUARD-ARENA-i71v4n1968gk240",
+          prize: 750,
+        },
+
+      ],
+    },
+  ];
 
   const pastEvents = [
     {
@@ -294,7 +341,7 @@ const Events = () => {
 
       <div className="container mx-auto px-4 pt-12">
         {/* Live Events Section */}
-        {/* <section className="mb-16">
+        {<section className="mb-16">
           <h2 className="font-orbitron text-3xl font-bold mb-8 flex items-center gap-2">
             <Trophy className="h-8 w-8 text-accent" />
             Live Events
@@ -338,7 +385,7 @@ const Events = () => {
                     </div>
                   </div>
                   <div>
-                    <Link to={`/events/vanguardarena`}>
+                    <Link to={`/events/powersurge`}>
                       <Button className="w-full font-orbitron">Details</Button>
                     </Link>
                   </div>
@@ -346,9 +393,9 @@ const Events = () => {
               </Card>
             ))}
           </div>
-        </section> */}
+        </section>}
 
-        {/* Upcoming Events Section */}
+        {/* Upcoming Events Section
         <section className="mb-16">
           <h2 className="font-orbitron text-3xl font-bold mb-8 flex items-center gap-2">
             <Trophy className="h-8 w-8 text-accent" />
@@ -414,17 +461,19 @@ const Events = () => {
                         </Button>
                       </a>
 
-                      <Button
-                        className="w-full font-orbitron"
-                        onClick={() =>
-                          handleUpcomingEventRegister(
-                            event.id,
-                            event.games[0].id
-                          )
-                        }
-                      >
-                        Register Now
-                      </Button>
+                      <div className="flex flex-col gap-2">
+                        {event.games?.map((game) => (
+                          <Button
+                            key={game.id}
+                            className="w-full font-orbitron text-sm"
+                            onClick={() =>
+                              handleUpcomingEventRegister(event.id, game.id)
+                            }
+                          >
+                            Register {game.name}
+                          </Button>
+                        ))}
+                      </div>
                     </div>
                   </CardContent>
                 </Card>
@@ -449,7 +498,7 @@ const Events = () => {
               </CardContent>
             </Card>
           )}
-        </section>
+        </section> */}
 
         <section>
           <h2 className="font-orbitron text-3xl font-bold mb-8 flex items-center gap-2">

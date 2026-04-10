@@ -27,6 +27,7 @@ import Dashboard from "./pages/Dashboard.jsx";
 import FreeFire from "./pages/FreeFire.jsx";
 
 import VanguardArena from "./pages/Gamingbonanza.jsx";
+import PowerSurge from "./pages/PowerSurge.jsx";
 import TeamRegistration from "./pages/TeamRegistration.jsx";
 import RegistrationConfirmation from "./pages/RegistrationConfirmation.jsx";
 import CashfreeReturn from "./pages/CashfreeReturn.jsx";
@@ -138,6 +139,7 @@ function MainRoutes() {
         <Route path="/events/:eventId/leaderboard/:gameId" element={<EventLeaderboard />} />
         <Route path="/events/lock-load" element={<LockLoad />} />
         <Route path="/events/vanguardarena" element={<VanguardArena />} />
+        <Route path="/events/powersurge" element={<PowerSurge />} />
         <Route path="/events/freefiretournament" element={<FreeFire />} />
         <Route path="/events/:eventId/schedule" element={<EventSchedule />} />
         <Route path="/schedule" element={<Schedule />} />

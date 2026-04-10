@@ -100,8 +100,12 @@ const TeamRegistration = () => {
     );
   }
 
-  const price =
+  let price =
     collegeType === "nits" ? gameInfo.price.nits : gameInfo.price.other;
+
+  if (eventId === "powersurge") {
+    price = 0;
+  }
 
   const handleInputChange = (field, value) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -131,10 +135,10 @@ const TeamRegistration = () => {
   const validateForm = () => {
     const emailIsNits = isNitsEmail(formData.email);
 
+    if (!emailIsNits) return "Registration is restricted to NIT Silchar students only.";
     if (!formData.email) return "Email is required";
     if (!formData.teamName) return "Team name is required";
     if (!formData.teamLeaderName) return "Team leader name is required";
-    if (!formData.teamLeaderContact) return "Team leader contact is required";
     if (!formData.teamLeaderContact) return "Team leader contact is required";
     if (!/^\d{10}$/.test(formData.teamLeaderContact))
       return "Team leader contact must be a valid 10-digit number";
@@ -326,12 +330,13 @@ const TeamRegistration = () => {
               </h3>
 
               <div>
-                <Label>Email ID *</Label>
+                <Label>Email ID (Locked to logged-in email) *</Label>
                 <Input
                   required
                   type="email"
                   value={formData.email}
-                  onChange={(e) => handleInputChange("email", e.target.value)}
+                  disabled
+                  className="bg-muted cursor-not-allowed text-muted-foreground"
                   placeholder="your@email.com"
                 />
               </div>

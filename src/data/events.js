@@ -3,8 +3,66 @@ import bgmiImg from "@/assets/bgmi.jpg";
 import mlImg from "@/assets/ml.jpg";
 import freefireImg from "@/assets/freefire.jpg";
 import codImg from "@/assets/cod.jpg";
+import clashroyaleImg from "@/assets/clash_royale.jpg";
 
 export const events = [
+  {
+    id: "powersurge",
+    title: "Power Surge",
+    date: "April 11, 2026",
+    startDate: "April 11, 2026",
+    endDate: "April 11, 2026",
+    location: "Online",
+    status: "upcoming",
+    prize: "₹4,000",
+    image: "https://cdn.builder.io/api/v1/image/assets%2F778be80571eb4edd92c70f9fecab8fab%2F8efd1aa0a2864beeb58f62fed4425fdd?format=webp&width=1200",
+    games: [
+      {
+        id: "bgmi",
+        name: "BGMI",
+        image: bgmiImg,
+        participants: "#",
+        gameHead: { name: "TBD", phone: "TBD" },
+        format: "points",
+        rankings: [],
+        prize: 1250,
+        brochure: "#",
+      },
+      {
+        id: "ml",
+        name: "Mobile Legends",
+        image: mlImg,
+        participants: "#",
+        gameHead: { name: "TBD", phone: "TBD" },
+        format: "points",
+        rankings: [],
+        prize: 750,
+        brochure: "#",
+      },
+      {
+        id: "freefire",
+        name: "Free Fire",
+        image: freefireImg,
+        participants: "#",
+        gameHead: { name: "TBD", phone: "TBD" },
+        format: "points",
+        rankings: [],
+        prize: 1250,
+        brochure: "#",
+      },
+      {
+        id: "clashroyale",
+        name: "Clash Royale",
+        image: clashroyaleImg,
+        participants: "#",
+        gameHead: { name: "TBD", phone: "TBD" },
+        format: "points",
+        rankings: [],
+        prize: 750,
+        brochure: "#",
+      }
+    ]
+  },
   {
     id: "vanguardarena",
     title: "Vanguard Arena",
