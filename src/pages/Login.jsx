@@ -273,7 +273,7 @@ navigate(target, { replace: true });
                 )}
               </Button>
 
-              <Button
+              {/* <Button
                 variant="outline"
                 className="w-full"
                 onClick={onRegister}
@@ -289,7 +289,7 @@ navigate(target, { replace: true });
                 ) : (
                   "Sign Up"
                 )}
-              </Button>
+              </Button> */}
             </div>
 
             {/* Google Sign In */}

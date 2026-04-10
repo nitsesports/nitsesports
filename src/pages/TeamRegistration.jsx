@@ -64,7 +64,7 @@ const TeamRegistration = () => {
   // Check if email is NITS student
   const isNitsEmail = (email) => {
     const nitsEmailPattern =
-      /^[a-zA-Z0-9_]+_(ug|pg)_\d{2}@[a-zA-Z0-9]+\.nits\.ac\.in$/;
+      /^[a-zA-Z0-9_]+_(ug|pg)_\d{2}@[ee]+\.nits\.ac\.in$/;
     return nitsEmailPattern.test(email);
   };
 
@@ -135,7 +135,7 @@ const TeamRegistration = () => {
   const validateForm = () => {
     const emailIsNits = isNitsEmail(formData.email);
 
-    if (!emailIsNits) return "Registration is restricted to NIT Silchar students only.";
+    if (!emailIsNits) return "Registration is restricted to NIT Silchar Electrical Students only.";
     if (!formData.email) return "Email is required";
     if (!formData.teamName) return "Team name is required";
     if (!formData.teamLeaderName) return "Team leader name is required";
