@@ -7,9 +7,11 @@ import { supabase } from "@/lib/supabase.js";
 import { CheckCircle2 } from "lucide-react";
 
 const WHATSAPP_GROUP_LINKS = {
-  bgmi: "https://chat.whatsapp.com/JT1LmygDBmcJUODP2DhhuS",
+  bgmi: "https://chat.whatsapp.com/F80Z8XOZaBQ32YolSNNVam?mode=gi_t",
   rc: "https://chat.whatsapp.com/D1oKopa4iM61eEPIj83owa",
-  
+  ml: "https://chat.whatsapp.com/IEaPhVlcmesF8irgW1qwbv?mode=gi_t",
+  freefire: "https://chat.whatsapp.com/GfC91d0B0CfKAciLozV1Zr?mode=gi_t",
+  clashroyale: "https://chat.whatsapp.com/GgOUeIZPwZ7GaxORQ18js0?mode=gi_t",
 };
 
 const RegistrationConfirmation = () => {
