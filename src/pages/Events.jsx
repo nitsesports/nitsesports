@@ -107,12 +107,12 @@ const Events = () => {
     {
       id: "powersurge",
       title: "Power Surge",
-      date: "April 11 - April 12, 2026",
+      date: "April 11 - April 13, 2026",
       location: "Online",
       status: "upcoming",
       prize: "₹4,000",
       image:
-        "https://res.cloudinary.com/dboqkwvhv/image/upload/v1768466009/tempImage4DyI6t_ekzmcw.jpg",
+        "https://res.cloudinary.com/dboqkwvhv/image/upload/v1775813462/presents-2_xyjjrx.png",
       teams: "TBD",
       games: [
         {
@@ -120,7 +120,7 @@ const Events = () => {
           name: "Mobile Legends",
           image:
             "https://res.cloudinary.com/dboqkwvhv/image/upload/v1761372633/ml_h8honj.jpg",
-          brochure: "https://gamma.app/docs/TECNOESIS-CUP-mlbb-h5oottx9xnwqnet",
+          brochure: "#",
           prize: 750,
         },
         {
@@ -128,7 +128,7 @@ const Events = () => {
           name: "BGMI",
           image:
             "https://res.cloudinary.com/dboqkwvhv/image/upload/v1761372612/bgmi_lxvrnt.jpg",
-          brochure: "https://gamma.app/docs/VANGUARD-ARENA-i71v4n1968gk240",
+          brochure: "#",
           prize: 1250,
         },
         {
@@ -136,7 +136,7 @@ const Events = () => {
           name: "Free Fire",
           image:
             "https://res.cloudinary.com/dboqkwvhv/image/upload/v1761372612/bgmi_lxvrnt.jpg",
-          brochure: "https://gamma.app/docs/VANGUARD-ARENA-i71v4n1968gk240",
+          brochure: "#",
           prize: 1250,
         },
         {
@@ -144,7 +144,7 @@ const Events = () => {
           name: "Clash Royale",
           image:
             "https://res.cloudinary.com/dboqkwvhv/image/upload/v1761372612/bgmi_lxvrnt.jpg",
-          brochure: "https://gamma.app/docs/VANGUARD-ARENA-i71v4n1968gk240",
+          brochure: "#",
           prize: 750,
         },
 
