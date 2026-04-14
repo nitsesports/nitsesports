@@ -396,8 +396,8 @@ const Events = () => {
           </div>
         </section> */}
 
-        {/* Upcoming Events Section
-        <section className="mb-16">
+        {/* Upcoming Events Section*/
+          { <section className="mb-16">
           <h2 className="font-orbitron text-3xl font-bold mb-8 flex items-center gap-2">
             <Trophy className="h-8 w-8 text-accent" />
             Upcoming Events
@@ -499,7 +499,7 @@ const Events = () => {
               </CardContent>
             </Card>
           )}
-        </section> */}
+        </section> }
 
         <section>
           <h2 className="font-orbitron text-3xl font-bold mb-8 flex items-center gap-2">
