@@ -95,21 +95,14 @@ const PowerSurge = () => {
                       View Details
                     </Button>
                   </a>
-                  {CLOSED_GAMES.has(g.id) ? (
+                  
                     <Button
                       className="w-full font-orbitron bg-purple-600 hover:bg-purple-700"
                       onClick={() => navigate(`/events/powersurge/leaderboard/${g.id}`)}
                     >
                       View Leaderboard
                     </Button>
-                  ) : (
-                    <Button
-                      className="w-full font-orbitron"
-                      onClick={() => handleRegisterClick(g)}
-                    >
-                      Register Team
-                    </Button>
-                  )}
+                  ) 
                 </div>
               </CardContent>
             </Card>
