@@ -104,12 +104,16 @@ const Events = () => {
   const upcomingEvents = [];
 
   const liveEvents = [
+    
+  ];
+
+  const pastEvents = [
     {
       id: "powersurge",
       title: "Power Surge",
       date: "April 11 - April 13, 2026",
       location: "Online",
-      status: "upcoming",
+      status: "past",
       prize: "₹4,000",
       image:
         "https://res.cloudinary.com/dboqkwvhv/image/upload/v1775813462/presents-2_xyjjrx.png",
@@ -150,9 +154,6 @@ const Events = () => {
 
       ],
     },
-  ];
-
-  const pastEvents = [
     {
       id: "freefiretournament",
       title: "Freefire Tournament",
@@ -341,7 +342,7 @@ const Events = () => {
 
       <div className="container mx-auto px-4 pt-12">
         {/* Live Events Section */}
-        {<section className="mb-16">
+        {/* <section className="mb-16"> 
           <h2 className="font-orbitron text-3xl font-bold mb-8 flex items-center gap-2">
             <Trophy className="h-8 w-8 text-accent" />
             Live Events
@@ -393,7 +394,7 @@ const Events = () => {
               </Card>
             ))}
           </div>
-        </section>}
+        </section> */}
 
         {/* Upcoming Events Section
         <section className="mb-16">
