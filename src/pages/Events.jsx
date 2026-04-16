@@ -101,10 +101,23 @@ const Events = () => {
     }
   };
 
-  const upcomingEvents = [];
+  const upcomingEvents = [
+    {
+      id: "honorofkings",
+      title: "Honor of Kings",
+      date: "April 18, 2026",
+      location: "GYMKHANA PARK , NIT SILCHAR",
+      status: "upcoming",
+      prize: "Merchandise",
+      image:
+        "https://play-lh.googleusercontent.com/0FNzm3zbHP4a-pHH4fHThryQF2zpstnEhf1g6GHEAZmcX7K2c46BzkyavQtoNaIDBaqUBRRSjPiMNvQlLho0Qw=w1052-h592-rw",
+      teams: "TBD",
+    },
+
+  ];
 
   const liveEvents = [
-    
+
   ];
 
   const pastEvents = [
@@ -117,7 +130,7 @@ const Events = () => {
       prize: "₹4,000",
       image:
         "https://res.cloudinary.com/dboqkwvhv/image/upload/v1775813462/presents-2_xyjjrx.png",
-      teams: "TBD",
+      teams: "50+",
       games: [
         {
           id: "ml",
@@ -397,7 +410,7 @@ const Events = () => {
         </section> */}
 
         {/* Upcoming Events Section*/}
-          { <section className="mb-16">
+        {<section className="mb-16">
           <h2 className="font-orbitron text-3xl font-bold mb-8 flex items-center gap-2">
             <Trophy className="h-8 w-8 text-accent" />
             Upcoming Events
@@ -450,7 +463,7 @@ const Events = () => {
                     </div>
                     <div>
                       <a
-                        href="https://drive.google.com/file/d/1a3fib_qy2_43igEEjJhl44ZEG7jouOE5/view"
+                        href="https://forms.gle/soiT1gbDQACagHEP7"
                         target="_blank"
                         rel="noopener noreferrer"
                       >
@@ -458,7 +471,7 @@ const Events = () => {
                           variant="outline"
                           className="w-full font-orbitron mb-2"
                         >
-                          View Details
+                          Register Now
                         </Button>
                       </a>
 
@@ -499,7 +512,7 @@ const Events = () => {
               </CardContent>
             </Card>
           )}
-        </section> }
+        </section>}
 
         <section>
           <h2 className="font-orbitron text-3xl font-bold mb-8 flex items-center gap-2">
