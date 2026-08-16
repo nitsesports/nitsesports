@@ -185,7 +185,7 @@ Then open [http://localhost:5173](http://localhost:5173)
 
 For queries, suggestions, or collaborations:
 
-📩 **Email:** esports.nits@gmail.com  
+📩 **Email:**  esports.nits@gmail.com  
 🌐 **Website:** [nitsesports.in](https://nitsesports.in)  
 🧑‍💻 **GitHub Org:** [github.com/nitsesports](https://github.com/nitsesports)
 
