@@ -2,7 +2,7 @@
 
 Welcome to the official repository of **NIT Silchar Esports Club** 🏆  
 This is the home for our website, events, and gaming community.  
-Join us to compete, contribute, and create something epic together! 💪  
+Join us to compete, contribute, and create something epic together!  
 
 ---
 
