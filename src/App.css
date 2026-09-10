@@ -1,0 +1,66 @@
+@keyframes scrollLine {
+  0% {
+    transform: translateY(-100%);
+    opacity: 0;
+  }
+
+  30% {
+    opacity: 1;
+  }
+
+  70% {
+    opacity: 1;
+  }
+
+  100% {
+    transform: translateY(220%);
+    opacity: 0;
+  }
+}
+
+
+@import url('https://fonts.googleapis.com/css2?family=Oxanium:wght@400;500;600;700;800&family=Rajdhani:wght@400;500;600;700&display=swap');
+
+/* =====================================
+   SCROLL SECTION 2
+===================================== */
+
+@keyframes galleryScroll {
+  from {
+    transform: translateX(0);
+  }
+
+  to {
+    transform: translateX(calc(-50% - 10px));
+  }
+}
+
+.animate-galleryScroll {
+  animation: galleryScroll 28s linear infinite;
+  will-change: transform;
+}
+
+
+/* CHARACTER VIDEO */
+
+@keyframes characterZoom {
+  0% {
+    transform: scale(1);
+  }
+
+  100% {
+    transform: scale(1.12);
+  }
+}
+
+.animate-characterZoom {
+  animation: characterZoom 14s ease-in-out infinite alternate;
+  transform-origin: center center;
+}
+
+
+/* PAUSE GALLERY ON HOVER */
+
+.animate-galleryScroll:hover {
+  animation-play-state: paused;
+}

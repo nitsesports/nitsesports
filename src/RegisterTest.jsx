@@ -1,0 +1,58 @@
+import { useState } from "react";
+import { supabase } from "./supabaseClient";
+
+function RegisterTest() {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [message, setMessage] = useState("");
+
+  const handleRegister = async (e) => {
+    e.preventDefault();
+
+    setMessage("Creating account...");
+
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+    });
+
+    if (error) {
+      setMessage(error.message);
+      console.error(error);
+      return;
+    }
+
+    console.log("Registration data:", data);
+    setMessage("Registration successful! Check your email.");
+  };
+
+  return (
+    <div>
+      <h2>Test Registration</h2>
+
+      <form onSubmit={handleRegister}>
+        <input
+          type="email"
+          placeholder="Email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+        />
+
+        <input
+          type="password"
+          placeholder="Password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+        />
+
+        <button type="submit">
+          Register
+        </button>
+      </form>
+
+      <p>{message}</p>
+    </div>
+  );
+}
+
+export default RegisterTest;
