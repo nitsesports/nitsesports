@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
+import * as THREE from "three";
 import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "../supabaseClient";
-import registerVideo from "../assets/v8.mp4";
 
 const Register = () => {
   const navigate = useNavigate();
@@ -18,6 +18,243 @@ const Register = () => {
 
   const [loading, setLoading] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
+
+  /* =====================================================
+     MERCHENDISE STARFIELD BACKGROUND + SCROLL EFFECT
+  ===================================================== */
+
+  useEffect(() => {
+    const canvas = document.createElement("canvas");
+    canvas.className = "merch-starfield-canvas";
+    document.body.appendChild(canvas);
+
+    const scene = new THREE.Scene();
+    scene.fog = new THREE.FogExp2(0x000000, 0.018);
+
+    const camera = new THREE.PerspectiveCamera(
+      45,
+      window.innerWidth / window.innerHeight,
+      0.1,
+      100
+    );
+    camera.position.z = 9;
+
+    const renderer = new THREE.WebGLRenderer({
+      canvas,
+      antialias: false,
+      alpha: true,
+      powerPreference: "high-performance",
+    });
+
+    renderer.setPixelRatio(
+      Math.min(window.devicePixelRatio || 1, 1.25)
+    );
+    renderer.setSize(window.innerWidth, window.innerHeight, false);
+    renderer.setClearColor(0x000000, 0);
+    renderer.toneMappingExposure = 1.15;
+
+    const particleCount = 1400;
+    const positions = new Float32Array(particleCount * 3);
+    const particleSpeeds = new Float32Array(particleCount);
+
+    for (let i = 0; i < particleCount; i++) {
+      const index = i * 3;
+
+      const radius =
+        0.2 + Math.pow(Math.random(), 0.52) * 11.5;
+
+      const angle = Math.random() * Math.PI * 2;
+
+      positions[index] =
+        Math.cos(angle) * radius;
+
+      positions[index + 1] =
+        Math.sin(angle) * radius;
+
+      positions[index + 2] =
+        -10 + Math.random() * 12;
+
+      particleSpeeds[i] =
+        0.008 + Math.random() * 0.035;
+    }
+
+    const geometry = new THREE.BufferGeometry();
+    geometry.setAttribute(
+      "position",
+      new THREE.BufferAttribute(positions, 3)
+    );
+
+    const material = new THREE.PointsMaterial({
+      color: 0xffffff,
+      size: 0.085,
+      transparent: true,
+      opacity: 1,
+      depthWrite: false,
+      blending: THREE.AdditiveBlending,
+    });
+
+    const particles = new THREE.Points(
+      geometry,
+      material
+    );
+
+    scene.add(particles);
+
+    let mouseX = 0;
+    let mouseY = 0;
+    let smoothX = 0;
+    let smoothY = 0;
+
+    let scrollTarget = 0;
+    let scrollCurrent = 0;
+    let lastScroll = window.scrollY;
+
+    const handleScroll = () => {
+      const current = window.scrollY;
+      const delta = current - lastScroll;
+
+      scrollTarget = THREE.MathUtils.clamp(
+        scrollTarget + delta * 0.02,
+        -3.5,
+        9
+      );
+
+      lastScroll = current;
+    };
+
+    const handleMouseMove = (event) => {
+      mouseX =
+        (event.clientX / window.innerWidth - 0.5) * 2;
+
+      mouseY =
+        -((event.clientY / window.innerHeight - 0.5) * 2);
+    };
+
+    const handleResize = () => {
+      camera.aspect =
+        window.innerWidth / window.innerHeight;
+
+      camera.updateProjectionMatrix();
+
+      renderer.setSize(
+        window.innerWidth,
+        window.innerHeight,
+        false
+      );
+
+      renderer.setPixelRatio(
+        Math.min(window.devicePixelRatio || 1, 1.25)
+      );
+    };
+
+    window.addEventListener("scroll", handleScroll, {
+      passive: true,
+    });
+
+    window.addEventListener(
+      "mousemove",
+      handleMouseMove,
+      { passive: true }
+    );
+
+    window.addEventListener(
+      "resize",
+      handleResize
+    );
+
+    const clock = new THREE.Clock();
+    let time = 0;
+    let animationFrame;
+
+    const animate = () => {
+      animationFrame = requestAnimationFrame(animate);
+
+      const dt = Math.min(
+        clock.getDelta(),
+        0.033
+      );
+
+      time += dt;
+
+      const damping = (speed) =>
+        1 - Math.exp(-speed * dt);
+
+      smoothX +=
+        (mouseX - smoothX) * damping(9);
+
+      smoothY +=
+        (mouseY - smoothY) * damping(9);
+
+      scrollCurrent +=
+        (scrollTarget - scrollCurrent) *
+        damping(5.5);
+
+      const cameraZ =
+        9 - scrollCurrent * 1.35;
+
+      camera.position.z +=
+        (cameraZ - camera.position.z) *
+        damping(6);
+
+      camera.position.x +=
+        (smoothX * 0.18 - camera.position.x) *
+        damping(4);
+
+      camera.position.y +=
+        (smoothY * 0.12 - camera.position.y) *
+        damping(4);
+
+      for (let i = 0; i < particleCount; i++) {
+        const index = i * 3;
+
+        let z =
+          positions[index + 2] +
+          particleSpeeds[i];
+
+        if (z > 3) z = -10;
+
+        positions[index + 2] = z;
+      }
+
+      geometry.attributes.position.needsUpdate = true;
+
+      particles.rotation.z =
+        time * 0.025;
+
+      renderer.render(
+        scene,
+        camera
+      );
+    };
+
+    animate();
+
+    return () => {
+      cancelAnimationFrame(animationFrame);
+
+      window.removeEventListener(
+        "scroll",
+        handleScroll
+      );
+
+      window.removeEventListener(
+        "mousemove",
+        handleMouseMove
+      );
+
+      window.removeEventListener(
+        "resize",
+        handleResize
+      );
+
+      geometry.dispose();
+      material.dispose();
+      renderer.dispose();
+
+      canvas.remove();
+    };
+  }, []);
+
 
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
@@ -340,6 +577,18 @@ const Register = () => {
           border-color: rgba(255,255,255,.18) !important;
         }
 
+        .merch-starfield-canvas {
+          position: fixed !important;
+          inset: 0 !important;
+          display: block;
+          width: 100vw !important;
+          height: 100vh !important;
+          min-width: 100vw !important;
+          min-height: 100vh !important;
+          z-index: 0 !important;
+          pointer-events: none !important;
+        }
+
         html { overflow-y: auto; }
 
         body {
@@ -350,62 +599,21 @@ const Register = () => {
       `}</style>
 
       {/* =====================================================
-          BACKGROUND VIDEO
-      ===================================================== */}
-
-      <video
-        src={registerVideo}
-        autoPlay
-        loop
-        muted
-        playsInline
-        preload="auto"
-        className="
-          fixed
-          inset-0
-          z-0
-          h-full
-          w-full
-          object-cover
-        "
-      />
-
-      {/* =====================================================
-          DARK SAMURAI CINEMATIC VEIL
+          MERCHENDISE GRID + AMBIENT GLOWS
       ===================================================== */}
 
       <div
-        className="
-          pointer-events-none
-          fixed
-          inset-0
-          z-[1]
-          bg-black/80
-        "
+        className="pointer-events-none fixed inset-0 z-[2] opacity-[.055]"
+        style={{
+          backgroundImage:
+            "linear-gradient(rgba(255,255,255,.10) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.07) 1px, transparent 1px)",
+          backgroundSize: "80px 80px",
+        }}
       />
 
-      <div
-        className="
-          pointer-events-none
-          fixed
-          inset-0
-          z-[2]
-          bg-gradient-to-b
-          from-black/25
-          via-black/15
-          to-black/85
-        "
-      />
+      <div className="pointer-events-none fixed left-[8%] top-[18%] z-[2] h-[320px] w-[420px] rounded-full bg-white/[.075] blur-[120px]" />
 
-      <div
-        className="
-          pointer-events-none
-          fixed
-          inset-0
-          z-[2]
-          bg-[radial-gradient(circle_at_50%_12%,rgba(255,255,255,.07),transparent_40%)]
-        "
-      />
+      <div className="pointer-events-none fixed bottom-[5%] right-[7%] z-[2] h-[340px] w-[430px] rounded-full bg-white/[.055] blur-[130px]" />
 
       {/* =====================================================
           MAIN

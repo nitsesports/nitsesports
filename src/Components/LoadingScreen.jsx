@@ -5,24 +5,143 @@ const LoadingScreen = ({ onLoadingComplete }) => {
   const [progress, setProgress] = useState(0);
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      setProgress((prev) => {
-        if (prev >= 100) {
-          clearInterval(interval);
+    let cancelled = false;
+    let progressTimer = null;
+    let readyTimer = null;
 
-          // Give the 100% state a tiny moment to display
-          setTimeout(() => {
-            onLoadingComplete();
-          }, 200);
+    /*
+      FAST CRITICAL-READY LOADER
+      --------------------------
+      The old loader waited for every image/video + 90 Three.js frames +
+      extra delays. That made the website feel unnecessarily slow.
 
-          return 100;
+      This version waits only for the important first-paint pieces:
+      - DOM/window ready
+      - critical above-the-fold images
+      - fonts are allowed to settle in the background (never blocking)
+      - a few real browser frames so the hero/layout can paint
+
+      Non-critical assets continue loading after the website is revealed.
+    */
+
+    const nextFrame = () =>
+      new Promise((resolve) => requestAnimationFrame(resolve));
+
+    const waitForImage = (img) =>
+      new Promise((resolve) => {
+        if (img.complete) {
+          if (typeof img.decode === "function") {
+            img.decode().catch(() => {}).finally(resolve);
+          } else {
+            resolve();
+          }
+          return;
         }
 
-        return prev + 1;
+        const done = () => {
+          img.removeEventListener("load", done);
+          img.removeEventListener("error", done);
+          resolve();
+        };
+
+        img.addEventListener("load", done, { once: true });
+        img.addEventListener("error", done, { once: true });
+
+        // Never let one slow/broken image hold the whole website.
+        setTimeout(done, 1800);
+      });
+
+    const waitForCriticalAssets = async () => {
+      // Do not block on document load forever.
+      if (document.readyState !== "complete") {
+        await Promise.race([
+          new Promise((resolve) =>
+            window.addEventListener("load", resolve, { once: true })
+          ),
+          new Promise((resolve) => setTimeout(resolve, 1800)),
+        ]);
+      }
+
+      if (cancelled) return;
+
+      setProgress(35);
+
+      // Only wait for images that are actually relevant to the first viewport.
+      const viewportImages = Array.from(document.images || []).filter((img) => {
+        const rect = img.getBoundingClientRect();
+        return (
+          rect.width > 0 &&
+          rect.height > 0 &&
+          rect.top < window.innerHeight * 1.15 &&
+          rect.bottom > -100
+        );
+      });
+
+      // Cap the number of blocking images so a large gallery never blocks startup.
+      const criticalImages = viewportImages.slice(0, 8);
+
+      await Promise.all(criticalImages.map(waitForImage));
+
+      if (cancelled) return;
+      setProgress(68);
+
+      // Fonts should not hold the loader hostage.
+      // Let the browser finish them naturally after reveal.
+      if (document.fonts?.ready) {
+        document.fonts.ready.catch(() => {});
+      }
+
+      // Give React + Three.js a little more time to settle.
+      await nextFrame();
+      await nextFrame();
+      await nextFrame();
+      await nextFrame();
+      await nextFrame();
+      await nextFrame();
+      await nextFrame();
+      await nextFrame();
+
+      if (cancelled) return;
+
+      setProgress(94);
+
+      // Small final paint window for a smoother reveal.
+      await new Promise((resolve) => setTimeout(resolve, 220));
+      await nextFrame();
+
+      if (cancelled) return;
+
+      setProgress(100);
+
+      // Very short ready-state pause instead of the old 500ms delay.
+      readyTimer = setTimeout(() => {
+        if (!cancelled) onLoadingComplete();
+      }, 260);
+    };
+
+    // Fast visual progress; real readiness controls the final 100%.
+    progressTimer = setInterval(() => {
+      setProgress((prev) => {
+        if (prev >= 91) return prev;
+
+        const step =
+          prev < 35 ? 4 :
+          prev < 65 ? 3 :
+          prev < 85 ? 2 :
+          1;
+
+        return Math.min(91, prev + step);
       });
     }, 40);
 
-    return () => clearInterval(interval);
+    waitForCriticalAssets();
+
+    return () => {
+      cancelled = true;
+
+      if (progressTimer) clearInterval(progressTimer);
+      if (readyTimer) clearTimeout(readyTimer);
+    };
   }, [onLoadingComplete]);
 
   return (
@@ -40,12 +159,6 @@ const LoadingScreen = ({ onLoadingComplete }) => {
         muted
         playsInline
       />
-
-      {/* Dark cinematic overlay */}
-      <div className="absolute inset-0 bg-black/35" />
-
-      {/* Purple/blue color atmosphere */}
-      <div className="absolute inset-0 bg-linear-to-b from-purple-950/20 via-transparent to-black/50" />
 
       {/* =====================================================
           SCREEN SCANLINES
@@ -243,8 +356,7 @@ const LoadingScreen = ({ onLoadingComplete }) => {
               rounded-full
               border
               border-fuchsia-400/30
-              bg-black/20
-              backdrop-blur-[2px]
+              bg-black/10
               shadow-[inset_0_0_30px_rgba(217,70,239,0.08)]
             "
           />

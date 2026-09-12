@@ -1,8 +1,199 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import merchBg from "../assets/i3.png";
+import { useEffect } from "react";
+import * as THREE from "three";
 
 const Merchendise = () => {
+
+  // =========================================================
+  // THREE.JS STAR / PARTICLE FIELD
+  // No portal — only the cinematic moving dots from the Hero.
+  // The field is fixed to the viewport and reacts continuously
+  // to scroll + mouse movement across this entire page.
+  // =========================================================
+  useEffect(() => {
+    const canvas = document.createElement("canvas");
+    canvas.className = "merch-starfield-canvas";
+    document.body.appendChild(canvas);
+
+    const scene = new THREE.Scene();
+    scene.fog = new THREE.FogExp2(0x000000, 0.018);
+
+    const camera = new THREE.PerspectiveCamera(
+      45,
+      window.innerWidth / window.innerHeight,
+      0.1,
+      100
+    );
+
+    camera.position.z = 9;
+
+    const renderer = new THREE.WebGLRenderer({
+      canvas,
+      antialias: false,
+      alpha: true,
+      powerPreference: "high-performance",
+    });
+
+    // Same render quality as Hero — intentionally capped for smoothness.
+    const getPixelRatio = () =>
+      Math.min(window.devicePixelRatio || 1, 1.25);
+
+    renderer.setPixelRatio(getPixelRatio());
+    renderer.setSize(window.innerWidth, window.innerHeight, false);
+    renderer.setClearColor(0x000000, 0);
+    renderer.toneMappingExposure = 1.15;
+
+    // ---------------------------------------------------------
+    // PARTICLE TUNNEL — EXACT HERO STAR PROPERTIES
+    // ---------------------------------------------------------
+
+    const particleCount = 1400;
+    const positions = new Float32Array(particleCount * 3);
+    const particleSpeeds = new Float32Array(particleCount);
+
+    for (let i = 0; i < particleCount; i++) {
+      const a = Math.random() * Math.PI * 2;
+      const r = 0.2 + Math.pow(Math.random(), 0.52) * 11.5;
+      const z = -10 + Math.random() * 12;
+
+      particleSpeeds[i] = 0.008 + Math.random() * 0.035;
+      positions[i * 3] = Math.cos(a) * r;
+      positions[i * 3 + 1] = Math.sin(a) * r;
+      positions[i * 3 + 2] = z;
+    }
+
+    const particleGeometry = new THREE.BufferGeometry();
+    particleGeometry.setAttribute(
+      "position",
+      new THREE.BufferAttribute(positions, 3)
+    );
+    const particlePositionAttribute = particleGeometry.attributes.position;
+
+    const particles = new THREE.Points(
+      particleGeometry,
+      new THREE.PointsMaterial({
+        color: 0xffffff,
+        size: 0.085,
+        transparent: true,
+        opacity: 1.0,
+        depthWrite: false,
+        blending: THREE.AdditiveBlending,
+      })
+    );
+
+    scene.add(particles);
+
+    // ---------------------------------------------------------
+    // MOUSE PARALLAX — SAME AS HERO
+    // ---------------------------------------------------------
+
+    let mouseX = 0;
+    let mouseY = 0;
+    let smoothX = 0;
+    let smoothY = 0;
+
+    const handleMouseMove = (event) => {
+      mouseX = (event.clientX / window.innerWidth - 0.5) * 2;
+      mouseY = -((event.clientY / window.innerHeight - 0.5) * 2);
+    };
+
+    window.addEventListener("mousemove", handleMouseMove, { passive: true });
+
+    let scrollTarget = 0;
+    let scrollCurrent = 0;
+    let lastScroll = window.scrollY;
+
+    const handleScroll = () => {
+      const current = window.scrollY;
+      const delta = current - lastScroll;
+
+      scrollTarget = THREE.MathUtils.clamp(
+        scrollTarget + delta * 0.02,
+        -3.5,
+        9
+      );
+
+      lastScroll = current;
+    };
+
+    const handleResize = () => {
+      const width = window.innerWidth;
+      const height = window.innerHeight;
+
+      camera.aspect = width / height;
+      camera.updateProjectionMatrix();
+
+      renderer.setPixelRatio(getPixelRatio());
+      renderer.setSize(width, height, false);
+    };
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    window.addEventListener("resize", handleResize);
+    handleResize();
+
+    const clock = new THREE.Clock();
+    let animationFrame;
+    let time = 0;
+
+    const animate = () => {
+      animationFrame = requestAnimationFrame(animate);
+
+      const dt = Math.min(clock.getDelta(), 0.033);
+      time += dt;
+
+      const damping = (speed) => 1 - Math.exp(-speed * dt);
+
+      // Same smooth mouse interpolation as Hero.
+      smoothX += (mouseX - smoothX) * damping(9);
+      smoothY += (mouseY - smoothY) * damping(9);
+
+      scrollCurrent +=
+        (scrollTarget - scrollCurrent) * damping(5.5);
+
+      const cameraZ = 9 - scrollCurrent * 1.35;
+      camera.position.z +=
+        (cameraZ - camera.position.z) * damping(6);
+
+      // Exact Hero forward star movement.
+      for (let i = 0; i < particleCount; i++) {
+        const index = i * 3;
+        let z = positions[index + 2] + particleSpeeds[i];
+
+        if (z > 3) z = -10;
+
+        positions[index + 2] = z;
+      }
+
+      // Exact Hero star-field rotation/parallax.
+      particles.rotation.z = time * 0.025;
+
+      particlePositionAttribute.needsUpdate = true;
+
+      if (!document.hidden) {
+        renderer.render(scene, camera);
+      }
+    };
+
+    animate();
+
+    return () => {
+      cancelAnimationFrame(animationFrame);
+
+      window.removeEventListener("mousemove", handleMouseMove);
+      window.removeEventListener("scroll", handleScroll);
+      window.removeEventListener("resize", handleResize);
+
+      particleGeometry.dispose();
+      particles.material.dispose();
+      renderer.dispose();
+
+      if (canvas.parentNode === document.body) {
+        document.body.removeChild(canvas);
+      }
+    };
+  }, []);
+
   return (
     <div className="relative min-h-screen w-full overflow-hidden bg-black text-white">
       <style>{`
@@ -34,6 +225,18 @@ const Merchendise = () => {
           font-family: 'Inter', sans-serif;
         }
 
+        .merch-starfield-canvas {
+          position: fixed !important;
+          inset: 0 !important;
+          display: block;
+          width: 100vw !important;
+          height: 100vh !important;
+          min-width: 100vw !important;
+          min-height: 100vh !important;
+          z-index: 0 !important;
+          pointer-events: none !important;
+        }
+
         /* ==================================================
            SAME CINEMATIC ENTRANCE LANGUAGE AS HERO
         ================================================== */
@@ -56,11 +259,11 @@ const Merchendise = () => {
 
         @keyframes samuraiGlow {
           0%, 100% {
-            opacity: .24;
+            opacity: .38;
             transform: translate3d(0, 0, 0) scale(1);
           }
           50% {
-            opacity: .48;
+            opacity: .72;
             transform: translate3d(0, -10px, 0) scale(1.04);
           }
         }
@@ -243,29 +446,13 @@ const Merchendise = () => {
       `}</style>
 
       {/* ==================================================
-          BACKGROUND — DARK SAMURAI ATMOSPHERE
+          THREE.JS STARFIELD — FULL PAGE BACKGROUND
+          The old image background has been removed.
+          Only the animated Three.js dots remain underneath
+          the entire page.
       ================================================== */}
-      <div className="fixed inset-0 z-0 overflow-hidden">
-        <img
-          src={merchBg}
-          alt=""
-          aria-hidden="true"
-          className="absolute inset-0 h-full w-full"
-          style={{
-            objectFit: "cover",
-            objectPosition: "center",
-            filter: "grayscale(1) saturate(0) contrast(1.08) brightness(.72)",
-          }}
-        />
-      </div>
 
-      <div
-        className="fixed inset-0 z-[1] pointer-events-none"
-        style={{
-          background:
-            "linear-gradient(to bottom, rgba(0,0,0,.48), rgba(0,0,0,.58) 42%, rgba(0,0,0,.88) 100%)",
-        }}
-      />
+
 
       {/* CINEMATIC GRID */}
       <div
@@ -278,17 +465,11 @@ const Merchendise = () => {
       />
 
       {/* AMBIENT LIGHT */}
-      <div className="ambient-glow pointer-events-none fixed left-[8%] top-[18%] z-[2] h-[320px] w-[420px] rounded-full bg-white/[.035] blur-[140px]" />
-      <div className="ambient-glow pointer-events-none fixed bottom-[5%] right-[7%] z-[2] h-[340px] w-[430px] rounded-full bg-white/[.025] blur-[150px]" />
+      <div className="ambient-glow pointer-events-none fixed left-[8%] top-[18%] z-[2] h-[320px] w-[420px] rounded-full bg-white/[.075] blur-[120px]" />
+      <div className="ambient-glow pointer-events-none fixed bottom-[5%] right-[7%] z-[2] h-[340px] w-[430px] rounded-full bg-white/[.055] blur-[130px]" />
 
       {/* VIGNETTE */}
-      <div
-        className="pointer-events-none fixed inset-0 z-[3]"
-        style={{
-          background:
-            "radial-gradient(ellipse at center, transparent 28%, rgba(0,0,0,.32) 64%, rgba(0,0,0,.76) 100%)",
-        }}
-      />
+
 
       {/* ==================================================
           CONTENT

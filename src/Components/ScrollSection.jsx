@@ -1,12 +1,10 @@
-
 import { useState, useEffect, useRef } from "react";
+import * as THREE from "three";
 import { ArrowRight, CalendarDays, Trophy } from "lucide-react";
 
 import eventImage1 from "../assets/events/event1.png";
 import eventImage2 from "../assets/events/event2.png";
 import eventImage3 from "../assets/events/event3.png";
-
-import backgroundImage from "../assets/i1.png";
 
 const events = [
   {
@@ -58,43 +56,948 @@ const monochrome = {
   overlay: "group-hover:bg-white/[0.035]",
 };
 
-const ScrollSection = () => {
-  const [activeCard, setActiveCard] = useState(null);
-  const [cardsVisible, setCardsVisible] = useState(false);
+/* ==========================================================
+   PAC-MAN MAZE BACKGROUND
+   ========================================================== */
 
-  const sectionRef = useRef(null);
-
-  // ==========================================================
-  // CARD VISIBILITY
-  // ==========================================================
+const WhiteCombatMaze = () => {
+  const canvasRef = useRef(null);
 
   useEffect(() => {
-    const section = sectionRef.current;
+    const canvas = canvasRef.current;
+
+    if (!canvas) return;
+
+    /* ========================================================
+       THREE.JS SETUP
+    ======================================================== */
+
+    const scene = new THREE.Scene();
+
+    const camera = new THREE.OrthographicCamera(
+      -6,
+      6,
+      6,
+      -6,
+      0.1,
+      100
+    );
+
+    camera.position.set(0, 10, 0.0001);
+    camera.up.set(0, 0, -1);
+    camera.lookAt(0, 0, 0);
+
+    const renderer = new THREE.WebGLRenderer({
+      canvas,
+      alpha: true,
+      antialias: true,
+      powerPreference: "high-performance",
+    });
+
+    renderer.setPixelRatio(
+      Math.min(window.devicePixelRatio || 1, 2)
+    );
+
+    renderer.setClearColor(0x000000, 0);
+
+    /* ========================================================
+       MAZE SETTINGS
+    ======================================================== */
+
+    const SIZE = 21;
+
+    /*
+      Increased from 0.48 → 0.56.
+      This makes the maze visibly larger without
+      making it occupy the entire screen.
+    */
+    const CELL = 0.56;
+
+    const mazeWidth = SIZE * CELL;
+
+    const mazeGroup = new THREE.Group();
+
+    /*
+      Increased from 0.72 → 0.78.
+      Still leaves comfortable breathing space around
+      the maze.
+    */
+    mazeGroup.scale.setScalar(0.78);
+
+    /*
+      Stronger initial 3D presentation.
+      Maze itself remains completely flat.
+    */
+    mazeGroup.rotation.x = -0.58;
+    mazeGroup.rotation.z = 0.06;
+
+    scene.add(mazeGroup);
+
+    /* ========================================================
+       MAZE GENERATOR
+    ======================================================== */
+
+    const generateMaze = (size) => {
+      const grid = Array.from(
+        { length: size },
+        () => Array(size).fill(1)
+      );
+
+      const directions = [
+        [2, 0],
+        [-2, 0],
+        [0, 2],
+        [0, -2],
+      ];
+
+      const shuffle = (array) => {
+        for (let i = array.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+
+          [array[i], array[j]] = [
+            array[j],
+            array[i],
+          ];
+        }
+
+        return array;
+      };
+
+      const carve = (row, col) => {
+        grid[row][col] = 0;
+
+        const dirs = shuffle([...directions]);
+
+        dirs.forEach(([dr, dc]) => {
+          const nr = row + dr;
+          const nc = col + dc;
+
+          if (
+            nr > 0 &&
+            nr < size - 1 &&
+            nc > 0 &&
+            nc < size - 1 &&
+            grid[nr][nc] === 1
+          ) {
+            grid[row + dr / 2][col + dc / 2] = 0;
+
+            carve(nr, nc);
+          }
+        });
+      };
+
+      carve(1, 1);
+
+      /*
+        Additional openings.
+      */
+      for (let r = 0; r < size; r++) {
+        for (let c = 0; c < size; c++) {
+          if (
+            grid[r][c] === 1 &&
+            Math.random() < 0.045
+          ) {
+            grid[r][c] = 0;
+          }
+        }
+      }
+
+      return grid;
+    };
+
+    const maze = generateMaze(SIZE);
+
+    const offset = (SIZE * CELL) / 2;
+
+    /* ========================================================
+       WALLS
+    ======================================================== */
+
+    const wallSegments = [];
+
+    const addWall = (x1, z1, x2, z2) => {
+      wallSegments.push(
+        new THREE.Vector3(x1, 0, z1),
+        new THREE.Vector3(x2, 0, z2)
+      );
+    };
+
+    for (let r = 0; r < SIZE; r++) {
+      for (let c = 0; c < SIZE; c++) {
+        if (maze[r][c] !== 0) continue;
+
+        const x = c * CELL - offset;
+        const z = r * CELL - offset;
+
+        if (r === 0 || maze[r - 1][c] === 1) {
+          addWall(
+            x,
+            z,
+            x + CELL,
+            z
+          );
+        }
+
+        if (
+          r === SIZE - 1 ||
+          maze[r + 1][c] === 1
+        ) {
+          addWall(
+            x,
+            z + CELL,
+            x + CELL,
+            z + CELL
+          );
+        }
+
+        if (c === 0 || maze[r][c - 1] === 1) {
+          addWall(
+            x,
+            z,
+            x,
+            z + CELL
+          );
+        }
+
+        if (
+          c === SIZE - 1 ||
+          maze[r][c + 1] === 1
+        ) {
+          addWall(
+            x + CELL,
+            z,
+            x + CELL,
+            z + CELL
+          );
+        }
+      }
+    }
+
+    const wallGeometry =
+      new THREE.BufferGeometry().setFromPoints(
+        wallSegments
+      );
+
+    const wallMaterial =
+      new THREE.LineBasicMaterial({
+        color: 0xffffff,
+        transparent: true,
+        opacity: 0.70,
+        depthWrite: false,
+      });
+
+    const walls = new THREE.LineSegments(
+      wallGeometry,
+      wallMaterial
+    );
+
+    mazeGroup.add(walls);
+
+    /* ========================================================
+       MAZE BORDER
+    ======================================================== */
+
+    const borderPoints = [
+      [-offset, -offset],
+      [offset, -offset],
+      [offset, offset],
+      [-offset, offset],
+      [-offset, -offset],
+    ].map(
+      ([x, z]) =>
+        new THREE.Vector3(x, 0, z)
+    );
+
+    const borderGeometry =
+      new THREE.BufferGeometry().setFromPoints(
+        borderPoints
+      );
+
+    const borderMaterial =
+      new THREE.LineBasicMaterial({
+        color: 0xffffff,
+        transparent: true,
+        opacity: 0.9,
+      });
+
+    const border = new THREE.Line(
+      borderGeometry,
+      borderMaterial
+    );
+
+    mazeGroup.add(border);
+
+    /* ========================================================
+       SUBTLE MAZE GLOW
+    ======================================================== */
+
+    const glowGeometry = wallGeometry.clone();
+
+    const glowMaterial =
+      new THREE.LineBasicMaterial({
+        color: 0xffffff,
+        transparent: true,
+        opacity: 0.055,
+        depthWrite: false,
+        blending: THREE.AdditiveBlending,
+      });
+
+    const glow = new THREE.LineSegments(
+      glowGeometry,
+      glowMaterial
+    );
+
+    glow.scale.set(
+      1.008,
+      1,
+      1.008
+    );
+
+    mazeGroup.add(glow);
+
+    /* ========================================================
+       PAC-MAN
+    ======================================================== */
+
+    const pacmanGroup = new THREE.Group();
+
+    mazeGroup.add(pacmanGroup);
+
+    const shape = new THREE.Shape();
+
+    const radius = CELL * 0.30;
+    const mouth = Math.PI / 5;
+
+    shape.moveTo(0, 0);
+
+    shape.lineTo(
+      Math.cos(mouth) * radius,
+      Math.sin(mouth) * radius
+    );
+
+    for (let i = 0; i <= 30; i++) {
+      const angle =
+        mouth +
+        ((Math.PI * 2 - mouth * 2) * i) /
+          30;
+
+      shape.lineTo(
+        Math.cos(angle) * radius,
+        Math.sin(angle) * radius
+      );
+    }
+
+    shape.lineTo(0, 0);
+
+    const pacmanGeometry =
+      new THREE.ShapeGeometry(shape);
+
+    const pacmanMaterial =
+      new THREE.MeshBasicMaterial({
+        color: 0xffffff,
+        transparent: true,
+        opacity: 0.95,
+        side: THREE.DoubleSide,
+      });
+
+    const pacman = new THREE.Mesh(
+      pacmanGeometry,
+      pacmanMaterial
+    );
+
+    pacman.rotation.x = -Math.PI / 2;
+    pacman.position.y = 0.025;
+
+    pacmanGroup.add(pacman);
+
+    /* ========================================================
+       PELLETS
+    ======================================================== */
+
+    const pellets = [];
+
+    const pelletGeometry =
+      new THREE.CircleGeometry(
+        0.035,
+        8
+      );
+
+    for (let r = 1; r < SIZE - 1; r++) {
+      for (let c = 1; c < SIZE - 1; c++) {
+        if (
+          maze[r][c] !== 0 ||
+          Math.random() > 0.48
+        ) {
+          continue;
+        }
+
+        const pelletMaterial =
+          new THREE.MeshBasicMaterial({
+            color: 0xffffff,
+            transparent: true,
+            opacity: 0.6,
+            side: THREE.DoubleSide,
+          });
+
+        const pellet = new THREE.Mesh(
+          pelletGeometry,
+          pelletMaterial
+        );
+
+        pellet.rotation.x = -Math.PI / 2;
+
+        pellet.position.set(
+          c * CELL -
+            offset +
+            CELL / 2,
+          0.018,
+          r * CELL -
+            offset +
+            CELL / 2
+        );
+
+        mazeGroup.add(pellet);
+
+        pellets.push({
+          mesh: pellet,
+          active: true,
+          phase:
+            Math.random() *
+            Math.PI *
+            2,
+        });
+      }
+    }
+
+    /* ========================================================
+       CURSOR RING
+    ======================================================== */
+
+    const cursor = new THREE.Mesh(
+      new THREE.RingGeometry(
+        0.10,
+        0.13,
+        32
+      ),
+      new THREE.MeshBasicMaterial({
+        color: 0xffffff,
+        transparent: true,
+        opacity: 0.55,
+        side: THREE.DoubleSide,
+      })
+    );
+
+    cursor.rotation.x = -Math.PI / 2;
+    cursor.position.y = 0.05;
+
+    scene.add(cursor);
+
+    /* ========================================================
+       MOUSE
+    ======================================================== */
+
+    const target = new THREE.Vector3();
+
+    let mouseX = 0;
+    let mouseY = 0;
+
+    const onMouseMove = (event) => {
+      mouseX =
+        (event.clientX /
+          window.innerWidth -
+          0.5) *
+        2;
+
+      mouseY =
+        -(
+          event.clientY /
+            window.innerHeight -
+          0.5
+        ) *
+        2;
+
+      target.set(
+        mouseX * mazeWidth * 0.48,
+        0.04,
+        mouseY * mazeWidth * 0.40
+      );
+    };
+
+    window.addEventListener(
+      "mousemove",
+      onMouseMove,
+      {
+        passive: true,
+      }
+    );
+
+    /* ========================================================
+       CLICK SHOCKWAVE
+    ======================================================== */
+
+    const shock = new THREE.Mesh(
+      new THREE.RingGeometry(
+        0.08,
+        0.11,
+        64
+      ),
+      new THREE.MeshBasicMaterial({
+        color: 0xffffff,
+        transparent: true,
+        opacity: 0,
+        side: THREE.DoubleSide,
+        blending:
+          THREE.AdditiveBlending,
+      })
+    );
+
+    shock.rotation.x = -Math.PI / 2;
+
+    mazeGroup.add(shock);
+
+    let shockLife = 0;
+
+    const onClick = () => {
+      shock.position.copy(
+        pacmanGroup.position
+      );
+
+      shock.position.y = 0.08;
+
+      shock.scale.setScalar(0.1);
+
+      shock.material.opacity = 0.8;
+
+      shockLife = 1;
+    };
+
+    window.addEventListener(
+      "click",
+      onClick
+    );
+
+    /* ========================================================
+       SCROLL REACTION
+    ======================================================== */
+
+    let scrollVelocity = 0;
+    let lastScroll =
+      window.scrollY || 0;
+
+    const onScroll = () => {
+      const current =
+        window.scrollY || 0;
+
+      scrollVelocity =
+        THREE.MathUtils.clamp(
+          scrollVelocity +
+            (current - lastScroll) *
+              0.0015,
+          -0.08,
+          0.08
+        );
+
+      lastScroll = current;
+    };
+
+    window.addEventListener(
+      "scroll",
+      onScroll,
+      {
+        passive: true,
+      }
+    );
+
+    /* ========================================================
+       RESIZE
+    ======================================================== */
+
+    const resize = () => {
+      const width =
+        canvas.clientWidth ||
+        window.innerWidth;
+
+      const height =
+        canvas.clientHeight ||
+        window.innerHeight;
+
+      renderer.setSize(
+        width,
+        height,
+        false
+      );
+
+      const aspect =
+        width / height;
+
+      const view = 12;
+
+      camera.top = view / 2;
+      camera.bottom = -view / 2;
+
+      camera.right =
+        (view * aspect) / 2;
+
+      camera.left =
+        -(view * aspect) / 2;
+
+      camera.updateProjectionMatrix();
+    };
+
+    window.addEventListener(
+      "resize",
+      resize
+    );
+
+    resize();
+
+    /* ========================================================
+       ANIMATION
+    ======================================================== */
+
+    const clock = new THREE.Clock();
+
+    let animationFrame;
+
+    const animate = () => {
+      animationFrame =
+        requestAnimationFrame(
+          animate
+        );
+
+      const time =
+        clock.getElapsedTime();
+
+      /* --------------------------------
+         CURSOR
+      -------------------------------- */
+
+      cursor.position.x = target.x;
+      cursor.position.z = target.z;
+
+      cursor.rotation.z =
+        time * 0.6;
+
+      cursor.scale.setScalar(
+        1 +
+          Math.sin(time * 3) *
+            0.08
+      );
+
+      /* --------------------------------
+         PAC-MAN FOLLOW
+      -------------------------------- */
+
+      pacmanGroup.position.lerp(
+        target,
+        0.045
+      );
+
+      const dx =
+        target.x -
+        pacmanGroup.position.x;
+
+      const dz =
+        target.z -
+        pacmanGroup.position.z;
+
+      if (
+        Math.abs(dx) +
+          Math.abs(dz) >
+        0.02
+      ) {
+        pacman.rotation.z =
+          Math.atan2(dx, dz);
+      }
+
+      /* --------------------------------
+         MOUTH ANIMATION
+      -------------------------------- */
+
+      pacman.scale.y =
+        0.82 +
+        Math.sin(time * 9) *
+          0.16;
+
+      /* --------------------------------
+         PELLETS
+      -------------------------------- */
+
+      pellets.forEach(
+        (pellet) => {
+          if (!pellet.active)
+            return;
+
+          const pulse =
+            Math.sin(
+              time * 3 +
+                pellet.phase
+            ) *
+              0.5 +
+            0.5;
+
+          pellet.mesh.material.opacity =
+            0.35 +
+            pulse * 0.3;
+
+          pellet.mesh.scale.setScalar(
+            0.85 +
+              pulse * 0.25
+          );
+
+          const distance =
+            Math.hypot(
+              pellet.mesh.position.x -
+                pacmanGroup.position.x,
+              pellet.mesh.position.z -
+                pacmanGroup.position.z
+            );
+
+          if (distance < 0.28) {
+            pellet.active = false;
+
+            pellet.mesh.scale.setScalar(
+              0.01
+            );
+          }
+        }
+      );
+
+      /* ======================================================
+         STRONGER 3D MAZE MOVEMENT
+
+         Maze remains FLAT 2D.
+         Only the complete board tilts in 3D.
+      ====================================================== */
+
+      const targetRotationX =
+        -0.58 +
+        mouseY * 0.26;
+
+      const targetRotationZ =
+        0.06 -
+        mouseX * 0.20;
+
+      mazeGroup.rotation.x +=
+        (
+          targetRotationX -
+          mazeGroup.rotation.x
+        ) * 0.055;
+
+      mazeGroup.rotation.z +=
+        (
+          targetRotationZ -
+          mazeGroup.rotation.z
+        ) * 0.055;
+
+      /* --------------------------------
+         SUBTLE POSITIONAL PARALLAX
+      -------------------------------- */
+
+      const targetPosX =
+        mouseX * 0.16;
+
+      const targetPosZ =
+        mouseY * 0.12;
+
+      mazeGroup.position.x +=
+        (
+          targetPosX -
+          mazeGroup.position.x
+        ) * 0.035;
+
+      mazeGroup.position.z +=
+        (
+          targetPosZ -
+          mazeGroup.position.z
+        ) * 0.035;
+
+      /* --------------------------------
+         SCROLL MOVEMENT
+      -------------------------------- */
+
+      scrollVelocity *= 0.90;
+
+      mazeGroup.position.y +=
+        scrollVelocity * 0.8;
+
+      mazeGroup.position.y *=
+        0.94;
+
+      /* --------------------------------
+         CLICK SHOCKWAVE
+      -------------------------------- */
+
+      if (shockLife > 0) {
+        shockLife -= 0.045;
+
+        const progress =
+          1 - shockLife;
+
+        shock.scale.setScalar(
+          0.2 +
+            progress * 2.6
+        );
+
+        shock.material.opacity =
+          shockLife * 0.75;
+      }
+
+      renderer.render(
+        scene,
+        camera
+      );
+    };
+
+    animate();
+
+    /* ========================================================
+       CLEANUP
+    ======================================================== */
+
+    return () => {
+      cancelAnimationFrame(
+        animationFrame
+      );
+
+      window.removeEventListener(
+        "mousemove",
+        onMouseMove
+      );
+
+      window.removeEventListener(
+        "click",
+        onClick
+      );
+
+      window.removeEventListener(
+        "scroll",
+        onScroll
+      );
+
+      window.removeEventListener(
+        "resize",
+        resize
+      );
+
+      scene.traverse((object) => {
+        if (object.geometry) {
+          object.geometry.dispose();
+        }
+
+        if (object.material) {
+          if (
+            Array.isArray(
+              object.material
+            )
+          ) {
+            object.material.forEach(
+              (material) =>
+                material.dispose()
+            );
+          } else {
+            object.material.dispose();
+          }
+        }
+      });
+
+      renderer.dispose();
+    };
+  }, []);
+
+  return (
+    <div className="white-pacman-maze">
+      <canvas
+        ref={canvasRef}
+        className="white-pacman-maze-canvas"
+      />
+
+      <div className="maze-vignette" />
+
+      <style>{`
+        .white-pacman-maze {
+          position: absolute;
+          inset: 0;
+          width: 100%;
+          height: 100%;
+          overflow: hidden;
+          pointer-events: none;
+          z-index: 0;
+          background: #000;
+        }
+
+        .white-pacman-maze-canvas {
+          position: absolute;
+          inset: 0;
+          width: 100%;
+          height: 100%;
+          display: block;
+          opacity: 0.82;
+          mix-blend-mode: screen;
+        }
+
+        .maze-vignette {
+          position: absolute;
+          inset: 0;
+          pointer-events: none;
+          background:
+            radial-gradient(
+              ellipse at center,
+              transparent 30%,
+              rgba(0,0,0,0.20) 62%,
+              rgba(0,0,0,0.78) 100%
+            );
+        }
+
+        @media (max-width: 768px) {
+          .white-pacman-maze-canvas {
+            opacity: 0.55;
+          }
+        }
+      `}</style>
+    </div>
+  );
+};
+
+/* ==========================================================
+   SCROLL SECTION
+   ========================================================== */
+
+const ScrollSection = () => {
+  const [activeCard, setActiveCard] =
+    useState(null);
+
+  const [cardsVisible, setCardsVisible] =
+    useState(false);
+
+  const sectionRef =
+    useRef(null);
+
+  useEffect(() => {
+    const section =
+      sectionRef.current;
 
     if (!section) return;
 
-    // --------------------------------------------------------
-    // CARD INTERSECTION OBSERVER
-    // --------------------------------------------------------
+    const observer =
+      new IntersectionObserver(
+        ([entry]) => {
+          if (entry.isIntersecting) {
+            setCardsVisible(false);
 
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setCardsVisible(false);
-
-          requestAnimationFrame(() => {
             requestAnimationFrame(() => {
-              setCardsVisible(true);
+              requestAnimationFrame(() => {
+                setCardsVisible(true);
+              });
             });
-          });
-        } else {
-          setCardsVisible(false);
+          } else {
+            setCardsVisible(false);
+          }
+        },
+        {
+          threshold: 0.18,
         }
-      },
-      {
-        threshold: 0.18,
-      }
-    );
+      );
 
     observer.observe(section);
 
@@ -123,10 +1026,6 @@ const ScrollSection = () => {
       <style>{`
         @import url('https://fonts.cdnfonts.com/css/the-last-shuriken');
 
-        /* ==================================================
-           GLOBAL SECTION FONT
-        ================================================== */
-
         .live-events-section,
         .live-events-section *,
         .live-events-section button,
@@ -135,10 +1034,6 @@ const ScrollSection = () => {
         .live-events-section span {
           font-family: "The Last Shuriken", sans-serif;
         }
-
-        /* ==================================================
-           LIVE EVENTS SVG
-        ================================================== */
 
         .live-events-neon-svg {
           display: block;
@@ -178,10 +1073,6 @@ const ScrollSection = () => {
           pointer-events: none;
         }
 
-        /* ==================================================
-           MOVEMENT / TICKER
-        ================================================== */
-
         @keyframes synchronizedTicker {
           0% {
             transform: translate3d(-100%, 0, 0);
@@ -205,10 +1096,6 @@ const ScrollSection = () => {
 
           will-change: transform;
         }
-
-        /* ==================================================
-           SPONSOR LOGOS
-        ================================================== */
 
         .sponsor-logo {
           height: 20px;
@@ -256,21 +1143,13 @@ const ScrollSection = () => {
 
         .ticker-visible {
           opacity: 1;
-
-          transform:
-            translateY(0);
+          transform: translateY(0);
         }
 
         .ticker-hidden {
           opacity: 0;
-
-          transform:
-            translateY(5px);
+          transform: translateY(5px);
         }
-
-        /* ==================================================
-           MOBILE TICKER
-        ================================================== */
 
         @media (max-width: 768px) {
           .event-ticker,
@@ -278,10 +1157,6 @@ const ScrollSection = () => {
             animation-duration: 18s;
           }
         }
-
-        /* ==================================================
-           REDUCED MOTION
-        ================================================== */
 
         @media (prefers-reduced-motion: reduce) {
           .event-ticker,
@@ -296,29 +1171,10 @@ const ScrollSection = () => {
       `}</style>
 
       {/* ==================================================
-          BACKGROUND IMAGE
+          PAC-MAN MAZE BACKGROUND
       ================================================== */}
 
-      <img
-        src={backgroundImage}
-        alt=""
-        aria-hidden="true"
-        className="
-          absolute
-          inset-0
-          z-0
-          h-full
-          w-full
-          object-cover
-          scale-[1.065]
-          opacity-[0.88]
-          grayscale
-          brightness-[0.50]
-          saturate-0
-          contrast-[1.12]
-          pointer-events-none
-        "
-      />
+      <WhiteCombatMaze />
 
       {/* ==================================================
           BACKGROUND OVERLAYS
@@ -481,9 +1337,7 @@ const ScrollSection = () => {
             lg:items-end
           "
         >
-          {/* ==================================================
-              HEADING
-          ================================================== */}
+          {/* HEADING */}
 
           <div
             className="
@@ -527,14 +1381,38 @@ const ScrollSection = () => {
                     x2="0%"
                     y2="100%"
                   >
-                    <stop offset="0%" stopColor="#ffffff" />
-                    <stop offset="14%" stopColor="#f1f1f1" />
-                    <stop offset="30%" stopColor="#dcdcdc" />
-                    <stop offset="46%" stopColor="#686868" />
-                    <stop offset="60%" stopColor="#303030" />
-                    <stop offset="72%" stopColor="#8a8a8a" />
-                    <stop offset="86%" stopColor="#d9d9d9" />
-                    <stop offset="100%" stopColor="#ffffff" />
+                    <stop
+                      offset="0%"
+                      stopColor="#ffffff"
+                    />
+                    <stop
+                      offset="14%"
+                      stopColor="#f1f1f1"
+                    />
+                    <stop
+                      offset="30%"
+                      stopColor="#dcdcdc"
+                    />
+                    <stop
+                      offset="46%"
+                      stopColor="#686868"
+                    />
+                    <stop
+                      offset="60%"
+                      stopColor="#303030"
+                    />
+                    <stop
+                      offset="72%"
+                      stopColor="#8a8a8a"
+                    />
+                    <stop
+                      offset="86%"
+                      stopColor="#d9d9d9"
+                    />
+                    <stop
+                      offset="100%"
+                      stopColor="#ffffff"
+                    />
                   </linearGradient>
 
                   <linearGradient
@@ -544,11 +1422,26 @@ const ScrollSection = () => {
                     x2="0%"
                     y2="100%"
                   >
-                    <stop offset="0%" stopColor="#ffffff" />
-                    <stop offset="38%" stopColor="#dddddd" />
-                    <stop offset="58%" stopColor="#666666" />
-                    <stop offset="78%" stopColor="#bdbdbd" />
-                    <stop offset="100%" stopColor="#ffffff" />
+                    <stop
+                      offset="0%"
+                      stopColor="#ffffff"
+                    />
+                    <stop
+                      offset="38%"
+                      stopColor="#dddddd"
+                    />
+                    <stop
+                      offset="58%"
+                      stopColor="#666666"
+                    />
+                    <stop
+                      offset="78%"
+                      stopColor="#bdbdbd"
+                    />
+                    <stop
+                      offset="100%"
+                      stopColor="#ffffff"
+                    />
                   </linearGradient>
 
                   <linearGradient
@@ -676,9 +1569,7 @@ const ScrollSection = () => {
             </div>
           </div>
 
-          {/* ==================================================
-              DESCRIPTION
-          ================================================== */}
+          {/* DESCRIPTION */}
 
           <p
             className="
@@ -694,8 +1585,9 @@ const ScrollSection = () => {
           >
             COMPETE. CONQUER. CREATE LEGACY.
             <br />
-            Enter the competitive world of NITS Esports
-            and experience the next generation of campus gaming.
+            Enter the competitive world of NITS
+            Esports and experience the next
+            generation of campus gaming.
           </p>
         </div>
 
@@ -1000,7 +1892,7 @@ const ScrollSection = () => {
                   </p>
                 </div>
 
-                {/* BOTTOM NEON LINE */}
+                {/* BOTTOM LINE */}
 
                 <div
                   className={`
@@ -1022,7 +1914,7 @@ const ScrollSection = () => {
                 {/* CORNER */}
 
                 <div
-                  className={`
+                  className="
                     absolute
                     right-0
                     top-0
@@ -1030,12 +1922,12 @@ const ScrollSection = () => {
                     w-7
                     border-r
                     border-t
+                    border-white/30
                     opacity-0
                     transition-all
                     duration-300
                     group-hover:opacity-100
-                    border-white/30
-                  `}
+                  "
                 />
               </article>
             );
@@ -1099,55 +1991,11 @@ const ScrollSection = () => {
         </div>
       </div>
 
-
       {/* ==================================================
-          SECTION PAGE DIVIDER
-          WHITE / BLACK
-          FIXED TO THE BOTTOM OF THIS SECTION
+          SECTION PAGE DIVIDER — REMOVED
       ================================================== */}
-
-      <div
-        className="
-          pointer-events-none
-          absolute
-          bottom-0
-          left-0
-          z-30
-          w-full
-        "
-        aria-hidden="true"
-      >
-        <div
-          className="
-            h-[2px]
-            w-full
-            bg-gradient-to-r
-            from-transparent
-            via-white/55
-            to-transparent
-            shadow-[0_0_10px_rgba(255,255,255,.16)]
-          "
-        />
-
-        <div
-          className="
-            absolute
-            left-[15%]
-            top-0
-            h-px
-            w-[70%]
-            bg-gradient-to-r
-            from-transparent
-            via-white
-            to-transparent
-            opacity-65
-          "
-        />
-      </div>
-
     </section>
   );
 };
 
 export default ScrollSection;
-

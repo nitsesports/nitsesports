@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "../supabaseClient";
-import loginVideo from "../assets/v8.mp4";
+import * as THREE from "three";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -17,6 +17,189 @@ const Login = () => {
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
   const [isVisible, setIsVisible] = useState(false);
+
+  useEffect(() => {
+    const canvas = document.createElement("canvas");
+    canvas.className = "merch-starfield-canvas";
+    document.body.appendChild(canvas);
+
+    const scene = new THREE.Scene();
+    scene.fog = new THREE.FogExp2(0x000000, 0.018);
+
+    const camera = new THREE.PerspectiveCamera(
+      45,
+      window.innerWidth / window.innerHeight,
+      0.1,
+      100
+    );
+
+    camera.position.z = 9;
+
+    const renderer = new THREE.WebGLRenderer({
+      canvas,
+      antialias: false,
+      alpha: true,
+      powerPreference: "high-performance",
+    });
+
+    // Same render quality as Hero — intentionally capped for smoothness.
+    const getPixelRatio = () =>
+      Math.min(window.devicePixelRatio || 1, 1.25);
+
+    renderer.setPixelRatio(getPixelRatio());
+    renderer.setSize(window.innerWidth, window.innerHeight, false);
+    renderer.setClearColor(0x000000, 0);
+    renderer.toneMappingExposure = 1.15;
+
+    // ---------------------------------------------------------
+    // PARTICLE TUNNEL — EXACT HERO STAR PROPERTIES
+    // ---------------------------------------------------------
+
+    const particleCount = 1400;
+    const positions = new Float32Array(particleCount * 3);
+    const particleSpeeds = new Float32Array(particleCount);
+
+    for (let i = 0; i < particleCount; i++) {
+      const a = Math.random() * Math.PI * 2;
+      const r = 0.2 + Math.pow(Math.random(), 0.52) * 11.5;
+      const z = -10 + Math.random() * 12;
+
+      particleSpeeds[i] = 0.008 + Math.random() * 0.035;
+      positions[i * 3] = Math.cos(a) * r;
+      positions[i * 3 + 1] = Math.sin(a) * r;
+      positions[i * 3 + 2] = z;
+    }
+
+    const particleGeometry = new THREE.BufferGeometry();
+    particleGeometry.setAttribute(
+      "position",
+      new THREE.BufferAttribute(positions, 3)
+    );
+    const particlePositionAttribute = particleGeometry.attributes.position;
+
+    const particles = new THREE.Points(
+      particleGeometry,
+      new THREE.PointsMaterial({
+        color: 0xffffff,
+        size: 0.085,
+        transparent: true,
+        opacity: 1.0,
+        depthWrite: false,
+        blending: THREE.AdditiveBlending,
+      })
+    );
+
+    scene.add(particles);
+
+    // ---------------------------------------------------------
+    // MOUSE PARALLAX — SAME AS HERO
+    // ---------------------------------------------------------
+
+    let mouseX = 0;
+    let mouseY = 0;
+    let smoothX = 0;
+    let smoothY = 0;
+
+    const handleMouseMove = (event) => {
+      mouseX = (event.clientX / window.innerWidth - 0.5) * 2;
+      mouseY = -((event.clientY / window.innerHeight - 0.5) * 2);
+    };
+
+    window.addEventListener("mousemove", handleMouseMove, { passive: true });
+
+    let scrollTarget = 0;
+    let scrollCurrent = 0;
+    let lastScroll = window.scrollY;
+
+    const handleScroll = () => {
+      const current = window.scrollY;
+      const delta = current - lastScroll;
+
+      scrollTarget = THREE.MathUtils.clamp(
+        scrollTarget + delta * 0.02,
+        -3.5,
+        9
+      );
+
+      lastScroll = current;
+    };
+
+    const handleResize = () => {
+      const width = window.innerWidth;
+      const height = window.innerHeight;
+
+      camera.aspect = width / height;
+      camera.updateProjectionMatrix();
+
+      renderer.setPixelRatio(getPixelRatio());
+      renderer.setSize(width, height, false);
+    };
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    window.addEventListener("resize", handleResize);
+    handleResize();
+
+    const clock = new THREE.Clock();
+    let animationFrame;
+    let time = 0;
+
+    const animate = () => {
+      animationFrame = requestAnimationFrame(animate);
+
+      const dt = Math.min(clock.getDelta(), 0.033);
+      time += dt;
+
+      const damping = (speed) => 1 - Math.exp(-speed * dt);
+
+      // Same smooth mouse interpolation as Hero.
+      smoothX += (mouseX - smoothX) * damping(9);
+      smoothY += (mouseY - smoothY) * damping(9);
+
+      scrollCurrent +=
+        (scrollTarget - scrollCurrent) * damping(5.5);
+
+      const cameraZ = 9 - scrollCurrent * 1.35;
+      camera.position.z +=
+        (cameraZ - camera.position.z) * damping(6);
+
+      // Exact Hero forward star movement.
+      for (let i = 0; i < particleCount; i++) {
+        const index = i * 3;
+        let z = positions[index + 2] + particleSpeeds[i];
+
+        if (z > 3) z = -10;
+
+        positions[index + 2] = z;
+      }
+
+      // Exact Hero star-field rotation/parallax.
+      particles.rotation.z = time * 0.025;
+
+      particlePositionAttribute.needsUpdate = true;
+
+      if (!document.hidden) {
+        renderer.render(scene, camera);
+      }
+    };
+
+    animate();
+
+    return () => {
+      cancelAnimationFrame(animationFrame);
+
+      window.removeEventListener("mousemove", handleMouseMove);
+      window.removeEventListener("scroll", handleScroll);
+      window.removeEventListener("resize", handleResize);
+
+      particleGeometry.dispose();
+      particles.material.dispose();
+      renderer.dispose();
+
+      if (canvas.parentNode === document.body) {
+        document.body.removeChild(canvas);
+      }
+    };
+  }, []);
 
   /* =====================================================
      PAGE ANIMATION
@@ -297,6 +480,18 @@ const Login = () => {
           box-sizing: border-box;
         }
 
+        .merch-starfield-canvas {
+          position: fixed !important;
+          inset: 0 !important;
+          display: block;
+          width: 100vw !important;
+          height: 100vh !important;
+          min-width: 100vw !important;
+          min-height: 100vh !important;
+          z-index: 0 !important;
+          pointer-events: none !important;
+        }
+
         .login-page {
           scrollbar-width: thin;
           scrollbar-color: rgba(255,255,255,.30) rgba(0,0,0,.65);
@@ -479,89 +674,26 @@ const Login = () => {
         }
       `}</style>
 
-      {/* =====================================================
-          BACKGROUND VIDEO
-      ===================================================== */}
+      {/* ==================================================
+          MERCHENDISE EXACT THREE.JS BACKGROUND
+          No video / dark overlay — exact cinematic star field.
+      ================================================== */}
 
-      <video
-        className="
-          fixed
-          inset-0
-          z-0
-          h-full
-          w-full
-          object-cover
-        "
-        src={loginVideo}
-        autoPlay
-        loop
-        muted
-        playsInline
-        preload="auto"
+      {/* CINEMATIC GRID */}
+      <div
+        className="pointer-events-none fixed inset-0 z-[2] opacity-[.055]"
+        style={{
+          backgroundImage:
+            "linear-gradient(rgba(255,255,255,.10) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.07) 1px, transparent 1px)",
+          backgroundSize: "80px 80px",
+        }}
       />
+
+      {/* AMBIENT LIGHT */}
+      <div className="pointer-events-none fixed left-[8%] top-[18%] z-[2] h-[320px] w-[420px] rounded-full bg-white/[.075] blur-[120px]" />
+      <div className="pointer-events-none fixed bottom-[5%] right-[7%] z-[2] h-[340px] w-[430px] rounded-full bg-white/[.055] blur-[130px]" />
 
       {/* =====================================================
-          DARK OVERLAY
-      ===================================================== */}
-
-      <div
-        className="
-          pointer-events-none
-          fixed
-          inset-0
-          z-[1]
-          bg-black/60
-        "
-      />
-
-      {/* =====================================================
-          DARK SAMURAI CINEMATIC VEIL
-      ===================================================== */}
-
-      <div
-        className="
-          pointer-events-none
-          fixed
-          inset-0
-          z-[1]
-          bg-black/55
-        "
-      />
-
-      <div
-        className="
-          pointer-events-none
-          fixed
-          inset-0
-          z-[2]
-          bg-gradient-to-b
-          from-black/30
-          via-black/10
-          to-black/85
-        "
-      />
-
-      <div
-        className="
-          pointer-events-none
-          fixed
-          inset-0
-          z-[2]
-          bg-[radial-gradient(circle_at_50%_12%,rgba(255,255,255,.075),transparent_40%)]
-        "
-      />
-
-      <div
-        className="
-          pointer-events-none
-          fixed
-          inset-0
-          z-[2]
-          bg-[linear-gradient(90deg,rgba(0,0,0,.25),transparent_25%,transparent_75%,rgba(0,0,0,.25))]
-        "
-      />
-
-            {/* =====================================================
           MAIN CONTENT
 
           Navbar ke liye top space maintained.

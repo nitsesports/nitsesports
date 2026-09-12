@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import "./App.css";
 
@@ -27,8 +28,6 @@ import Schedule from "./Components/Schedule";
 
 import Login from "./Components/Login";
 import Register from "./Components/Register";
-
-import landingVideo from "./assets/land2.webm";
 
 
 /* =====================================================
@@ -314,46 +313,12 @@ function Home({ websiteReady }) {
         "
       >
 
-        {/* BACKGROUND VIDEO */}
+        {/* =================================================
+            HERO CONTENT
 
-        <div
-          className="
-            absolute
-            inset-0
-            z-0
-          "
-        >
-
-          <video
-            src={landingVideo}
-            autoPlay
-            loop
-            muted
-            playsInline
-            preload="auto"
-            className="
-              h-full
-              w-full
-              object-cover
-            "
-          />
-
-        </div>
-
-
-        {/* DARK OVERLAY */}
-
-        <div
-          className="
-            absolute
-            inset-0
-            z-[1]
-            bg-black/20
-          "
-        />
-
-
-        {/* HERO */}
+            Landing video completely removed.
+            Background is now pure black.
+        ================================================= */}
 
         {websiteReady && (
           <div
@@ -580,3 +545,4 @@ function SchedulePage({ websiteReady }) {
 ===================================================== */
 
 export default App;
+

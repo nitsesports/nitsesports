@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import scheduleBg from "../assets/i2.png";
+import * as THREE from "three";
 
 const Schedule = () => {
   // =========================================================
@@ -92,15 +92,203 @@ const Schedule = () => {
   // =========================================================
 
   useEffect(() => {
-    const revealElements = document.querySelectorAll(".scroll-reveal");
+    const canvas = document.createElement("canvas");
+    canvas.className = "merch-starfield-canvas";
+    document.body.appendChild(canvas);
+
+    const scene = new THREE.Scene();
+    scene.fog = new THREE.FogExp2(0x000000, 0.018);
+
+    const camera = new THREE.PerspectiveCamera(
+      45,
+      window.innerWidth / window.innerHeight,
+      0.1,
+      100
+    );
+
+    camera.position.z = 9;
+
+    const renderer = new THREE.WebGLRenderer({
+      canvas,
+      antialias: false,
+      alpha: true,
+      powerPreference: "high-performance",
+    });
+
+    // Same render quality as Hero — intentionally capped for smoothness.
+    const getPixelRatio = () =>
+      Math.min(window.devicePixelRatio || 1, 1.25);
+
+    renderer.setPixelRatio(getPixelRatio());
+    renderer.setSize(window.innerWidth, window.innerHeight, false);
+    renderer.setClearColor(0x000000, 0);
+    renderer.toneMappingExposure = 1.15;
+
+    // ---------------------------------------------------------
+    // PARTICLE TUNNEL — EXACT HERO STAR PROPERTIES
+    // ---------------------------------------------------------
+
+    const particleCount = 1400;
+    const positions = new Float32Array(particleCount * 3);
+    const particleSpeeds = new Float32Array(particleCount);
+
+    for (let i = 0; i < particleCount; i++) {
+      const a = Math.random() * Math.PI * 2;
+      const r = 0.2 + Math.pow(Math.random(), 0.52) * 11.5;
+      const z = -10 + Math.random() * 12;
+
+      particleSpeeds[i] = 0.008 + Math.random() * 0.035;
+      positions[i * 3] = Math.cos(a) * r;
+      positions[i * 3 + 1] = Math.sin(a) * r;
+      positions[i * 3 + 2] = z;
+    }
+
+    const particleGeometry = new THREE.BufferGeometry();
+    particleGeometry.setAttribute(
+      "position",
+      new THREE.BufferAttribute(positions, 3)
+    );
+    const particlePositionAttribute = particleGeometry.attributes.position;
+
+    const particles = new THREE.Points(
+      particleGeometry,
+      new THREE.PointsMaterial({
+        color: 0xffffff,
+        size: 0.085,
+        transparent: true,
+        opacity: 1.0,
+        depthWrite: false,
+        blending: THREE.AdditiveBlending,
+      })
+    );
+
+    scene.add(particles);
+
+    // ---------------------------------------------------------
+    // MOUSE PARALLAX — SAME AS HERO
+    // ---------------------------------------------------------
+
+    let mouseX = 0;
+    let mouseY = 0;
+    let smoothX = 0;
+    let smoothY = 0;
+
+    const handleMouseMove = (event) => {
+      mouseX = (event.clientX / window.innerWidth - 0.5) * 2;
+      mouseY = -((event.clientY / window.innerHeight - 0.5) * 2);
+    };
+
+    window.addEventListener("mousemove", handleMouseMove, { passive: true });
+
+    let scrollTarget = 0;
+    let scrollCurrent = 0;
+    let lastScroll = window.scrollY;
+
+    const handleScroll = () => {
+      const current = window.scrollY;
+      const delta = current - lastScroll;
+
+      scrollTarget = THREE.MathUtils.clamp(
+        scrollTarget + delta * 0.02,
+        -3.5,
+        9
+      );
+
+      lastScroll = current;
+    };
+
+    const handleResize = () => {
+      const width = window.innerWidth;
+      const height = window.innerHeight;
+
+      camera.aspect = width / height;
+      camera.updateProjectionMatrix();
+
+      renderer.setPixelRatio(getPixelRatio());
+      renderer.setSize(width, height, false);
+    };
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    window.addEventListener("resize", handleResize);
+    handleResize();
+
+    const clock = new THREE.Clock();
+    let animationFrame;
+    let time = 0;
+
+    const animate = () => {
+      animationFrame = requestAnimationFrame(animate);
+
+      const dt = Math.min(clock.getDelta(), 0.033);
+      time += dt;
+
+      const damping = (speed) => 1 - Math.exp(-speed * dt);
+
+      // Same smooth mouse interpolation as Hero.
+      smoothX += (mouseX - smoothX) * damping(9);
+      smoothY += (mouseY - smoothY) * damping(9);
+
+      scrollCurrent +=
+        (scrollTarget - scrollCurrent) * damping(5.5);
+
+      const cameraZ = 9 - scrollCurrent * 1.35;
+      camera.position.z +=
+        (cameraZ - camera.position.z) * damping(6);
+
+      // Exact Hero forward star movement.
+      for (let i = 0; i < particleCount; i++) {
+        const index = i * 3;
+        let z = positions[index + 2] + particleSpeeds[i];
+
+        if (z > 3) z = -10;
+
+        positions[index + 2] = z;
+      }
+
+      // Exact Hero star-field rotation/parallax.
+      particles.rotation.z = time * 0.025;
+
+      particlePositionAttribute.needsUpdate = true;
+
+      if (!document.hidden) {
+        renderer.render(scene, camera);
+      }
+    };
+
+    animate();
+
+    return () => {
+      cancelAnimationFrame(animationFrame);
+
+      window.removeEventListener("mousemove", handleMouseMove);
+      window.removeEventListener("scroll", handleScroll);
+      window.removeEventListener("resize", handleResize);
+
+      particleGeometry.dispose();
+      particles.material.dispose();
+      renderer.dispose();
+
+      if (canvas.parentNode === document.body) {
+        document.body.removeChild(canvas);
+      }
+    };
+  }, []);
+
+
+  // =========================================================
+  // SCROLL REVEAL OBSERVER
+  // =========================================================
+  useEffect(() => {
+    const elements = document.querySelectorAll(".schedule-root .scroll-reveal");
+
+    if (!elements.length) return;
 
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
             entry.target.classList.add("is-visible");
-          } else {
-            entry.target.classList.remove("is-visible");
+            observer.unobserve(entry.target);
           }
         });
       },
@@ -110,13 +298,11 @@ const Schedule = () => {
       }
     );
 
-    revealElements.forEach((element) => observer.observe(element));
+    elements.forEach((element) => observer.observe(element));
 
-    return () => {
-      revealElements.forEach((element) => observer.unobserve(element));
-      observer.disconnect();
-    };
+    return () => observer.disconnect();
   }, []);
+
 
   // =========================================================
   // ICONS
@@ -573,73 +759,23 @@ const Schedule = () => {
   // =========================================================
 
   return (
-    <div className="schedule-root relative min-h-screen w-full overflow-hidden bg-[#030305] text-white">
+    <div className="schedule-root relative min-h-screen w-full overflow-hidden bg-black text-white">
 
-      {/* =====================================================
-          DARK SAMURAI BACKGROUND
-      ====================================================== */}
-
-      <img
-        src={scheduleBg}
-        alt=""
-        aria-hidden="true"
-        className="
-          fixed
-          inset-0
-          z-0
-          h-full
-          w-full
-          object-cover
-          scale-[1.04]
-          grayscale
-          brightness-[0.42]
-          saturate-0
-          contrast-[1.18]
-          pointer-events-none
-        "
-      />
-
-      {/* =====================================================
-          DARK SAMURAI OVERLAYS
-      ====================================================== */}
-
-      <div className="pointer-events-none fixed inset-0 z-[1] bg-black/[0.46]" />
+      {/* ==================================================
+          MERCHENDISE-STYLE CINEMATIC BACKGROUND
+      ================================================== */}
 
       <div
-        className="
-          pointer-events-none
-          fixed
-          inset-0
-          z-[2]
-          bg-gradient-to-b
-          from-black/[0.38]
-          via-black/[0.12]
-          to-black/[0.62]
-        "
+        className="pointer-events-none fixed inset-0 z-[2] opacity-[.055]"
+        style={{
+          backgroundImage:
+            "linear-gradient(rgba(255,255,255,.10) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.07) 1px, transparent 1px)",
+          backgroundSize: "80px 80px",
+        }}
       />
 
-      <div
-        className="
-          pointer-events-none
-          fixed
-          inset-0
-          z-[2]
-          bg-gradient-to-r
-          from-black/[0.24]
-          via-transparent
-          to-black/[0.24]
-        "
-      />
-
-      <div
-        className="
-          pointer-events-none
-          fixed
-          inset-0
-          z-[2]
-          bg-[radial-gradient(circle_at_50%_35%,transparent_0%,rgba(255,255,255,0.018)_42%,rgba(0,0,0,0.42)_100%)]
-        "
-      />
+      <div className="pointer-events-none fixed left-[8%] top-[18%] z-[2] h-[320px] w-[420px] rounded-full bg-white/[.075] blur-[120px]" />
+      <div className="pointer-events-none fixed bottom-[5%] right-[7%] z-[2] h-[340px] w-[430px] rounded-full bg-white/[.055] blur-[130px]" />
 
       {/* =====================================================
           CONTENT
@@ -967,6 +1103,24 @@ const Schedule = () => {
 
         @import url('https://fonts.cdnfonts.com/css/the-last-shuriken');
 
+
+        /* ==================================================
+           THREE.JS STARFIELD — FULL PAGE BACKGROUND
+           Stars are copied from File 1 exactly.
+        ================================================== */
+
+        .merch-starfield-canvas {
+          position: fixed !important;
+          inset: 0 !important;
+          display: block;
+          width: 100vw !important;
+          height: 100vh !important;
+          min-width: 100vw !important;
+          min-height: 100vh !important;
+          z-index: 0 !important;
+          pointer-events: none !important;
+        }
+
         /* ==================================================
            GLOBAL FONT
         ================================================== */
@@ -982,7 +1136,7 @@ const Schedule = () => {
 
         body {
           margin: 0;
-          background: #030305;
+          background: #000;
         }
 
         ::selection {

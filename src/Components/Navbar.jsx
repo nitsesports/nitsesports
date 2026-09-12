@@ -18,16 +18,22 @@ import youtubeLogo from "../assets/ytw.png";
 
 const Navbar = () => {
   const [menuOpen, setMenuOpen] = useState(false);
+
   const [session, setSession] = useState(null);
   const [profileOpen, setProfileOpen] = useState(false);
   const [profilePhoto, setProfilePhoto] = useState(null);
   const [uploading, setUploading] = useState(false);
 
   const fileInputRef = useRef(null);
+
   const location = useLocation();
 
   const currentPath =
     location.pathname.replace(/\/+$/, "") || "/";
+
+  /* =====================================================
+     ACTIVE ROUTES
+  ===================================================== */
 
   const isHome = currentPath === "/";
   const isTeam = currentPath === "/team";
@@ -39,6 +45,10 @@ const Navbar = () => {
   const isRegister =
     currentPath === "/register" ||
     currentPath === "/register-test";
+
+  /* =====================================================
+     GET CURRENT SESSION
+  ===================================================== */
 
   useEffect(() => {
     let mounted = true;
@@ -58,6 +68,10 @@ const Navbar = () => {
     };
 
     getSession();
+
+    /* ===================================================
+       AUTH STATE LISTENER
+    =================================================== */
 
     const {
       data: { subscription },
@@ -82,10 +96,18 @@ const Navbar = () => {
     };
   }, []);
 
+  /* =====================================================
+     LOAD PROFILE PHOTO
+  ===================================================== */
+
   const loadProfilePhoto = async (user) => {
     if (!user) return;
 
     try {
+      /*
+        First check metadata.
+      */
+
       const metadataPhoto =
         user.user_metadata?.avatar_url ||
         user.user_metadata?.picture ||
@@ -95,6 +117,10 @@ const Navbar = () => {
         setProfilePhoto(metadataPhoto);
         return;
       }
+
+      /*
+        Otherwise check Storage.
+      */
 
       const fileName = `${user.id}/avatar`;
 
@@ -106,13 +132,24 @@ const Navbar = () => {
         setProfilePhoto(data.publicUrl);
       }
     } catch (error) {
-      console.error("Profile photo load error:", error);
+      console.error(
+        "Profile photo load error:",
+        error
+      );
     }
   };
+
+  /* =====================================================
+     CLOSE MOBILE MENU
+  ===================================================== */
 
   const closeMenu = () => {
     setMenuOpen(false);
   };
+
+  /* =====================================================
+     LOGOUT
+  ===================================================== */
 
   const handleLogout = async () => {
     try {
@@ -123,9 +160,16 @@ const Navbar = () => {
       setProfileOpen(false);
       closeMenu();
     } catch (error) {
-      console.error("Logout error:", error);
+      console.error(
+        "Logout error:",
+        error
+      );
     }
   };
+
+  /* =====================================================
+     PROFILE PHOTO UPLOAD
+  ===================================================== */
 
   const handleProfileUpload = async (event) => {
     const file = event.target.files?.[0];
@@ -133,6 +177,10 @@ const Navbar = () => {
     if (!file || !session?.user) {
       return;
     }
+
+    /* -----------------------------
+       FILE VALIDATION
+    ----------------------------- */
 
     const allowedTypes = [
       "image/jpeg",
@@ -142,13 +190,19 @@ const Navbar = () => {
     ];
 
     if (!allowedTypes.includes(file.type)) {
-      alert("Please upload a JPG, PNG or WEBP image.");
+      alert(
+        "Please upload a JPG, PNG or WEBP image."
+      );
+
       event.target.value = "";
       return;
     }
 
     if (file.size > 5 * 1024 * 1024) {
-      alert("Profile photo must be smaller than 5MB.");
+      alert(
+        "Profile photo must be smaller than 5MB."
+      );
+
       event.target.value = "";
       return;
     }
@@ -157,11 +211,20 @@ const Navbar = () => {
       setUploading(true);
 
       const userId = session.user.id;
-      const fileExt =
-        file.name.split(".").pop()?.toLowerCase() || "jpg";
 
-      const filePath =
-        `${userId}/avatar-${Date.now()}-${crypto.randomUUID()}.${fileExt}`;
+      /*
+        Store one avatar per user.
+      */
+
+      // Give every upload a unique filename so Supabase never has to
+      // overwrite the previous object. This makes changing the photo
+      // work every single time, even with Storage RLS policies.
+      const fileExt = file.name.split(".").pop()?.toLowerCase() || "jpg";
+      const filePath = `${userId}/avatar-${Date.now()}-${crypto.randomUUID()}.${fileExt}`;
+
+      /* -----------------------------
+         UPLOAD TO SUPABASE STORAGE
+      ----------------------------- */
 
       const { error: uploadError } =
         await supabase.storage
@@ -176,13 +239,18 @@ const Navbar = () => {
         throw uploadError;
       }
 
+      /* -----------------------------
+         GET PUBLIC URL
+      ----------------------------- */
+
       const {
         data: publicUrlData,
       } = supabase.storage
         .from("avatars")
         .getPublicUrl(filePath);
 
-      const publicUrl = publicUrlData?.publicUrl;
+      const publicUrl =
+        publicUrlData?.publicUrl;
 
       if (!publicUrl) {
         throw new Error(
@@ -190,10 +258,19 @@ const Navbar = () => {
         );
       }
 
+      /*
+        Cache buster ensures the newly
+        uploaded image appears immediately.
+      */
+
       const finalUrl =
         `${publicUrl}?t=${Date.now()}`;
 
       setProfilePhoto(finalUrl);
+
+      /* -----------------------------
+         SAVE URL IN USER METADATA
+      ----------------------------- */
 
       const {
         error: metadataError,
@@ -228,6 +305,10 @@ const Navbar = () => {
     }
   };
 
+  /* =====================================================
+     USER INITIAL
+  ===================================================== */
+
   const getUserInitial = () => {
     const fullName =
       session?.user?.user_metadata?.full_name;
@@ -250,17 +331,11 @@ const Navbar = () => {
     <>
       <style>{`
 
-        @import url(
-          'https://fonts.cdnfonts.com/css/the-last-shuriken'
-        );
+        @import url('https://fonts.cdnfonts.com/css/the-last-shuriken');
 
         @import url(
           'https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;600;700&display=swap'
         );
-
-        /* =====================================================
-           SAMURAI NAVBAR BASE
-        ===================================================== */
 
         .gaming-navbar {
           font-family: 'The Last Shuriken', sans-serif;
@@ -268,6 +343,7 @@ const Navbar = () => {
           letter-spacing: .035em;
         }
 
+        /* Same display typeface as the NITS ESPORTS hero heading. */
         .gaming-navbar .navbar-link,
         .gaming-navbar .login-link,
         .gaming-navbar .mobile-navbar a,
@@ -276,73 +352,40 @@ const Navbar = () => {
           font-family: 'The Last Shuriken', sans-serif;
         }
 
-        /* =====================================================
-           NAV TEXT
-        ===================================================== */
-
+        /* Subtle forged-metal / samurai edge treatment; layout unchanged. */
         .navbar-link,
         .login-link,
         .mobile-navbar a {
           text-shadow:
-            0 1px 0 rgba(255,255,255,.12),
-            0 3px 10px rgba(0,0,0,.90);
-
-          transition:
-            color .25s ease,
-            transform .25s ease,
-            text-shadow .25s ease;
+            0 1px 0 rgba(255,255,255,.10),
+            0 3px 8px rgba(0,0,0,.65);
         }
 
         .navbar-link.active,
         .navbar-link:hover,
         .login-link {
-          background-image:
-            linear-gradient(
-              180deg,
-              #ffffff 0%,
-              #e4e4e4 38%,
-              #a1a1a1 65%,
-              #555555 100%
-            );
-
+          background-image: linear-gradient(
+            180deg,
+            #ffffff 0%,
+            #d8d8d8 42%,
+            #777777 100%
+          );
           -webkit-background-clip: text;
           background-clip: text;
           color: transparent;
-
-          text-shadow:
-            0 0 12px rgba(255,255,255,.10);
         }
-
-        /* =====================================================
-           SAMURAI BLADE LINE ABOVE NAV TEXT
-        ===================================================== */
 
         .navbar-link::before {
           content: "";
-
           position: absolute;
           left: 0;
           right: 0;
           top: 5px;
-
           height: 1px;
-
-          background:
-            linear-gradient(
-              90deg,
-              transparent,
-              rgba(255,255,255,.05) 10%,
-              rgba(255,255,255,.65) 50%,
-              rgba(255,255,255,.05) 90%,
-              transparent
-            );
-
+          background: linear-gradient(90deg, transparent, rgba(255,255,255,.28), transparent);
           opacity: 0;
-          transform: scaleX(.45);
-
-          transition:
-            opacity .25s ease,
-            transform .35s cubic-bezier(.22,1,.36,1);
+          transform: scaleX(.55);
+          transition: opacity .25s ease, transform .35s cubic-bezier(.22,1,.36,1);
         }
 
         .navbar-link:hover::before,
@@ -351,113 +394,21 @@ const Navbar = () => {
           transform: scaleX(1);
         }
 
-        /* =====================================================
-           MAIN NAVBAR BODY
-        ===================================================== */
-
-        .navbar-body {
-          position: relative;
-          overflow: visible !important;
-
-          background:
-            linear-gradient(
-              115deg,
-              rgba(0,0,0,.985) 0%,
-              rgba(8,8,8,.98) 24%,
-              rgba(20,20,20,.96) 50%,
-              rgba(7,7,7,.985) 76%,
-              rgba(0,0,0,.99) 100%
-            );
-
-          border:
-            1px solid rgba(255,255,255,.13);
-
-          backdrop-filter:
-            blur(24px)
-            saturate(70%);
-
-          -webkit-backdrop-filter:
-            blur(24px)
-            saturate(70%);
-
-          box-shadow:
-            0 22px 65px rgba(0,0,0,.72),
-            0 5px 20px rgba(0,0,0,.65),
-            inset 0 1px 0 rgba(255,255,255,.09),
-            inset 0 -1px 0 rgba(255,255,255,.035);
-
-          border-radius: 0 0 18px 18px;
-        }
-
-        /* Forged steel texture */
-
-        .navbar-body::before {
-          content: "";
-
-          position: absolute;
-          inset: 0;
-
-          pointer-events: none;
-
-          border-radius: inherit;
-
-          background:
-            repeating-linear-gradient(
-              115deg,
-              transparent 0px,
-              transparent 7px,
-              rgba(255,255,255,.018) 8px,
-              transparent 9px,
-              transparent 17px
-            );
-
-          opacity: .65;
-
-          mix-blend-mode: screen;
-        }
-
-        /* Outer samurai edge */
-
         .navbar-body::after {
           content: "";
-
           position: absolute;
-
           left: 2.5%;
           right: 2.5%;
           bottom: 1px;
-
           height: 1px;
-
           pointer-events: none;
-
-          background:
-            linear-gradient(
-              90deg,
-              transparent 0%,
-              rgba(255,255,255,.04) 12%,
-              rgba(255,255,255,.18) 30%,
-              rgba(255,255,255,.60) 50%,
-              rgba(255,255,255,.18) 70%,
-              rgba(255,255,255,.04) 88%,
-              transparent 100%
-            );
-
-          box-shadow:
-            0 0 12px rgba(255,255,255,.10);
+          background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,.08) 20%, rgba(255,255,255,.42) 50%, rgba(255,255,255,.08) 80%, transparent 100%);
+          box-shadow: 0 0 10px rgba(255,255,255,.08);
         }
 
-        /* =====================================================
-           TOP LINE
-        ===================================================== */
-
-        .navbar-body > div:first-child {
-          opacity: .8;
-        }
-
-        /* =====================================================
+        /* =============================================
            NAVBAR ENTRY
-        ===================================================== */
+        ============================================= */
 
         @keyframes navbarEnter {
           from {
@@ -478,13 +429,12 @@ const Navbar = () => {
             cubic-bezier(.16,1,.3,1);
         }
 
-        /* =====================================================
+        /* =============================================
            NAV LINK
-        ===================================================== */
+        ============================================= */
 
         .navbar-link {
           position: relative;
-
           display: inline-flex;
           align-items: center;
           justify-content: center;
@@ -499,11 +449,8 @@ const Navbar = () => {
 
           transition:
             color .25s ease,
-            transform .25s ease,
-            filter .25s ease;
+            transform .25s ease;
         }
-
-        /* Blade underline */
 
         .navbar-link::after {
           content: "";
@@ -522,16 +469,14 @@ const Navbar = () => {
           background:
             linear-gradient(
               90deg,
-              #4b4b4b,
-              #bcbcbc,
+              #666666,
               #ffffff,
-              #bcbcbc,
-              #4b4b4b
+              #777777
             );
 
           box-shadow:
-            0 0 5px rgba(255,255,255,.22),
-            0 0 12px rgba(255,255,255,.10);
+            0 0 6px rgba(255,255,255,.18),
+            0 0 10px rgba(255,255,255,.08);
 
           opacity: 0;
 
@@ -548,85 +493,11 @@ const Navbar = () => {
 
         .navbar-link:hover {
           transform: translateY(-1px);
-          filter: brightness(1.12);
         }
 
-        /* =====================================================
-           SEARCH BUTTON
-        ===================================================== */
-
-        .gaming-navbar button[aria-label="Search"] {
-          position: relative;
-
-          border-radius: 8px;
-
-          transition:
-            color .25s ease,
-            transform .25s ease,
-            background .25s ease;
-        }
-
-        .gaming-navbar button[aria-label="Search"]::before {
-          content: "";
-
-          position: absolute;
-          inset: 4px;
-
-          border: 1px solid rgba(255,255,255,.045);
-          border-radius: 7px;
-
-          opacity: 0;
-          transition: opacity .25s ease;
-        }
-
-        .gaming-navbar button[aria-label="Search"]:hover {
-          transform: translateY(-1px);
-          background: rgba(255,255,255,.025);
-        }
-
-        .gaming-navbar button[aria-label="Search"]:hover::before {
-          opacity: 1;
-        }
-
-        /* =====================================================
-           SOCIAL ICONS
-        ===================================================== */
-
-        .social-logo {
-          width: 15px;
-          height: 15px;
-
-          object-fit: contain;
-          display: block;
-
-          opacity: .65;
-
-          filter:
-            grayscale(1)
-            brightness(1.35);
-
-          transition:
-            opacity .25s ease,
-            transform .25s ease,
-            filter .25s ease;
-        }
-
-        .social-logo:hover {
-          opacity: 1;
-
-          transform:
-            translateY(-1px)
-            scale(1.08);
-
-          filter:
-            grayscale(1)
-            brightness(1.8)
-            drop-shadow(0 0 5px rgba(255,255,255,.18));
-        }
-
-        /* =====================================================
-           LOGIN BUTTON
-        ===================================================== */
+        /* =============================================
+           LOGIN / LOGGED IN BUTTON
+        ============================================= */
 
         .login-link {
           position: relative;
@@ -652,22 +523,21 @@ const Navbar = () => {
           letter-spacing: .14em;
 
           border:
-            1px solid rgba(255,255,255,.16);
+            1px solid rgba(255,255,255,.18);
 
-          border-radius: 6px;
+          border-radius: 7px;
 
           background:
             linear-gradient(
               135deg,
-              rgba(255,255,255,.055),
-              rgba(30,30,30,.92),
-              rgba(0,0,0,.98)
+              rgba(255,255,255,.10),
+              rgba(110,110,110,.08),
+              rgba(0,0,0,.28)
             );
 
           box-shadow:
-            0 8px 22px rgba(0,0,0,.42),
-            inset 0 1px 0 rgba(255,255,255,.08),
-            inset 0 -1px 0 rgba(0,0,0,.8);
+            0 0 18px rgba(255,255,255,.06),
+            inset 0 1px 0 rgba(255,255,255,.10);
 
           backdrop-filter: blur(10px);
           -webkit-backdrop-filter: blur(10px);
@@ -685,16 +555,15 @@ const Navbar = () => {
           position: absolute;
           inset: -1px;
 
-          border-radius: 6px;
+          border-radius: 7px;
           padding: 1px;
 
           background:
             linear-gradient(
-              105deg,
-              rgba(60,60,60,.85),
-              rgba(255,255,255,.62),
-              rgba(70,70,70,.90),
-              rgba(20,20,20,.95)
+              90deg,
+              rgba(110,110,110,.85),
+              rgba(255,255,255,.75),
+              rgba(85,85,85,.85)
             );
 
           -webkit-mask:
@@ -704,31 +573,8 @@ const Navbar = () => {
           -webkit-mask-composite: xor;
           mask-composite: exclude;
 
-          opacity: .42;
-
+          opacity: .48;
           pointer-events: none;
-        }
-
-        .login-link::after {
-          content: "";
-
-          position: absolute;
-
-          left: 15%;
-          right: 15%;
-          bottom: 3px;
-
-          height: 1px;
-
-          background:
-            linear-gradient(
-              90deg,
-              transparent,
-              rgba(255,255,255,.55),
-              transparent
-            );
-
-          opacity: .45;
         }
 
         .login-link:hover {
@@ -740,27 +586,39 @@ const Navbar = () => {
           background:
             linear-gradient(
               135deg,
-              rgba(255,255,255,.10),
-              rgba(35,35,35,.94),
-              rgba(0,0,0,.98)
+              rgba(255,255,255,.15),
+              rgba(120,120,120,.12),
+              rgba(0,0,0,.32)
             );
 
           box-shadow:
-            0 10px 28px rgba(0,0,0,.55),
-            0 0 20px rgba(255,255,255,.06),
+            0 0 20px rgba(255,255,255,.08),
+            0 0 30px rgba(255,255,255,.035),
             inset 0 1px 0 rgba(255,255,255,.12);
         }
 
-        /* =====================================================
+        /* =============================================
            PROFILE
-        ===================================================== */
+        ============================================= */
+
+        .social-logo {
+          width: 15px;
+          height: 15px;
+          object-fit: contain;
+          display: block;
+          opacity: .78;
+          transition: opacity .25s ease, transform .25s ease;
+        }
+
+        .social-logo:hover {
+          opacity: 1;
+          transform: scale(1.08);
+        }
 
         .profile-wrapper {
           position: relative;
-
           display: flex;
           align-items: center;
-
           margin-left: 9px;
           padding-bottom: 14px;
           margin-bottom: -14px;
@@ -768,15 +626,11 @@ const Navbar = () => {
 
         .profile-wrapper::after {
           content: "";
-
           position: absolute;
-
           left: -18px;
           right: -18px;
           top: 100%;
-
           height: 22px;
-
           pointer-events: auto;
         }
 
@@ -800,48 +654,27 @@ const Navbar = () => {
           background:
             linear-gradient(
               135deg,
-              rgba(255,255,255,.08),
-              rgba(45,45,45,.50),
-              rgba(0,0,0,.98)
+              rgba(255,255,255,.12),
+              rgba(95,95,95,.10),
+              rgba(0,0,0,.30)
             );
 
           box-shadow:
-            0 8px 22px rgba(0,0,0,.55),
-            0 0 16px rgba(255,255,255,.045),
-            inset 0 1px 0 rgba(255,255,255,.12);
+            0 0 18px rgba(255,255,255,.07);
 
           cursor: pointer;
 
           transition:
             transform .25s ease,
-            box-shadow .25s ease,
-            border-color .25s ease;
-        }
-
-        .profile-button::before {
-          content: "";
-
-          position: absolute;
-          inset: 2px;
-
-          border-radius: 50%;
-
-          border:
-            1px solid rgba(255,255,255,.08);
-
-          pointer-events: none;
+            box-shadow .25s ease;
         }
 
         .profile-button:hover {
           transform: scale(1.06);
 
-          border-color:
-            rgba(255,255,255,.38);
-
           box-shadow:
-            0 10px 28px rgba(0,0,0,.65),
-            0 0 25px rgba(255,255,255,.11),
-            inset 0 1px 0 rgba(255,255,255,.16);
+            0 0 25px rgba(255,255,255,.12),
+            0 0 35px rgba(255,255,255,.05);
         }
 
         .profile-image {
@@ -856,22 +689,20 @@ const Navbar = () => {
 
           background:
             linear-gradient(
-              135deg,
-              #5b5b5b,
+              90deg,
+              #bdbdbd,
               #ffffff,
-              #8b8b8b,
-              #363636
+              #8a8a8a
             );
 
           -webkit-background-clip: text;
           background-clip: text;
-
           color: transparent;
         }
 
-        /* =====================================================
+        /* =============================================
            PROFILE DROPDOWN
-        ===================================================== */
+        ============================================= */
 
         .profile-dropdown {
           position: absolute;
@@ -886,51 +717,29 @@ const Navbar = () => {
           border:
             1px solid rgba(255,255,255,.14);
 
-          border-radius: 14px;
+          border-radius: 18px;
 
           background:
             linear-gradient(
               135deg,
-              rgba(0,0,0,.985),
-              rgba(17,17,17,.98),
-              rgba(3,3,3,.995)
+              rgba(8,8,8,.97),
+              rgba(28,28,28,.94),
+              rgba(5,5,5,.98)
             );
 
-          backdrop-filter: blur(26px);
-          -webkit-backdrop-filter: blur(26px);
+          backdrop-filter: blur(24px);
+          -webkit-backdrop-filter: blur(24px);
 
           box-shadow:
-            0 28px 75px rgba(0,0,0,.78),
-            0 0 35px rgba(255,255,255,.035),
-            inset 0 1px 0 rgba(255,255,255,.08);
+            0 25px 70px rgba(0,0,0,.62),
+            0 0 30px rgba(255,255,255,.045);
 
           z-index: 2147483647 !important;
           pointer-events: auto;
         }
 
-        .profile-dropdown::before {
-          content: "";
-
-          position: absolute;
-
-          top: -1px;
-          left: 18%;
-          right: 18%;
-
-          height: 1px;
-
-          background:
-            linear-gradient(
-              90deg,
-              transparent,
-              rgba(255,255,255,.45),
-              transparent
-            );
-        }
-
         .profile-info {
           padding: 10px;
-
           border-bottom:
             1px solid rgba(255,255,255,.08);
         }
@@ -959,7 +768,7 @@ const Navbar = () => {
 
           margin-top: 5px;
 
-          border-radius: 9px;
+          border-radius: 11px;
 
           color: rgba(255,255,255,.70);
 
@@ -972,26 +781,53 @@ const Navbar = () => {
 
           transition:
             background .2s ease,
-            color .2s ease,
-            transform .2s ease;
+            color .2s ease;
         }
 
         .profile-action:hover {
           background:
-            linear-gradient(
-              90deg,
-              rgba(255,255,255,.055),
-              rgba(255,255,255,.015)
-            );
+            rgba(255,255,255,.06);
 
           color: #fff;
-
-          transform: translateX(2px);
         }
 
-        /* =====================================================
+        /* =============================================
+           NAVBAR BODY
+        ============================================= */
+
+        .navbar-body {
+          position: relative;
+          overflow: visible !important;
+
+          background:
+            linear-gradient(
+              110deg,
+              rgba(3,3,3,.91),
+              rgba(30,30,30,.70),
+              rgba(4,4,4,.91)
+            );
+
+          border:
+            1px solid rgba(255,255,255,.13);
+
+          backdrop-filter:
+            blur(22px)
+            saturate(85%);
+
+          -webkit-backdrop-filter:
+            blur(22px)
+            saturate(85%);
+
+          box-shadow:
+            0 18px 55px rgba(0,0,0,.34),
+            inset 0 1px 0 rgba(255,255,255,.07);
+
+          border-radius: 0 0 18px 18px;
+        }
+
+        /* =============================================
            CENTER LOGO
-        ===================================================== */
+        ============================================= */
 
         .center-logo {
           position: absolute;
@@ -1014,9 +850,6 @@ const Navbar = () => {
               100% 100%,
               0% 100%
             );
-
-          filter:
-            drop-shadow(0 15px 25px rgba(0,0,0,.60));
         }
 
         .center-logo-frame {
@@ -1026,12 +859,9 @@ const Navbar = () => {
           background:
             linear-gradient(
               135deg,
-              #202020,
-              #9b9b9b,
-              #303030,
-              #080808,
-              #777777,
-              #171717
+              rgba(75,75,75,.92),
+              rgba(225,225,225,.78),
+              rgba(55,55,55,.92)
             );
 
           clip-path:
@@ -1050,9 +880,9 @@ const Navbar = () => {
           background:
             linear-gradient(
               145deg,
-              rgba(0,0,0,.99),
-              rgba(18,18,18,.98),
-              rgba(2,2,2,.99)
+              rgba(5,5,5,.98),
+              rgba(24,24,24,.92),
+              rgba(3,3,3,.98)
             );
 
           clip-path:
@@ -1066,35 +896,17 @@ const Navbar = () => {
 
         .center-logo::after {
           content: "";
-
           position: absolute;
-
           left: 22%;
           right: 22%;
           bottom: 14px;
-
           height: 1px;
-
           z-index: 20;
-
           pointer-events: none;
-
-          transform:
-            rotate(-7deg);
-
+          transform: rotate(-7deg);
           transform-origin: center;
-
-          background:
-            linear-gradient(
-              90deg,
-              transparent,
-              rgba(255,255,255,.72),
-              rgba(255,255,255,.18),
-              transparent
-            );
-
-          box-shadow:
-            0 0 9px rgba(255,255,255,.18);
+          background: linear-gradient(90deg, transparent, rgba(255,255,255,.62), transparent);
+          box-shadow: 0 0 7px rgba(255,255,255,.16);
         }
 
         .center-logo-glow {
@@ -1103,8 +915,8 @@ const Navbar = () => {
           left: 50%;
           top: 50%;
 
-          width: 72px;
-          height: 72px;
+          width: 70px;
+          height: 70px;
 
           transform:
             translate(-50%,-50%);
@@ -1115,35 +927,33 @@ const Navbar = () => {
             radial-gradient(
               circle,
               rgba(255,255,255,.075),
-              rgba(150,150,150,.025) 45%,
+              rgba(160,160,160,.025) 45%,
               transparent 72%
             );
 
-          filter: blur(11px);
+          filter: blur(10px);
         }
 
-        /* =====================================================
+        /* =============================================
            MOBILE NAVBAR
-        ===================================================== */
+        ============================================= */
 
         .mobile-navbar {
-          position: relative;
-
           background:
             linear-gradient(
               120deg,
-              rgba(0,0,0,.995),
-              rgba(14,14,14,.985),
-              rgba(2,2,2,.995)
+              rgba(4,4,4,.97),
+              rgba(27,27,27,.92),
+              rgba(5,5,5,.97)
             );
 
           backdrop-filter:
-            blur(24px)
-            saturate(70%);
+            blur(22px)
+            saturate(85%);
 
           -webkit-backdrop-filter:
-            blur(24px)
-            saturate(70%);
+            blur(22px)
+            saturate(85%);
 
           clip-path:
             polygon(
@@ -1154,73 +964,15 @@ const Navbar = () => {
               3% 100%,
               0 96%
             );
-
-          box-shadow:
-            0 25px 70px rgba(0,0,0,.78),
-            inset 0 1px 0 rgba(255,255,255,.07);
         }
 
-        .mobile-navbar::before {
-          content: "";
-
-          position: absolute;
-          inset: 0;
-
-          pointer-events: none;
-
-          background:
-            repeating-linear-gradient(
-              115deg,
-              transparent 0,
-              transparent 8px,
-              rgba(255,255,255,.018) 9px,
-              transparent 10px,
-              transparent 18px
-            );
-        }
+        /* =============================================
+           RESPONSIVE
+        ============================================= */
 
         .mobile-navbar a {
-          text-shadow:
-            0 2px 8px rgba(0,0,0,.85);
-
-          transition:
-            background .25s ease,
-            color .25s ease,
-            padding-left .25s ease;
+          text-shadow: 0 2px 7px rgba(0,0,0,.65);
         }
-
-        .mobile-navbar a:hover {
-          background:
-            linear-gradient(
-              90deg,
-              rgba(255,255,255,.045),
-              transparent
-            );
-
-          padding-left: 18px;
-        }
-
-        /* =====================================================
-           MOBILE TRIGGER
-        ===================================================== */
-
-        .mobile-trigger {
-          border-radius: 8px;
-
-          transition:
-            background .25s ease,
-            color .25s ease,
-            transform .25s ease;
-        }
-
-        .mobile-trigger:hover {
-          background: rgba(255,255,255,.045);
-          transform: scale(1.03);
-        }
-
-        /* =====================================================
-           RESPONSIVE
-        ===================================================== */
 
         @media (max-width: 1279px) {
           .desktop-nav {
@@ -1284,7 +1036,6 @@ const Navbar = () => {
             margin-left: 5px;
           }
         }
-
       `}</style>
 
       {/* =====================================================
@@ -1343,7 +1094,9 @@ const Navbar = () => {
               "
             />
 
-            {/* MAIN CONTENT */}
+            {/* =================================================
+                MAIN CONTENT
+            ================================================= */}
 
             <div
               className="
@@ -1360,7 +1113,9 @@ const Navbar = () => {
               "
             >
 
-              {/* LEFT */}
+              {/* =================================================
+                  LEFT
+              ================================================= */}
 
               <div
                 className="
@@ -1406,7 +1161,7 @@ const Navbar = () => {
                     xl:ml-6
                   "
                 >
-                  <SocialIcon>
+                  <SocialIcon href="https://www.instagram.com/nits.esports?stkn=MWs1aGNoNm8wbWc2cQ==">
                     <img
                       src={instagramLogo}
                       alt="Instagram"
@@ -1414,7 +1169,7 @@ const Navbar = () => {
                     />
                   </SocialIcon>
 
-                  <SocialIcon>
+                  <SocialIcon href="#">
                     <img
                       src={facebookLogo}
                       alt="Facebook"
@@ -1422,7 +1177,7 @@ const Navbar = () => {
                     />
                   </SocialIcon>
 
-                  <SocialIcon>
+                  <SocialIcon href="https://www.linkedin.com/company/nits-esports/">
                     <img
                       src={linkedinLogo}
                       alt="LinkedIn"
@@ -1430,7 +1185,7 @@ const Navbar = () => {
                     />
                   </SocialIcon>
 
-                  <SocialIcon>
+                  <SocialIcon href="https://youtube.com/@nitsesports?si=pQr4nw-dBh5wsrJ7">
                     <img
                       src={youtubeLogo}
                       alt="YouTube"
@@ -1453,6 +1208,7 @@ const Navbar = () => {
                     xl:gap-10
                   "
                 >
+
                   <NavItem
                     to="/"
                     active={isHome}
@@ -1476,11 +1232,14 @@ const Navbar = () => {
                   >
                     SCHEDULE
                   </NavItem>
+
                 </div>
 
               </div>
 
-              {/* CENTER LOGO */}
+              {/* =================================================
+                  CENTER LOGO
+              ================================================= */}
 
               <Link
                 to="/"
@@ -1510,13 +1269,15 @@ const Navbar = () => {
                       h-[92%]
                       w-[92%]
                       object-contain
-                      drop-shadow-[0_0_14px_rgba(255,255,255,.12)]
+                      drop-shadow-[0_0_12px_rgba(255,255,255,.10)]
                     "
                   />
                 </div>
               </Link>
 
-              {/* RIGHT */}
+              {/* =================================================
+                  RIGHT
+              ================================================= */}
 
               <div
                 className="
@@ -1566,6 +1327,8 @@ const Navbar = () => {
                     EVENTS
                   </NavItem>
 
+                  {/* LOGIN / LOGGED IN */}
+
                   {!session ? (
                     <LoginNavItem
                       to="/login"
@@ -1588,6 +1351,8 @@ const Navbar = () => {
                       >
                         LOGGED IN
                       </button>
+
+                      {/* PROFILE CIRCLE */}
 
                       <div className="profile-wrapper">
 
@@ -1613,6 +1378,8 @@ const Navbar = () => {
                             </span>
                           )}
                         </button>
+
+                        {/* PROFILE DROPDOWN */}
 
                         {profileOpen && (
                           <div className="profile-dropdown">
@@ -1783,7 +1550,9 @@ const Navbar = () => {
 
           </div>
 
-          {/* MOBILE MENU */}
+          {/* =====================================================
+              MOBILE MENU
+          ===================================================== */}
 
           <div
             className={`
@@ -1795,7 +1564,7 @@ const Navbar = () => {
               overflow-hidden
               border
               border-white/[0.12]
-              shadow-[0_24px_65px_rgba(0,0,0,.72)]
+              shadow-[0_20px_50px_rgba(0,0,0,.45)]
               transition-all
               duration-300
               xl:hidden
@@ -1892,6 +1661,7 @@ const Navbar = () => {
                       py-4
                     "
                   >
+
                     <span
                       className="
                         text-[12px]
@@ -1939,7 +1709,10 @@ const Navbar = () => {
                         </span>
                       )}
                     </button>
+
                   </div>
+
+                  {/* MOBILE PROFILE ACTIONS */}
 
                   {profileOpen && (
                     <div
@@ -1950,6 +1723,7 @@ const Navbar = () => {
                         py-3
                       "
                     >
+
                       <button
                         type="button"
                         onClick={() =>
@@ -2000,6 +1774,7 @@ const Navbar = () => {
                         <LogOut size={15} />
                         LOGOUT
                       </button>
+
                     </div>
                   )}
                 </>
@@ -2019,10 +1794,12 @@ const Navbar = () => {
    SOCIAL ICON
 ===================================================== */
 
-const SocialIcon = ({ children }) => {
+const SocialIcon = ({ children, href = "#" }) => {
   return (
-    <button
-      type="button"
+    <a
+      href={href}
+      target={href !== "#" ? "_blank" : undefined}
+      rel={href !== "#" ? "noopener noreferrer" : undefined}
       aria-label="Social media"
       className="
         flex
@@ -2037,7 +1814,7 @@ const SocialIcon = ({ children }) => {
       "
     >
       {children}
-    </button>
+    </a>
   );
 };
 
