@@ -1945,8 +1945,10 @@ const ScrollSection = () => {
             justify-center
           "
         >
-          <button
+          
+          <button   
             className="
+            
               group
               relative
               flex
@@ -1972,7 +1974,9 @@ const ScrollSection = () => {
               hover:text-white
               hover:shadow-[0_0_25px_rgba(255,255,255,0.16),0_0_45px_rgba(255,255,255,0.08)]
             "
+            
           >
+          
             <span className="relative z-10">
               VIEW ALL EVENTS
             </span>

@@ -163,75 +163,290 @@ const Hero = () => {
     core.position.z = -1.1;
     portal.add(core);
 
-    // Spiral
-    const spiralPoints = [];
-    for (let i = 0; i < 180; i++) {
-      const t = i / 279;
-      const a = t * Math.PI * 12;
-      const r = 0.08 + t * 1.18;
-      spiralPoints.push(new THREE.Vector3(Math.cos(a) * r, Math.sin(a) * r, -1.15));
-    }
-    const spiralMaterial = new THREE.LineBasicMaterial({
-      color: 0xffffff,
-      transparent: true,
-      opacity: 0.46,
-      blending: THREE.AdditiveBlending,
-      depthWrite: false,
-      linewidth: 1,
+    // PREMIUM REACTOR CORE
+    // Layered sci-fi reactor: armor plates + segmented rings +
+    // radial energy channels + inner iris + micro-core.
+    const reactor = new THREE.Group();
+    // Recess the core so it reads as a deep portal mechanism, not foreground UI.
+    reactor.position.z = -1.18;
+    portal.add(reactor);
+
+    const reactorRings = [];
+
+    [
+      [1.58, 0.014, 0.13],
+      [1.46, 0.028, 0.22],
+      [1.30, 0.010, 0.34],
+      [1.14, 0.022, 0.20],
+      [0.98, 0.012, 0.42],
+      [0.82, 0.024, 0.24],
+      [0.66, 0.014, 0.48],
+      [0.52, 0.022, 0.34],
+    ].forEach(([r, width, opacity], i) => {
+      const material = new THREE.MeshBasicMaterial({
+        color: 0xffffff,
+        transparent: true,
+        opacity,
+        side: THREE.DoubleSide,
+        blending: THREE.AdditiveBlending,
+        depthWrite: false,
+      });
+      material.userData.portalBaseOpacity = opacity;
+
+      const mesh = new THREE.Mesh(
+        new THREE.RingGeometry(r, r + width, 72),
+        material
+      );
+      mesh.rotation.x = Math.PI / 2;
+      mesh.position.z = i * -0.032;
+      reactor.add(mesh);
+
+      reactorRings.push({
+        mesh,
+        speed: (i % 2 ? -1 : 1) * (0.022 + i * 0.005),
+      });
     });
-    spiralMaterial.userData.portalBaseOpacity = spiralMaterial.opacity;
 
-    const spiral = new THREE.Line(
-      new THREE.BufferGeometry().setFromPoints(spiralPoints),
-      spiralMaterial
-    );
-    spiral.scale.setScalar(1.10);
-    spiral.position.z = -0.08;
-    portal.add(spiral);
+    // Segmented armored reactor plates
+    const reactorArmor = new THREE.Group();
+    reactor.add(reactorArmor);
 
-    // Hero spiral (bright focal spiral)
-    const heroSpiralPoints = [];
-    for (let i = 0; i < 320; i++) {
-      const t = i / 519;
-      const a = t * Math.PI * 16;
-      const r = 0.035 + t * 1.42;
-      heroSpiralPoints.push(new THREE.Vector3(Math.cos(a) * r, Math.sin(a) * r, -0.62));
+    for (let i = 0; i < 24; i++) {
+      const a = (i / 24) * Math.PI * 2;
+      const r = 1.38;
+      const w = i % 2 === 0 ? 0.19 : 0.11;
+      const h = i % 3 === 0 ? 0.055 : 0.032;
+
+      const material = new THREE.MeshBasicMaterial({
+        color: 0xffffff,
+        transparent: true,
+        opacity: i % 4 === 0 ? 0.46 : 0.16,
+        side: THREE.DoubleSide,
+        blending: THREE.AdditiveBlending,
+        depthWrite: false,
+      });
+      material.userData.portalBaseOpacity = material.opacity;
+
+      const mesh = new THREE.Mesh(
+        new THREE.BoxGeometry(w, h, 0.028),
+        material
+      );
+      mesh.position.set(Math.cos(a) * r, Math.sin(a) * r, 0.02);
+      mesh.rotation.z = a + Math.PI / 2;
+      reactorArmor.add(mesh);
     }
-    const heroSpiralMaterial = new THREE.LineBasicMaterial({
-      color: 0xffffff,
-      transparent: true,
-      opacity: 0.40,
-      blending: THREE.AdditiveBlending,
-      depthWrite: false,
-      linewidth: 1,
+
+    // Inner segmented lock ring
+    const lockRing = new THREE.Group();
+    reactor.add(lockRing);
+
+    for (let i = 0; i < 20; i++) {
+      const a = (i / 20) * Math.PI * 2;
+      const material = new THREE.MeshBasicMaterial({
+        color: 0xffffff,
+        transparent: true,
+        opacity: i % 5 === 0 ? 0.58 : 0.14,
+        blending: THREE.AdditiveBlending,
+        depthWrite: false,
+      });
+      material.userData.portalBaseOpacity = material.opacity;
+
+      const mesh = new THREE.Mesh(
+        new THREE.BoxGeometry(0.16, 0.026, 0.022),
+        material
+      );
+      mesh.position.set(Math.cos(a) * 0.91, Math.sin(a) * 0.91, 0.035);
+      mesh.rotation.z = a;
+      lockRing.add(mesh);
+    }
+
+    // Dual-layer radial energy channels
+    const reactorSpokes = new THREE.Group();
+    reactor.add(reactorSpokes);
+
+    for (let i = 0; i < 40; i++) {
+      const a = (i / 40) * Math.PI * 2;
+      const inner = i % 2 === 0 ? 0.56 : 0.70;
+      const outer = i % 2 === 0 ? 1.10 : 1.25;
+
+      const geometry = new THREE.BufferGeometry().setFromPoints([
+        new THREE.Vector3(Math.cos(a) * inner, Math.sin(a) * inner, -0.04),
+        new THREE.Vector3(Math.cos(a) * outer, Math.sin(a) * outer, -0.04),
+      ]);
+
+      const material = new THREE.LineBasicMaterial({
+        color: 0xffffff,
+        transparent: true,
+        opacity: i % 5 === 0 ? 0.52 : 0.10,
+        blending: THREE.AdditiveBlending,
+        depthWrite: false,
+      });
+      material.userData.portalBaseOpacity = material.opacity;
+
+      reactorSpokes.add(new THREE.Line(geometry, material));
+    }
+
+    // Crosshair energy channels
+    const crosshair = new THREE.Group();
+    reactor.add(crosshair);
+
+    [0, Math.PI / 2, Math.PI / 4, -Math.PI / 4].forEach((a, i) => {
+      const length = i < 2 ? 0.78 : 0.58;
+      const geometry = new THREE.BufferGeometry().setFromPoints([
+        new THREE.Vector3(-Math.cos(a) * length, -Math.sin(a) * length, -0.10),
+        new THREE.Vector3(Math.cos(a) * length, Math.sin(a) * length, -0.10),
+      ]);
+
+      const material = new THREE.LineBasicMaterial({
+        color: 0xffffff,
+        transparent: true,
+        opacity: i < 2 ? 0.13 : 0.08,
+        blending: THREE.AdditiveBlending,
+        depthWrite: false,
+      });
+      material.userData.portalBaseOpacity = material.opacity;
+
+      crosshair.add(new THREE.Line(geometry, material));
     });
-    heroSpiralMaterial.userData.portalBaseOpacity = heroSpiralMaterial.opacity;
 
-    const heroSpiral = new THREE.Line(
-      new THREE.BufferGeometry().setFromPoints(heroSpiralPoints),
-      heroSpiralMaterial
-    );
-    heroSpiral.scale.setScalar(1.04);
-    heroSpiral.position.z = -0.14;
-    portal.add(heroSpiral);
-
-    // Center target
-    const target = new THREE.Group();
-    portal.add(target);
-
-    const targetRingMaterial = new THREE.MeshBasicMaterial({
+    // Central energy aperture with layered iris
+    const irisMaterial = new THREE.MeshBasicMaterial({
       color: 0xffffff,
       transparent: true,
-      opacity: 0.7,
+      opacity: 0.08,
       side: THREE.DoubleSide,
       blending: THREE.AdditiveBlending,
       depthWrite: false,
     });
-    targetRingMaterial.userData.portalBaseOpacity = targetRingMaterial.opacity;
+    irisMaterial.userData.portalBaseOpacity = 0.08;
 
-    const targetRing = new THREE.Mesh(new THREE.RingGeometry(0.2, 0.215, 64), targetRingMaterial);
-    targetRing.rotation.x = Math.PI / 2;
-    target.add(targetRing);
+    const iris = new THREE.Mesh(
+      new THREE.CircleGeometry(0.49, 64),
+      irisMaterial
+    );
+    iris.rotation.x = Math.PI / 2;
+    iris.position.z = -0.32;
+    reactor.add(iris);
+
+    const irisRingMaterial = new THREE.MeshBasicMaterial({
+      color: 0xffffff,
+      transparent: true,
+      opacity: 0.48,
+      side: THREE.DoubleSide,
+      blending: THREE.AdditiveBlending,
+      depthWrite: false,
+    });
+    irisRingMaterial.userData.portalBaseOpacity = 0.48;
+
+    const irisRing = new THREE.Mesh(
+      new THREE.RingGeometry(0.49, 0.525, 72),
+      irisRingMaterial
+    );
+    irisRing.rotation.x = Math.PI / 2;
+    irisRing.position.z = -0.26;
+    reactor.add(irisRing);
+
+    const innerIrisMaterial = new THREE.MeshBasicMaterial({
+      color: 0xffffff,
+      transparent: true,
+      opacity: 0.34,
+      side: THREE.DoubleSide,
+      blending: THREE.AdditiveBlending,
+      depthWrite: false,
+    });
+    innerIrisMaterial.userData.portalBaseOpacity = 0.34;
+
+    const innerIris = new THREE.Mesh(
+      new THREE.RingGeometry(0.31, 0.34, 56),
+      innerIrisMaterial
+    );
+    innerIris.rotation.x = Math.PI / 2;
+    innerIris.position.z = -0.38;
+    reactor.add(innerIris);
+
+    // Eight iris shutters create a mechanical aperture feel.
+    const shutters = new THREE.Group();
+    reactor.add(shutters);
+
+    for (let i = 0; i < 8; i++) {
+      const a = (i / 8) * Math.PI * 2;
+      const material = new THREE.MeshBasicMaterial({
+        color: 0xffffff,
+        transparent: true,
+        opacity: 0.20,
+        side: THREE.DoubleSide,
+        blending: THREE.AdditiveBlending,
+        depthWrite: false,
+      });
+      material.userData.portalBaseOpacity = 0.48;
+
+      const mesh = new THREE.Mesh(
+        new THREE.RingGeometry(0.38, 0.405, 24, 1, 0.12, 0.34),
+        material
+      );
+      mesh.rotation.x = Math.PI / 2;
+      mesh.rotation.z = a;
+      mesh.position.z = -0.20;
+      shutters.add(mesh);
+    }
+
+    // Bright micro-core + outer glow rings
+    const coreDotMaterial = new THREE.MeshBasicMaterial({
+      color: 0xffffff,
+      transparent: true,
+      opacity: 0.72,
+      blending: THREE.AdditiveBlending,
+      depthWrite: false,
+    });
+    coreDotMaterial.userData.portalBaseOpacity = 1;
+
+    const coreDot = new THREE.Mesh(
+      new THREE.CircleGeometry(0.085, 40),
+      coreDotMaterial
+    );
+    coreDot.rotation.x = Math.PI / 2;
+    coreDot.position.z = -0.52;
+    reactor.add(coreDot);
+
+    const coreGlowMaterial = new THREE.MeshBasicMaterial({
+      color: 0xffffff,
+      transparent: true,
+      opacity: 0.07,
+      side: THREE.DoubleSide,
+      blending: THREE.AdditiveBlending,
+      depthWrite: false,
+    });
+    coreGlowMaterial.userData.portalBaseOpacity = 0.07;
+
+    const coreGlow = new THREE.Mesh(
+      new THREE.RingGeometry(0.10, 0.20, 48),
+      coreGlowMaterial
+    );
+    coreGlow.rotation.x = Math.PI / 2;
+    coreGlow.position.z = -0.49;
+    reactor.add(coreGlow);
+
+    // Deep occlusion layer: creates visual separation behind the reactor
+    // so the central detailing sits behind the hero typography.
+    const reactorDepthMaterial = new THREE.MeshBasicMaterial({
+      color: 0x000000,
+      transparent: true,
+      opacity: 0.58,
+      side: THREE.DoubleSide,
+      depthWrite: false,
+    });
+    const reactorDepth = new THREE.Mesh(
+      new THREE.CircleGeometry(1.72, 64),
+      reactorDepthMaterial
+    );
+    reactorDepth.rotation.x = Math.PI / 2;
+    reactorDepth.position.z = -0.88;
+    reactor.add(reactorDepth);
+    reactorDepth.renderOrder = -2;
+
+    // Disable the old flat center.
+    core.material.opacity = 0;
+    core.visible = false;
 
     // Click shockwave
     const shock = new THREE.Mesh(
@@ -254,7 +469,7 @@ const Hero = () => {
       shock.material.opacity = 0.95;
       shockLife = 1;
     };
-    window.addEventListener("click", handleClick, { passive: true });
+    window.addEventListener("click", handleClick);
 
     // ---------------------------------------------------------
     // PARTICLE TUNNEL (the "dots" that continue on every page)
@@ -314,16 +529,7 @@ const Hero = () => {
     // distance (roughly a full viewport-and-a-bit) before it
     // fully dissolves into just the particle tunnel, which then
     // keeps running underneath every subsequent page.
-    //
-    // Viewport height is cached (updated only on resize) instead
-    // of read from window.innerHeight on every scroll event, and
-    // the scroll/resize handlers themselves are rAF-gated so the
-    // math they do runs at most once per frame no matter how many
-    // scroll/resize events the browser fires. Same fade curve,
-    // same numbers — just computed less redundantly.
     // ---------------------------------------------------------
-
-    let viewportHeight = window.innerHeight || 1;
 
     let scrollTarget = 0;
     let scrollCurrent = 0;
@@ -337,7 +543,7 @@ const Hero = () => {
     // back instead of leaving it gone for good.
     const updatePortalFade = () => {
       const y = Math.max(window.scrollY || 0, 0);
-      const vh = Math.max(viewportHeight, 1);
+      const vh = Math.max(window.innerHeight || 1, 1);
 
       const fadeStart = vh * 0.05;
       const fadeEnd = vh * 1.0;
@@ -373,26 +579,23 @@ const Hero = () => {
         ring.material.opacity = ring.material.userData.portalBaseOpacity * v;
       });
 
-      core.material.opacity = core.material.userData.portalBaseOpacity * v;
-      spiral.material.opacity = spiral.material.userData.portalBaseOpacity * v;
-      heroSpiral.material.opacity = heroSpiral.material.userData.portalBaseOpacity * v;
-      targetRing.material.opacity = targetRing.material.userData.portalBaseOpacity * v;
+      core.material.opacity = 0;
+      reactor.traverse((object) => {
+        if (object.material?.userData?.portalBaseOpacity !== undefined) {
+          object.material.opacity =
+            object.material.userData.portalBaseOpacity * v;
+        }
+      });
       shock.material.opacity = shockLife * 0.85 * v;
     };
 
-    let scrollTicking = false;
     const handleScroll = () => {
-      if (scrollTicking) return;
-      scrollTicking = true;
-      requestAnimationFrame(() => {
-        const current = window.scrollY;
-        const delta = current - lastScroll;
+      const current = window.scrollY;
+      const delta = current - lastScroll;
 
-        scrollTarget = THREE.MathUtils.clamp(scrollTarget + delta * 0.02, -3.5, 9);
-        updatePortalFade();
-        lastScroll = current;
-        scrollTicking = false;
-      });
+      scrollTarget = THREE.MathUtils.clamp(scrollTarget + delta * 0.02, -3.5, 9);
+      updatePortalFade();
+      lastScroll = current;
     };
     window.addEventListener("scroll", handleScroll, { passive: true });
 
@@ -402,29 +605,17 @@ const Hero = () => {
 
     // ---------------------------------------------------------
     // RESIZE
-    // rAF-gated so a burst of resize events (window drag, mobile
-    // rotation, devtools docking) triggers one layout pass instead
-    // of one per event.
     // ---------------------------------------------------------
 
-    let resizeTicking = false;
     const handleResize = () => {
-      if (resizeTicking) return;
-      resizeTicking = true;
-      requestAnimationFrame(() => {
-        const width = window.innerWidth;
-        const height = window.innerHeight;
-        viewportHeight = height || 1;
+      const width = window.innerWidth;
+      const height = window.innerHeight;
 
-        camera.aspect = width / height;
-        camera.updateProjectionMatrix();
+      camera.aspect = width / height;
+      camera.updateProjectionMatrix();
 
-        renderer.setPixelRatio(getPixelRatio());
-        renderer.setSize(width, height, false);
-
-        updatePortalFade();
-        resizeTicking = false;
-      });
+      renderer.setPixelRatio(getPixelRatio());
+      renderer.setSize(width, height, false);
     };
     window.addEventListener("resize", handleResize);
     handleResize();
@@ -433,15 +624,10 @@ const Hero = () => {
     // ANIMATION LOOP
     // Rotation/motion speeds are unchanged (still fast) — only
     // the fade timing above got slower/longer.
-    //
-    // The loop is fully paused (rAF cancelled, not just skipped)
-    // while the tab is hidden, and resumes with a clean delta when
-    // it becomes visible again — so a backgrounded tab schedules
-    // zero frames instead of an empty one every ~16ms.
     // ---------------------------------------------------------
 
     const clock = new THREE.Clock();
-    let animationFrame = null;
+    let animationFrame;
     let time = 0;
 
     const animate = () => {
@@ -450,31 +636,26 @@ const Hero = () => {
       const dt = Math.min(clock.getDelta(), 0.033);
       time += dt;
 
-      // Reuse the same frame damping values to reduce per-frame allocations.
-      const damping10 = 1 - Math.exp(-10 * dt);
-      const damping9 = 1 - Math.exp(-9 * dt);
-      const damping7 = 1 - Math.exp(-7 * dt);
-      const damping6 = 1 - Math.exp(-6 * dt);
-      const damping5_5 = 1 - Math.exp(-5.5 * dt);
+      const damping = (speed) => 1 - Math.exp(-speed * dt);
 
       // Portal fade
-      portalVisibility += (portalFadeTarget - portalVisibility) * damping10;
+      portalVisibility += (portalFadeTarget - portalVisibility) * damping(10);
       if (portalFadeTarget === 0 && portalVisibility < 0.006) portalVisibility = 0;
       applyPortalFade(portalVisibility);
 
       // Mouse smoothing / parallax
-      smoothX += (mouseX - smoothX) * damping9;
-      smoothY += (mouseY - smoothY) * damping9;
+      smoothX += (mouseX - smoothX) * damping(9);
+      smoothY += (mouseY - smoothY) * damping(9);
 
-      portal.rotation.y += (smoothX * 0.44 - portal.rotation.y) * damping7;
-      portal.rotation.x += (smoothY * 0.29 - portal.rotation.x) * damping7;
-      portal.position.x += (smoothX * 0.44 - portal.position.x) * damping6;
-      portal.position.y += (smoothY * 0.34 - portal.position.y) * damping6;
+      portal.rotation.y += (smoothX * 0.44 - portal.rotation.y) * damping(7);
+      portal.rotation.x += (smoothY * 0.29 - portal.rotation.x) * damping(7);
+      portal.position.x += (smoothX * 0.44 - portal.position.x) * damping(6);
+      portal.position.y += (smoothY * 0.34 - portal.position.y) * damping(6);
 
       // Scroll camera
-      scrollCurrent += (scrollTarget - scrollCurrent) * damping5_5;
+      scrollCurrent += (scrollTarget - scrollCurrent) * damping(5.5);
       const cameraZ = 9 - scrollCurrent * 1.35;
-      camera.position.z += (cameraZ - camera.position.z) * damping6;
+      camera.position.z += (cameraZ - camera.position.z) * damping(6);
 
       // Outer rings
       rings.forEach((ring) => {
@@ -491,23 +672,32 @@ const Hero = () => {
         ring.scale.setScalar(1);
       });
 
-      core.material.opacity = core.material.userData.portalBaseOpacity * portalVisibility;
-      core.rotation.z = time * 0.025;
+      core.material.opacity = 0;
+      core.rotation.z = 0;
 
-      spiral.rotation.z = time * 0.035;
-      heroSpiral.rotation.z = -time * 0.055;
-      heroSpiral.material.opacity =
-        heroSpiral.material.userData.portalBaseOpacity * portalVisibility;
+      reactorRings.forEach(({ mesh, speed }) => {
+        mesh.rotation.z = time * speed;
+      });
+      reactorSpokes.rotation.z = -time * 0.020;
+      reactorArmor.rotation.z = time * 0.030;
+      lockRing.rotation.z = -time * 0.050;
+      crosshair.rotation.z = time * 0.014;
+      iris.rotation.z = time * 0.060;
+      irisRing.rotation.z = -time * 0.085;
+      innerIris.rotation.z = time * 0.11;
+      shutters.rotation.z = -time * 0.075;
 
-      target.rotation.z = -time * 0.2;
-      target.scale.setScalar(1.03);
+      iris.scale.setScalar(1 + Math.sin(time * 1.8) * 0.035);
+      innerIris.scale.setScalar(1 + Math.sin(time * 2.2) * 0.025);
+      coreDot.scale.setScalar(1 + Math.sin(time * 2.8) * 0.12);
+      coreGlow.scale.setScalar(1 + Math.sin(time * 2.8) * 0.22);
 
       // Particle tunnel — always runs, on every page
-      const positionArray = particlePositionAttribute.array;
-      for (let i = 0, index = 0; i < particleCount; i++, index += 3) {
-        let z = positionArray[index + 2] + particleSpeeds[i];
+      for (let i = 0; i < particleCount; i++) {
+        const index = i * 3;
+        let z = positions[index + 2] + particleSpeeds[i];
         if (z > 3) z = -10;
-        positionArray[index + 2] = z;
+        positions[index + 2] = z;
       }
       particles.rotation.z = time * 0.025;
       particlePositionAttribute.needsUpdate = true;
@@ -519,43 +709,24 @@ const Hero = () => {
         shock.material.opacity = shockLife * 0.85 * portalVisibility;
       }
 
-      renderer.render(scene, camera);
-    };
-
-    const startLoop = () => {
-      if (animationFrame !== null) return;
-      clock.getDelta(); // drop the elapsed-while-hidden delta
-      animate();
-    };
-    const stopLoop = () => {
-      if (animationFrame === null) return;
-      cancelAnimationFrame(animationFrame);
-      animationFrame = null;
-    };
-
-    const handleVisibilityChange = () => {
-      if (document.hidden) {
-        stopLoop();
-      } else {
-        startLoop();
+      if (!document.hidden) {
+        renderer.render(scene, camera);
       }
     };
-    document.addEventListener("visibilitychange", handleVisibilityChange);
 
-    startLoop();
+    animate();
 
     // ---------------------------------------------------------
     // CLEANUP
     // ---------------------------------------------------------
 
     return () => {
-      stopLoop();
+      cancelAnimationFrame(animationFrame);
 
       window.removeEventListener("mousemove", handleMouseMove);
       window.removeEventListener("scroll", handleScroll);
       window.removeEventListener("resize", handleResize);
       window.removeEventListener("click", handleClick);
-      document.removeEventListener("visibilitychange", handleVisibilityChange);
 
       particleGeometry.dispose();
       particles.material.dispose();
@@ -582,12 +753,8 @@ const Hero = () => {
 
       core.geometry.dispose();
       core.material.dispose();
-      spiral.geometry.dispose();
-      spiral.material.dispose();
-      heroSpiral.geometry.dispose();
-      heroSpiral.material.dispose();
 
-      target.traverse((object) => {
+      reactor.traverse((object) => {
         if (object.geometry) object.geometry.dispose();
         if (object.material) object.material.dispose();
       });
@@ -824,7 +991,7 @@ const Hero = () => {
         }
 
         .hero-scroll-button {
-          position: absolute !important;
+          position: fixed !important;
           left: 50% !important;
           bottom: 28px !important;
           top: auto !important;
@@ -911,7 +1078,6 @@ const Hero = () => {
 
         @media (max-width: 640px) {
           .hero-scroll-button {
-            position: absolute !important;
             left: 50% !important;
             bottom: 22px !important;
             transform: translateX(-50%) !important;
