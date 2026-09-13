@@ -2098,7 +2098,7 @@ const ScrollSection5 = () => {
           }}
         >
           <ShiningHeading maxWidth={760} size={76}>
-            WHERE WE ARE
+          CONNECT WITH US
           </ShiningHeading>
 
           <p

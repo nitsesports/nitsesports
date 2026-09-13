@@ -47,10 +47,15 @@ const Hero = () => {
       powerPreference: "high-performance",
     });
 
-    // Capped DPR keeps retina/4K screens from becoming
-    // unnecessarily GPU-heavy while preserving the same look.
+    // MOBILE-ONLY GPU optimization.
+    // Desktop rendering is kept exactly as before.
+    const isMobile =
+      window.matchMedia("(max-width: 767px)").matches;
+
     const getPixelRatio = () =>
-      Math.min(window.devicePixelRatio || 1, 1.15);
+      isMobile
+        ? Math.min(window.devicePixelRatio || 1, 1.0)
+        : Math.min(window.devicePixelRatio || 1, 1.15);
 
     renderer.setPixelRatio(getPixelRatio());
     renderer.setSize(
@@ -867,11 +872,12 @@ const Hero = () => {
     // =======================================================
     // PARTICLE TUNNEL
     //
-    // 1400 → 900 → 600
-    // Same tunnel concept, lower GPU/CPU workload.
+    // Desktop: 600 particles (unchanged).
+    // Mobile: 360 particles for smoother GPU/CPU performance.
+    // Same tunnel concept and visual direction.
     // =======================================================
 
-    const particleCount = 600;
+    const particleCount = isMobile ? 360 : 600;
 
     const positions =
       new Float32Array(
@@ -1037,13 +1043,15 @@ const Hero = () => {
           );
       };
 
-    window.addEventListener(
-      "mousemove",
-      handleMouseMove,
-      {
-        passive: true,
-      }
-    );
+    if (!isMobile) {
+      window.addEventListener(
+        "mousemove",
+        handleMouseMove,
+        {
+          passive: true,
+        }
+      );
+    }
 
     // =======================================================
     // SCROLL
@@ -1221,6 +1229,13 @@ const Hero = () => {
     handleResize();
 
     // =======================================================
+    // ANIMATION CLOCK
+    // =======================================================
+
+    const clock =
+      new THREE.Clock();
+
+    // =======================================================
     // VISIBILITY
     // =======================================================
 
@@ -1241,13 +1256,6 @@ const Hero = () => {
       "visibilitychange",
       handleVisibility
     );
-
-    // =======================================================
-    // ANIMATION
-    // =======================================================
-
-    const clock =
-      new THREE.Clock();
 
     let animationFrame;
     let time = 0;
@@ -1590,10 +1598,12 @@ const Hero = () => {
         resizeFrame
       );
 
-      window.removeEventListener(
-        "mousemove",
-        handleMouseMove
-      );
+      if (!isMobile) {
+        window.removeEventListener(
+          "mousemove",
+          handleMouseMove
+        );
+      }
 
       window.removeEventListener(
         "scroll",
@@ -2105,18 +2115,53 @@ const Hero = () => {
             padding-right: 30px;
           }
 
+          /* MOBILE ONLY — larger, stronger hero typography.
+             Desktop/tablet rules above remain unchanged. */
+          .neon-title-svg {
+            width: min(98vw, 760px);
+          }
+
+          .title-text {
+            font-size: clamp(86px, 22vw, 124px);
+          }
+
           .hero-description {
-            max-width: 92vw;
-            font-size: 13px;
-            line-height: 1.85;
-            letter-spacing: 0.075em;
+            max-width: 95vw;
+            font-size: clamp(15px, 4.4vw, 18px);
+            line-height: 1.72;
+            letter-spacing: 0.055em;
+          }
+
+          .hero-tagline {
+            font-size: clamp(14px, 4vw, 17px);
+            letter-spacing: 0.09em;
           }
 
           .hero-status {
             margin-top: 22px;
-            font-size: 8px;
-            letter-spacing: 0.17em;
-            padding: 8px 13px;
+            font-size: 9px;
+            letter-spacing: 0.15em;
+            padding: 9px 14px;
+          }
+        }
+
+        @media (max-width: 390px) {
+          .neon-title-svg {
+            width: 98vw;
+          }
+
+          .title-text {
+            font-size: clamp(78px, 22.5vw, 98px);
+          }
+
+          .hero-description {
+            max-width: 96vw;
+            font-size: 14.5px;
+            line-height: 1.68;
+          }
+
+          .hero-tagline {
+            font-size: 13px;
           }
         }
 
