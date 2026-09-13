@@ -8,6 +8,7 @@ import Navbar from "./Navbar";
 import instagramLogo from "../assets/insw.png";
 import linkedinLogo from "../assets/liw.png";
 import facebookLogo from "../assets/fbw.png";
+import member10Image from "../assets/Members/member10.png";
 import member1Image from "../assets/Members/member1.png";
 import member2Image from "../assets/Members/member2.png";
 import member4Image from "../assets/Members/member4.png";
@@ -16,7 +17,22 @@ import member6Image from "../assets/Members/member6.png";
 import member7Image from "../assets/Members/member7.png";
 import member8Image from "../assets/Members/member8.png";
 import member9Image from "../assets/Members/member9.png";
+import member11Image from "../assets/Members/member11.png";
 import member3Image from "../assets/Members/member3.png";
+import member12Image from "../assets/Members/member12.png";
+import member13Image from "../assets/Members/member13.png";
+import member14Image from "../assets/Members/member14.png";
+import member15Image from "../assets/Members/member15.png";
+import member16Image from "../assets/Members/member16.png";
+import member17Image from "../assets/Members/member17.png";
+import member18Image from "../assets/Members/member18.png";
+import member19Image from "../assets/Members/member19.png";
+import member20Image from "../assets/Members/member20.png";
+import member21Image from "../assets/Members/member21.png";
+import member22Image from "../assets/Members/member22.png";
+import member23Image from "../assets/Members/member23.png";
+import member24Image from "../assets/Members/member24.png";
+
 
 const Team = () => {
   const navigate = useNavigate();
@@ -317,7 +333,7 @@ const Team = () => {
         {
           name: "Yashraj Narzary",
           role: "Event Management & Content",
-          image: "/team/member14.jpg",
+          image: member10Image,
           instagram:
             "https://www.instagram.com/yashraj_nzy?stkn=MXNncm85Z2U0eXc0NQ==",
           linkedin:
@@ -327,7 +343,7 @@ const Team = () => {
         {
           name: "Affan Parwez",
           role: "Design",
-          image: "/team/member15.jpg",
+          image: member11Image,
           instagram:
             "https://www.instagram.com/__afp______?stkn=MW03MTJ1M3Bxc2pvZw==",
           linkedin:
@@ -337,7 +353,7 @@ const Team = () => {
         {
           name: "Kunal",
           role: "Event Management",
-          image: "/team/member16.jpg",
+          image: member12Image,
           instagram:
             "https://www.instagram.com/_kun_bamniya?stkn=cXV5NzhmeTk3azUx",
           linkedin: "#",
@@ -346,7 +362,7 @@ const Team = () => {
         {
           name: "Raunak Kumar",
           role: "Event Management",
-          image: "/team/member17.jpg",
+          image: member13Image,
           instagram:
             "https://www.instagram.com/raunakshxh?stkn=MXkyYnk3NmJ4ZHVoaA==",
           linkedin:
@@ -356,7 +372,7 @@ const Team = () => {
         {
           name: "Kunal Saha",
           role: "Event Management",
-          image: "/team/member18.jpg",
+          image: member14Image,
           instagram:
             "https://www.instagram.com/krspmelon?stkn=ZzUyY2sya214ZWh0",
           linkedin:
@@ -366,7 +382,7 @@ const Team = () => {
         {
           name: "Bhaskar Damachya",
           role: "Event Management & Content",
-          image: "/team/member19.jpg",
+          image: member15Image,
           instagram:
             "https://www.instagram.com/_bhaskar_666?stkn=OGY0eXY1Z3U4em85",
           linkedin:
@@ -376,7 +392,7 @@ const Team = () => {
         {
           name: "Subham Kishore Baishya",
           role: "Event Management",
-          image: "/team/member20.jpg",
+          image: member16Image,
           instagram:
             "https://www.instagram.com/subham_altered33?stkn=aTdpMjF2NWhmdTJ2",
           linkedin:
@@ -386,7 +402,7 @@ const Team = () => {
         {
           name: "Tonmoy Kakati",
           role: "Event Management",
-          image: "/team/member21.jpg",
+          image: member17Image,
           instagram:
             "https://www.instagram.com/t__k2507?stkn=MTZqNThxNWUzbDZ1OQ==",
           linkedin:
@@ -396,7 +412,7 @@ const Team = () => {
         {
           name: "Abhilesh Barman",
           role: "Technical & PR Team",
-          image: "/team/member22.jpg",
+          image: member18Image,
           instagram:
             "https://www.instagram.com/____abhilesh____?stkn=MWZjZ3ZhbTRvaDRwMA==",
           linkedin:
@@ -406,7 +422,7 @@ const Team = () => {
         {
           name: "Dilbag Singh",
           role: "Design",
-          image: "/team/member23.jpg",
+          image: member19Image,
           instagram:
             "https://www.instagram.com/im_life_editor?stkn=dGVmcWE2MW5iNHpo",
           linkedin:
@@ -416,7 +432,7 @@ const Team = () => {
         {
           name: "Luvya Trehan",
           role: "Event Management & Content",
-          image: "/team/member24.jpg",
+          image: member20Image,
           instagram: "https://www.instagram.com/micku_ln",
           linkedin:
             "https://www.linkedin.com/in/luvya-trehan-99b72936b?utm_source=share_via&utm_content=profile&utm_medium=member_android",
@@ -425,7 +441,7 @@ const Team = () => {
         {
           name: "Nishan Das",
           role: "Event Management & PR",
-          image: "/team/member25.jpg",
+          image: member21Image,
           instagram:
             "https://www.instagram.com/_nishan_.das?stkn=ZHc0Z2NxMHZhZnkz",
           linkedin: "https://www.linkedin.com/in/nishan-das-470386315/",
@@ -434,7 +450,7 @@ const Team = () => {
         {
           name: "Rezowan Hussain",
           role: "Design",
-          image: "/team/member26.jpg",
+          image: member22Image,
           instagram:
             "https://www.instagram.com/rezowan_02?stkn=aDJjZWVwODNrMWY3",
           linkedin:
@@ -444,7 +460,7 @@ const Team = () => {
         {
           name: "Abdur Rajjak Mustafa",
           role: "Event Management",
-          image: "/team/member27.jpg",
+          image: member23Image,
           instagram:
             "https://www.instagram.com/_i_rajjak_?stkn=cmt4eTBnNWVlb2Jw",
           linkedin:
@@ -454,7 +470,7 @@ const Team = () => {
         {
           name: "Aditya Prajapati",
           role: "Event Management & PR",
-          image: "/team/member28.jpg",
+          image: member24Image,
           instagram:
             "https://www.instagram.com/_aditya_prajapati_1314?stkn=YnE2aHFvazkzMTdz",
           linkedin: "#",
