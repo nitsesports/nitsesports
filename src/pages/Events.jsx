@@ -102,6 +102,14 @@ const Events = () => {
   };
 
   const upcomingEvents = [
+    
+  ];
+  
+  const liveEvents = [
+    
+  ];
+  
+  const pastEvents = [
     {
       id: "honorofkings",
       title: "Honor of Kings",
@@ -113,14 +121,6 @@ const Events = () => {
         "https://play-lh.googleusercontent.com/0FNzm3zbHP4a-pHH4fHThryQF2zpstnEhf1g6GHEAZmcX7K2c46BzkyavQtoNaIDBaqUBRRSjPiMNvQlLho0Qw=w1052-h592-rw",
       teams: "TBD",
     },
-
-  ];
-
-  const liveEvents = [
-
-  ];
-
-  const pastEvents = [
     {
       id: "powersurge",
       title: "Power Surge",
