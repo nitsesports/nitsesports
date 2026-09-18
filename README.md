@@ -208,3 +208,4 @@ and the awesome community of contributors and organizers behind **NITS Esports**
 
 ✨ *Level up the code. Level up the game.*  
 🎯 *Together, we build the future of NIT Silchar Esports.*
+- Subhasish Dey
