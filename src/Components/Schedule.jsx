@@ -8,54 +8,26 @@ const Schedule = () => {
 
   const upcomingEvents = [
     {
-      title: "Neon Clash",
-      date: "Sep 12, 2026 - Sep 14, 2026",
-      location: "Online",
-      teams: "128 Teams",
-      prize: "₹50,000",
+      title: "RAMPAGE 2026",
+      date: "PROBABLE DATE: TO BE ANNOUNCED",
+      location: "NIT SILCHAR",
+      teams: "TO BE ANNOUNCED",
+      prize: "TO BE ANNOUNCED",
       status: "Upcoming",
       image: "/events/neon-clash.jpg",
     },
     {
-      title: "Cyber Warfare",
-      date: "Sep 20, 2026 - Sep 22, 2026",
-      location: "Online",
-      teams: "64 Teams",
-      prize: "₹25,000",
+      title: "SPORTOMANIA",
+      date: "PROBABLE DATE: TO BE ANNOUNCED",
+      location: "NIT SILCHAR",
+      teams: "TO BE ANNOUNCED",
+      prize: "TO BE ANNOUNCED",
       status: "Upcoming",
       image: "/events/cyber-warfare.jpg",
     },
-    {
-      title: "Battle Royale X",
-      date: "Oct 05, 2026 - Oct 07, 2026",
-      location: "Online",
-      teams: "100 Teams",
-      prize: "₹40,000",
-      status: "Upcoming",
-      image: "/events/battle-royale.jpg",
-    },
   ];
 
-  const ongoingEvents = [
-    {
-      title: "Vanguard Championship",
-      date: "Aug 25, 2026 - Aug 30, 2026",
-      location: "Online",
-      teams: "96 Teams",
-      prize: "₹35,000",
-      status: "Live Now",
-      image: "/events/vanguard.jpg",
-    },
-    {
-      title: "Legends Arena",
-      date: "Aug 27, 2026 - Aug 31, 2026",
-      location: "Online",
-      teams: "80 Teams",
-      prize: "₹30,000",
-      status: "Live Now",
-      image: "/events/legends.jpg",
-    },
-  ];
+  const ongoingEvents = [];
 
   const pastEvents = [
     {
@@ -613,91 +585,38 @@ const Schedule = () => {
 
           {/* BUTTON */}
 
-          {isUpcoming ? (
-            <button
-              className="
-                group/button
-                flex
-                w-full
-                items-center
-                justify-center
-                gap-2
-                rounded-xl
-                border
-                border-white/20
-                bg-white/[0.055]
-                px-5
-                py-3
-                text-sm
-                font-semibold
-                text-white/85
-                shadow-[0_0_25px_rgba(255,255,255,0.06)]
-                backdrop-blur-xl
-                transition-all
-                duration-300
-                hover:border-white/60
-                hover:bg-white/[0.10]
-                hover:text-white
-                hover:shadow-[0_0_40px_rgba(255,255,255,0.12)]
-              "
-            >
-              View Event
-
-              <span className="transition-transform duration-300 group-hover/button:translate-x-1">
-                <ArrowIcon />
-              </span>
-            </button>
-          ) : isLive ? (
-            <button
-              className="
-                flex
-                w-full
-                items-center
-                justify-center
-                gap-2
-                rounded-xl
-                border
-                border-white/25
-                bg-white/[0.07]
-                px-5
-                py-3
-                text-sm
-                font-semibold
-                text-white/90
-                shadow-[0_0_30px_rgba(255,255,255,0.08)]
-                backdrop-blur-xl
-                transition-all
-                duration-300
-                hover:border-white/65
-                hover:bg-white/[0.11]
-                hover:shadow-[0_0_40px_rgba(255,255,255,0.12)]
-              "
-            >
-              <span className="h-2 w-2 animate-pulse rounded-full bg-white shadow-[0_0_10px_white]" />
-
-              Watch Live
-            </button>
-          ) : (
-            <button
-              disabled
-              className="
-                w-full
-                cursor-not-allowed
-                rounded-xl
-                border
-                border-white/10
-                bg-white/[0.035]
-                px-5
-                py-3
-                text-sm
-                font-semibold
-                text-white/40
-                backdrop-blur-xl
-              "
-            >
-              Event Ended
-            </button>
-          )}
+          <button
+            className="
+              group/button
+              flex
+              w-full
+              items-center
+              justify-center
+              gap-2
+              rounded-xl
+              border
+              border-white/20
+              bg-white/[0.055]
+              px-5
+              py-3
+              text-sm
+              font-semibold
+              text-white/85
+              shadow-[0_0_25px_rgba(255,255,255,0.06)]
+              backdrop-blur-xl
+              transition-all
+              duration-300
+              hover:border-white/60
+              hover:bg-white/[0.10]
+              hover:text-white
+              hover:shadow-[0_0_40px_rgba(255,255,255,0.12)]
+            "
+          >
+            View Schedule
+            <span className="transition-transform duration-300 group-hover/button:translate-x-1">
+              <ArrowIcon />
+            </span>
+          </button>
         </div>
       </div>
     );
@@ -733,23 +652,31 @@ const Schedule = () => {
 
         {/* CARDS */}
 
-        <div
-          className={`grid gap-7 ${
-            events.length === 1
-              ? "grid-cols-1 max-w-md"
-              : events.length === 2
-              ? "grid-cols-1 md:grid-cols-2"
-              : "grid-cols-1 md:grid-cols-2 xl:grid-cols-3"
-          }`}
-        >
-          {events.map((event, index) => (
-            <EventCard
-              key={`${event.title}-${index}`}
-              event={event}
-              index={index}
-            />
-          ))}
-        </div>
+        {events.length === 0 ? (
+          <div className="scroll-reveal rounded-3xl border border-white/10 bg-white/[0.035] px-6 py-10 text-center backdrop-blur-xl">
+            <p className="text-sm uppercase tracking-[0.18em] text-white/45">
+              No ongoing events currently
+            </p>
+          </div>
+        ) : (
+          <div
+            className={`grid gap-7 ${
+              events.length === 1
+                ? "grid-cols-1 max-w-md"
+                : events.length === 2
+                ? "grid-cols-1 md:grid-cols-2"
+                : "grid-cols-1 md:grid-cols-2 xl:grid-cols-3"
+            }`}
+          >
+            {events.map((event, index) => (
+              <EventCard
+                key={`${event.title}-${index}`}
+                event={event}
+                index={index}
+              />
+            ))}
+          </div>
+        )}
       </section>
     );
   };
