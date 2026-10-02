@@ -5,7 +5,7 @@ const Hero = () => {
   const [showSponsors, setShowSponsors] = useState(false);
 
   // =========================================================
-  // THREE.JS CYBER PORTAL (HEAVILY OPTIMIZED FOR IPHONE & MOBILE)
+  // THREE.JS CYBER PORTAL (DEEP BACKGROUND STARS FIXED)
   // =========================================================
 
   useEffect(() => {
@@ -23,11 +23,11 @@ const Hero = () => {
     const trackG = (g) => { disposeGeometries.add(g); return g; };
     const trackM = (m) => { disposeMaterials.add(m); return m; };
 
-    // Detection for mobile / iOS
+    // Accurate device profile
     const isMobile = window.innerWidth <= 768;
 
     // =======================================================
-    // GEOMETRY-MERGE HELPER
+    // GEOMETRY-MERGE HELPER (COLLAPSE DRAW CALLS)
     // =======================================================
     const mergePositions = (items) => {
       let totalVerts = 0;
@@ -108,7 +108,7 @@ const Hero = () => {
     camera.position.z = 9;
 
     // =======================================================
-    // RENDERER (Capped to 1.0 on mobile to prevent 3x retina lag)
+    // RENDERER (Capped for locked 60/120 FPS ProMotion)
     // =======================================================
     const getPixelRatio = () =>
       isMobile ? 1.0 : Math.min(window.devicePixelRatio || 1, 1.15);
@@ -130,12 +130,11 @@ const Hero = () => {
     renderer.toneMappingExposure = 1.15;
 
     // =======================================================
-    // PORTAL GROUP (PERFECTLY SCALED FOR IPHONE)
+    // PORTAL GROUP (AT Z = 0, IN FRONT OF STARS)
     // =======================================================
     const portal = new THREE.Group();
     portal.position.set(0, 0, 0);
-    
-    // Mobile screen width is ~3.5 units in Three.js — 0.52 fits 100% inside without clipping
+    portal.renderOrder = 100;
     const portalScale = isMobile ? 0.52 : 1.30;
     portal.scale.setScalar(portalScale);
     scene.add(portal);
@@ -167,7 +166,7 @@ const Hero = () => {
         depthWrite: false,
         blending: i % 2 === 0 ? THREE.AdditiveBlending : THREE.NormalBlending,
       }));
-      const geo = trackG(new THREE.RingGeometry(d[0], d[0] + d[1], isMobile ? 26 : 32));
+      const geo = trackG(new THREE.RingGeometry(d[0], d[0] + d[1], isMobile ? 24 : 32));
       const mesh = new THREE.Mesh(geo, material);
       mesh.rotation.x = Math.PI / 2;
       portal.add(mesh);
@@ -244,7 +243,7 @@ const Hero = () => {
       material.userData.portalBaseOpacity = baseOpacity;
       registerFadeMaterial(material);
 
-      const mesh = new THREE.Mesh(trackG(new THREE.RingGeometry(r, r + 0.012, isMobile ? 24 : 32)), material);
+      const mesh = new THREE.Mesh(trackG(new THREE.RingGeometry(r, r + 0.012, isMobile ? 22 : 32)), material);
       mesh.rotation.x = Math.PI / 2;
       mesh.position.z = -i * 0.11;
       portal.add(mesh);
@@ -269,7 +268,7 @@ const Hero = () => {
       material.userData.portalBaseOpacity = opacity;
       registerFadeMaterial(material);
 
-      const mesh = new THREE.Mesh(trackG(new THREE.RingGeometry(r, r + width, isMobile ? 24 : 32)), material);
+      const mesh = new THREE.Mesh(trackG(new THREE.RingGeometry(r, r + width, isMobile ? 22 : 32)), material);
       mesh.rotation.x = Math.PI / 2;
       mesh.position.z = i * -0.032;
       reactor.add(mesh);
@@ -398,7 +397,7 @@ const Hero = () => {
     const irisMat = trackM(new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.08, side: THREE.DoubleSide, blending: THREE.AdditiveBlending, depthWrite: false }));
     irisMat.userData.portalBaseOpacity = 0.08;
     registerFadeMaterial(irisMat);
-    const iris = new THREE.Mesh(trackG(new THREE.CircleGeometry(0.49, 24)), irisMat);
+    const iris = new THREE.Mesh(trackG(new THREE.CircleGeometry(0.49, 22)), irisMat);
     iris.rotation.x = Math.PI / 2;
     iris.position.z = -0.32;
     reactor.add(iris);
@@ -406,7 +405,7 @@ const Hero = () => {
     const irisRingMat = trackM(new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.48, side: THREE.DoubleSide, blending: THREE.AdditiveBlending, depthWrite: false }));
     irisRingMat.userData.portalBaseOpacity = 0.48;
     registerFadeMaterial(irisRingMat);
-    const irisRing = new THREE.Mesh(trackG(new THREE.RingGeometry(0.49, 0.525, 24)), irisRingMat);
+    const irisRing = new THREE.Mesh(trackG(new THREE.RingGeometry(0.49, 0.525, 22)), irisRingMat);
     irisRing.rotation.x = Math.PI / 2;
     irisRing.position.z = -0.26;
     reactor.add(irisRing);
@@ -414,7 +413,7 @@ const Hero = () => {
     const inIrisMat = trackM(new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.34, side: THREE.DoubleSide, blending: THREE.AdditiveBlending, depthWrite: false }));
     inIrisMat.userData.portalBaseOpacity = 0.34;
     registerFadeMaterial(inIrisMat);
-    const innerIris = new THREE.Mesh(trackG(new THREE.RingGeometry(0.31, 0.34, 24)), inIrisMat);
+    const innerIris = new THREE.Mesh(trackG(new THREE.RingGeometry(0.31, 0.34, 22)), inIrisMat);
     innerIris.rotation.x = Math.PI / 2;
     innerIris.position.z = -0.38;
     reactor.add(innerIris);
@@ -424,7 +423,7 @@ const Hero = () => {
     // =======================================================
     const shutters = new THREE.Group();
     reactor.add(shutters);
-    const shutGeo = trackG(new THREE.RingGeometry(0.38, 0.405, 18, 1, 0.12, 0.34));
+    const shutGeo = trackG(new THREE.RingGeometry(0.38, 0.405, 16, 1, 0.12, 0.34));
     const shutMat = trackM(new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.20, side: THREE.DoubleSide, blending: THREE.AdditiveBlending, depthWrite: false }));
     shutMat.userData.portalBaseOpacity = 0.48;
     registerFadeMaterial(shutMat);
@@ -443,7 +442,7 @@ const Hero = () => {
     const coreDotMat = trackM(new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.72, blending: THREE.AdditiveBlending, depthWrite: false }));
     coreDotMat.userData.portalBaseOpacity = 1;
     registerFadeMaterial(coreDotMat);
-    const coreDot = new THREE.Mesh(trackG(new THREE.CircleGeometry(0.085, 20)), coreDotMat);
+    const coreDot = new THREE.Mesh(trackG(new THREE.CircleGeometry(0.085, 18)), coreDotMat);
     coreDot.rotation.x = Math.PI / 2;
     coreDot.position.z = -0.52;
     reactor.add(coreDot);
@@ -451,7 +450,7 @@ const Hero = () => {
     const coreGlowMat = trackM(new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.07, side: THREE.DoubleSide, blending: THREE.AdditiveBlending, depthWrite: false }));
     coreGlowMat.userData.portalBaseOpacity = 0.07;
     registerFadeMaterial(coreGlowMat);
-    const coreGlow = new THREE.Mesh(trackG(new THREE.RingGeometry(0.10, 0.20, 24)), coreGlowMat);
+    const coreGlow = new THREE.Mesh(trackG(new THREE.RingGeometry(0.10, 0.20, 22)), coreGlowMat);
     coreGlow.rotation.x = Math.PI / 2;
     coreGlow.position.z = -0.49;
     reactor.add(coreGlow);
@@ -460,7 +459,7 @@ const Hero = () => {
     reactDepthMat.userData.portalBaseOpacity = 0.58;
     registerFadeMaterial(reactDepthMat);
 
-    const reactorDepth = new THREE.Mesh(trackG(new THREE.CircleGeometry(1.72, 24)), reactDepthMat);
+    const reactorDepth = new THREE.Mesh(trackG(new THREE.CircleGeometry(1.72, 22)), reactDepthMat);
     reactorDepth.rotation.x = Math.PI / 2;
     reactorDepth.position.z = -0.88;
     reactorDepth.renderOrder = -2;
@@ -472,7 +471,7 @@ const Hero = () => {
     // SHOCKWAVE
     // =======================================================
     const shockMaterial = trackM(new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0, side: THREE.DoubleSide, blending: THREE.AdditiveBlending, depthWrite: false }));
-    const shock = new THREE.Mesh(trackG(new THREE.RingGeometry(0.05, 0.09, 24)), shockMaterial);
+    const shock = new THREE.Mesh(trackG(new THREE.RingGeometry(0.05, 0.09, 22)), shockMaterial);
     shock.rotation.x = Math.PI / 2;
     portal.add(shock);
 
@@ -485,50 +484,16 @@ const Hero = () => {
     window.addEventListener("click", handleClick);
 
     // =======================================================
-    // ULTRA LIGHT STAR FIELD (12 STARS ON MOBILE, ZERO OVERLAP)
+    // MOUSE + SCROLL — FILE 1 STYLE
     // =======================================================
-    const particleCount = isMobile ? 12 : 30;
-    const positions = new Float32Array(particleCount * 3);
-    const particleSpeeds = new Float32Array(particleCount);
-
-    for (let i = 0, index = 0; i < particleCount; i++, index += 3) {
-      const a = Math.random() * Math.PI * 2;
-      // Start outside portal frame
-      const r = (isMobile ? 1.1 : 1.6) + Math.sqrt(Math.random()) * (isMobile ? 4.5 : 8.5);
-      positions[index] = Math.cos(a) * r;
-      positions[index + 1] = Math.sin(a) * r;
-      positions[index + 2] = -10 + Math.random() * 12;
-      particleSpeeds[i] = 0.007 + Math.random() * 0.022;
-    }
-
-    const particleGeometry = trackG(new THREE.BufferGeometry());
-    particleGeometry.setAttribute("position", new THREE.BufferAttribute(positions, 3));
-    const particlePositionAttribute = particleGeometry.attributes.position;
-    particlePositionAttribute.setUsage(THREE.DynamicDrawUsage);
-
-    const particlesMaterial = trackM(new THREE.PointsMaterial({
-      color: 0xffffff,
-      size: isMobile ? 0.048 : 0.055,
-      transparent: true,
-      opacity: 0.60,
-      depthWrite: false,
-      blending: THREE.AdditiveBlending,
-    }));
-    const particles = new THREE.Points(particleGeometry, particlesMaterial);
-    particles.frustumCulled = false;
-    scene.add(particles);
-
-    // =======================================================
-    // MOUSE INTERACTION (DISABLED ON MOBILE TO PREVENT JANK)
-    // =======================================================
+    let mouseX = 0;
+    let mouseY = 0;
     let smoothX = 0;
     let smoothY = 0;
-    let pendingMouseX = 0;
-    let pendingMouseY = 0;
 
     const handleMouseMove = (event) => {
-      pendingMouseX = (event.clientX / cachedInnerWidth - 0.5) * 2;
-      pendingMouseY = -((event.clientY / cachedInnerHeight - 0.5) * 2);
+      mouseX = (event.clientX / cachedInnerWidth - 0.5) * 2;
+      mouseY = -((event.clientY / cachedInnerHeight - 0.5) * 2);
     };
 
     if (!isMobile) {
@@ -536,7 +501,7 @@ const Hero = () => {
     }
 
     // =======================================================
-    // SMOOTH SCROLL & FADE
+    // SCROLL & FADE ENGINE
     // =======================================================
     let scrollCurrent = 0;
     let portalVisibility = 1;
@@ -547,22 +512,34 @@ const Hero = () => {
       const fadeStart = cachedInnerHeight * 0.05;
       const fadeEnd = cachedInnerHeight * 0.85;
 
-      const progress = THREE.MathUtils.clamp((y - fadeStart) / (fadeEnd - fadeStart), 0, 1);
-      portalFadeTarget = 1 - (progress * progress * (3 - 2 * progress));
+      const progress = THREE.MathUtils.clamp(
+        (y - fadeStart) / (fadeEnd - fadeStart),
+        0,
+        1
+      );
+
+      portalFadeTarget =
+        1 - (progress * progress * (3 - 2 * progress));
     };
 
     const applyPortalFade = (visibility) => {
       const v = THREE.MathUtils.clamp(visibility, 0, 1);
+
       for (const material of uniqueFadeMaterials) {
-        material.opacity = material.userData.portalBaseOpacity * v;
+        material.opacity =
+          material.userData.portalBaseOpacity * v;
       }
+
       for (let i = 0; i < rings.length; i++) {
-        rings[i].mesh.material.opacity = rings[i].baseOpacity * v;
+        rings[i].mesh.material.opacity =
+          rings[i].baseOpacity * v;
       }
+
       shockMaterial.opacity = shockLife * 0.85 * v;
-      particlesMaterial.opacity = 0.60 * v;
+
     };
 
+    // Scroll listener only records the latest page position.
     const handleScroll = () => {
       updatePortalFade(window.scrollY || 0);
     };
@@ -571,7 +548,7 @@ const Hero = () => {
     updatePortalFade(window.scrollY || 0);
 
     // =======================================================
-    // RESIZE (SMART IPHONE URL-BAR TOGGLE SHIELD)
+    // RESIZE (SMART SAFARI ADDRESS-BAR TOGGLE SHIELD)
     // =======================================================
     let resizeFrame = 0;
     let lastWidth = window.innerWidth;
@@ -583,8 +560,6 @@ const Hero = () => {
         const newWidth = window.innerWidth;
         const newHeight = window.innerHeight;
 
-        // Safari bottom bar hide/show causes height-only resize events.
-        // We do NOT re-allocate the WebGL backbuffer during scroll to prevent the iPhone flash glitch.
         const isUrlBarCollapse = isMobile && Math.abs(newWidth - lastWidth) < 2 && Math.abs(newHeight - lastHeight) < 160;
 
         if (isUrlBarCollapse) {
@@ -628,7 +603,7 @@ const Hero = () => {
     let time = 0;
 
     // =======================================================
-    // 60/120 FPS MOBILE RENDER LOOP
+    // 60 / 120 FPS HIGH PRECISION RENDER LOOP
     // =======================================================
     const animate = () => {
       animationFrame = requestAnimationFrame(animate);
@@ -649,31 +624,35 @@ const Hero = () => {
 
       applyPortalFade(portalVisibility);
 
-      // Off-screen idle to save 100% iPhone GPU
-      if (portalVisibility === 0 && portalFadeTarget === 0) {
-        if (canvas.style.visibility !== "hidden") {
-          canvas.style.visibility = "hidden";
-        }
-        return;
-      }
-
-      if (canvas.style.visibility === "hidden") {
-        canvas.style.visibility = "visible";
-      }
+      // Keep the WebGL canvas alive after the portal fades.
+      // The portal fades out, but the lightweight starfield continues
+      // as the persistent background for the entire page.
+      canvas.style.visibility = "visible";
 
       // Scroll Depth (Safe distance on mobile so camera never cuts into the portal)
-      const currentScrollY = window.scrollY || 0;
+      const currentScrollY = Math.max(window.scrollY || 0, 0);
       const maxScroll = isMobile ? 3.5 : 5.5;
-      const targetScrollFactor = THREE.MathUtils.clamp((currentScrollY / cachedInnerHeight) * maxScroll, 0, maxScroll * 1.2);
+      const targetScrollFactor = THREE.MathUtils.clamp(
+        (currentScrollY / cachedInnerHeight) * maxScroll,
+        0,
+        maxScroll * 1.2
+      );
       const scrollDamp = 1 - Math.exp(-9 * dt);
       scrollCurrent += (targetScrollFactor - scrollCurrent) * scrollDamp;
-      camera.position.z = 9 - scrollCurrent * (isMobile ? 0.75 : 1.15);
+
+      // Preserve the original Hero portal scroll depth.
+      const portalCameraZ = 9 - scrollCurrent * (isMobile ? 0.75 : 1.15);
+
+      // The File 1 starfield movement is handled independently above.
+      // Keep the camera in the same smooth range without a second jump.
+      camera.position.z +=
+        (portalCameraZ - camera.position.z) * (1 - Math.exp(-9 * dt));
 
       // Mouse Parallax (Desktop only)
       if (!isMobile) {
         const mouseDamp = 1 - Math.exp(-8 * dt);
-        smoothX += (pendingMouseX - smoothX) * mouseDamp;
-        smoothY += (pendingMouseY - smoothY) * mouseDamp;
+        smoothX += (mouseX - smoothX) * mouseDamp;
+        smoothY += (mouseY - smoothY) * mouseDamp;
 
         portal.rotation.y += (smoothX * 0.44 - portal.rotation.y) * mouseDamp;
         portal.rotation.x += (smoothY * 0.29 - portal.rotation.x) * mouseDamp;
@@ -712,16 +691,6 @@ const Hero = () => {
       innerIris.scale.setScalar(1 + Math.sin(time * 2.2) * 0.025);
       coreDot.scale.setScalar(1 + corePulse * 0.12);
       coreGlow.scale.setScalar(1 + corePulse * 0.22);
-
-      // Star Drift
-      const pStep = dt * 60;
-      for (let i = 0, index = 0; i < particleCount; i++, index += 3) {
-        let z = positions[index + 2] + particleSpeeds[i] * pStep;
-        if (z > 3) z = -10;
-        positions[index + 2] = z;
-      }
-      particles.rotation.z = time * 0.025;
-      particlePositionAttribute.needsUpdate = true;
 
       // Shockwave
       if (shockLife > 0) {
@@ -780,7 +749,7 @@ const Hero = () => {
   // UI
   // =========================================================
   return (
-    <section className="hero-section relative z-10 h-screen min-h-screen w-full overflow-hidden text-white isolate">
+    <section className="hero-section relative z-0 h-screen min-h-screen w-full overflow-hidden text-white isolate">
       <style>{`
         html {
           scroll-behavior: auto;
@@ -888,11 +857,14 @@ const Hero = () => {
         .ticker-visible {
           opacity: 1;
           transform: translateY(0);
+          visibility: visible;
         }
 
         .ticker-hidden {
           opacity: 0;
           transform: translateY(5px);
+          pointer-events: none;
+          visibility: hidden;
         }
 
         .neon-title-svg {
@@ -965,7 +937,7 @@ const Hero = () => {
           gap: 9px;
           border-radius: 999px;
           border: 1px solid rgba(255, 255, 255, 0.12);
-          background: rgba(8, 8, 12, 0.72);
+          background: rgba(8, 8, 12, 0.75);
           padding: 9px 17px;
           box-shadow: 0 0 20px rgba(255, 255, 255, 0.06);
           color: rgba(255, 255, 255, 0.65);
@@ -981,15 +953,33 @@ const Hero = () => {
           left: 50% !important;
           bottom: 28px !important;
           top: auto !important;
-          transform: translateX(-50%) !important;
+          transform: translateX(-50%) translateZ(0) !important;
           z-index: 1000 !important;
           pointer-events: auto;
           isolation: isolate;
+          will-change: transform, opacity;
           transition: opacity 400ms ease, transform 300ms ease;
         }
 
         .hero-scroll-button:hover {
-          transform: translateX(-50%) translateY(-4px) !important;
+          transform: translateX(-50%) translateY(-4px) translateZ(0) !important;
+        }
+
+        /* =====================================================
+           GLOBAL STARFIELD LAYER FIX
+           The Three.js canvas is background-only. Every section
+           after Hero is forced above it, so stars can NEVER
+           appear over Gallery / About / Events / cards / text.
+           ===================================================== */
+        .hero-section ~ * {
+          position: relative;
+          z-index: 2 !important;
+          isolation: isolate;
+        }
+
+        .hero-section ~ * * {
+          position: relative;
+          z-index: auto;
         }
 
         .hero-cyber-portal {
@@ -1006,7 +996,6 @@ const Hero = () => {
           background: transparent;
         }
 
-        /* Fixed canvas optimized for Safari WebKit & dynamic mobile heights */
         .hero-cyber-portal-canvas {
           position: fixed !important;
           inset: 0 !important;
@@ -1024,6 +1013,22 @@ const Hero = () => {
           transform: translate3d(0, 0, 0);
           -webkit-backface-visibility: hidden;
           backface-visibility: hidden;
+        }
+
+        /* Keep the fixed Three.js canvas behind every section after Hero. */
+        .hero-section {
+          position: relative;
+          z-index: 0 !important;
+        }
+
+        .hero-section ~ * {
+          position: relative;
+          z-index: 1;
+        }
+
+        .hero-section ~ * * {
+          position: relative;
+          z-index: auto;
         }
 
         .hero-cyber-portal::before {
@@ -1045,8 +1050,93 @@ const Hero = () => {
           background: radial-gradient(circle at center, transparent 25%, rgba(0, 0, 0, 0.08) 52%, rgba(0, 0, 0, 0.42) 100%);
         }
 
+        .hero-youtube-card {
+          position: fixed;
+          left: 22px;
+          bottom: 22px;
+          z-index: 900;
+          width: 230px;
+          aspect-ratio: 16 / 9;
+          overflow: hidden;
+          border: 1px solid rgba(255, 255, 255, 0.16);
+          border-radius: 10px;
+          background: rgba(6, 6, 10, 0.90);
+          box-shadow: 0 10px 35px rgba(0, 0, 0, 0.65);
+          -webkit-transform: translateZ(0);
+          transform: translateZ(0);
+          contain: content;
+        }
+
+        .hero-youtube-card iframe {
+          display: block;
+          width: 100%;
+          height: 100%;
+          border: 0;
+          contain: strict;
+        }
+
+        .hero-app-download {
+          position: fixed;
+          right: 22px;
+          top: 164px;
+          z-index: 900;
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          min-height: 48px;
+          padding: 6px 14px 6px 7px;
+          border: 1px solid rgba(255, 255, 255, 0.16);
+          border-radius: 999px;
+          background: rgba(6, 6, 10, 0.85);
+          box-shadow: 0 10px 30px rgba(0, 0, 0, 0.55);
+          text-decoration: none;
+          -webkit-transform: translateZ(0);
+          transform: translateZ(0);
+          transition: transform 220ms ease, border-color 220ms ease, background 220ms ease;
+        }
+
+        .hero-app-download:hover {
+          transform: translateY(-2px) translateZ(0);
+          border-color: rgba(255, 255, 255, 0.35);
+          background: rgba(12, 12, 18, 0.95);
+        }
+
+        .hero-app-logo {
+          width: 36px;
+          height: 36px;
+          flex: 0 0 36px;
+          border-radius: 50%;
+          object-fit: cover;
+          border: 1px solid rgba(255, 255, 255, 0.18);
+          background: rgba(255, 255, 255, 0.06);
+        }
+
+        .hero-app-copy {
+          display: flex;
+          flex-direction: column;
+          align-items: flex-start;
+          line-height: 1.1;
+        }
+
+        .hero-app-eyebrow {
+          font-family: 'Inter', sans-serif;
+          font-size: 7px;
+          font-weight: 600;
+          letter-spacing: 0.18em;
+          text-transform: uppercase;
+          color: rgba(255, 255, 255, 0.48);
+        }
+
+        .hero-app-title {
+          margin-top: 3px;
+          font-family: 'The Last Shuriken', sans-serif;
+          font-size: 12px;
+          letter-spacing: 0.08em;
+          text-transform: uppercase;
+          color: rgba(255, 255, 255, 0.88);
+        }
+
         @media (max-width: 768px) {
-          /* Disables expensive WebKit SVG filter on mobile Safari for 60 FPS */
           .neon-title-base {
             filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.9));
           }
@@ -1054,15 +1144,44 @@ const Hero = () => {
             display: none;
           }
 
+          .hero-youtube-card {
+            left: 10px;
+            bottom: 16px;
+            width: clamp(130px, 34vw, 155px);
+            border-radius: 8px;
+          }
+
+          .hero-app-download {
+            right: 10px;
+            top: 156px;
+            min-height: 40px;
+            gap: 8px;
+            padding: 5px 10px 5px 6px;
+          }
+
+          .hero-app-logo {
+            width: 28px;
+            height: 28px;
+            flex-basis: 28px;
+          }
+
+          .hero-app-eyebrow {
+            font-size: 6px;
+          }
+
+          .hero-app-title {
+            font-size: 10px;
+          }
+
           .hero-scroll-button {
             left: 50% !important;
-            bottom: 22px !important;
-            transform: translateX(-50%) !important;
+            bottom: 18px !important;
+            transform: translateX(-50%) translateZ(0) !important;
             z-index: 1000 !important;
           }
 
           .hero-scroll-button:hover {
-            transform: translateX(-50%) translateY(-4px) !important;
+            transform: translateX(-50%) translateY(-3px) translateZ(0) !important;
           }
 
           .sponsor-logo { height: 17px; max-width: 65px; }
@@ -1101,6 +1220,7 @@ const Hero = () => {
           .title-text { font-size: clamp(74px, 22vw, 92px); }
           .hero-description { max-width: 96vw; font-size: 13.5px; line-height: 1.62; }
           .hero-tagline { font-size: 12.5px; }
+          .hero-youtube-card { width: 125px; bottom: 14px; left: 8px; }
         }
 
         @media (prefers-reduced-motion: reduce) {
@@ -1137,7 +1257,7 @@ const Hero = () => {
           </span>
         </div>
 
-        <div className={`ticker-switch absolute inset-0 flex items-center overflow-hidden ${showSponsors ? "ticker-hidden pointer-events-none" : "ticker-visible"}`}>
+        <div className={`ticker-switch absolute inset-0 flex items-center overflow-hidden ${showSponsors ? "ticker-hidden" : "ticker-visible"}`}>
           <div className="event-ticker">
             <div className="ticker-group">
               <span className="ticker-premium-text text-[9px] font-semibold uppercase tracking-[0.22em]">
@@ -1156,7 +1276,7 @@ const Hero = () => {
           </div>
         </div>
 
-        <div className={`ticker-switch absolute inset-0 flex items-center overflow-hidden ${showSponsors ? "ticker-visible" : "ticker-hidden pointer-events-none"}`}>
+        <div className={`ticker-switch absolute inset-0 flex items-center overflow-hidden ${showSponsors ? "ticker-visible" : "ticker-hidden"}`}>
           <div className="sponsor-ticker">
             <div className="ticker-group">
               {sponsorLogos.map((logo, index) => (
@@ -1171,7 +1291,38 @@ const Hero = () => {
         <div className="pointer-events-none absolute right-0 top-0 z-20 h-full w-16 bg-gradient-to-l from-black/25 to-transparent" />
       </div>
 
-      {/* HERO CONTENT */}
+      {/* YOUTUBE VIDEO PREVIEW */}
+      <div className="hero-youtube-card">
+        <iframe
+          src="https://www.youtube.com/embed/VIDEO_ID"
+          title="NITS Esports YouTube Video"
+          loading="lazy"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+          allowFullScreen
+        />
+      </div>
+
+      {/* APP DOWNLOAD */}
+      <a
+        className="hero-app-download"
+        href="#"
+        target="_blank"
+        rel="noreferrer"
+        aria-label="Download our app on Google Play"
+      >
+        <img
+          src="/app-logo.png"
+          alt="App logo"
+          className="hero-app-logo"
+          loading="lazy"
+        />
+        <span className="hero-app-copy">
+          <span className="hero-app-eyebrow">Download our app</span>
+          <span className="hero-app-title">Google Play</span>
+        </span>
+      </a>
+
+      {/* HERO CONTENT (ALWAYS IN FRONT, Z-20) */}
       <div className="hero-font relative z-20 flex h-full flex-col items-center justify-center px-6 text-center">
         <div className="samurai-font mb-6 flex items-center gap-3">
           <span className="h-px w-10 bg-gradient-to-r from-transparent to-white/45" />
