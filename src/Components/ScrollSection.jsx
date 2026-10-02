@@ -556,7 +556,7 @@ const ScrollSection = () => {
     });
 
     const getPixelRatio = () =>
-      Math.min(window.devicePixelRatio || 1, isMobile ? 1.0 : 1.25);
+      Math.min(window.devicePixelRatio || 1, isMobile ? 1.15 : 1.25);
 
     renderer.setPixelRatio(getPixelRatio());
     renderer.setSize(window.innerWidth, window.innerHeight, false);
@@ -586,35 +586,56 @@ const ScrollSection = () => {
     const positionAttr = particleGeometry.attributes.position;
     const posArray = positionAttr.array;
 
-    // Soft glowing circle texture to eliminate blocky square pixels up close
+    // Soft bright star texture — brighter core, smooth outer glow
     const starTexCanvas = document.createElement("canvas");
     starTexCanvas.width = 32;
     starTexCanvas.height = 32;
+
     const ctx = starTexCanvas.getContext("2d");
+
     if (ctx) {
-      const grad = ctx.createRadialGradient(16, 16, 0, 16, 16, 16);
-      grad.addColorStop(0, "rgba(255, 255, 255, 1)");
-      grad.addColorStop(0.3, "rgba(255, 255, 255, 1)");
-      grad.addColorStop(0.7, "rgba(255, 255, 255, 0.28)");
-      grad.addColorStop(1, "rgba(255, 255, 255, 0)");
+      const grad = ctx.createRadialGradient(
+        16, 16, 0,
+        16, 16, 16
+      );
+
+      // Bright core
+      grad.addColorStop(0, "rgba(255,255,255,1)");
+      grad.addColorStop(0.22, "rgba(255,255,255,1)");
+
+      // Smooth luminous body
+      grad.addColorStop(0.48, "rgba(255,255,255,0.62)");
+      grad.addColorStop(0.72, "rgba(255,255,255,0.22)");
+
+      // Soft fade
+      grad.addColorStop(1, "rgba(255,255,255,0)");
+
       ctx.fillStyle = grad;
       ctx.beginPath();
       ctx.arc(16, 16, 16, 0, Math.PI * 2);
       ctx.fill();
     }
-    const starTexture = new THREE.CanvasTexture(starTexCanvas);
 
-    // Controlled point size: sharp, small, and non-distracting when near camera
+    const starTexture = new THREE.CanvasTexture(starTexCanvas);
+    starTexture.minFilter = THREE.LinearFilter;
+    starTexture.magFilter = THREE.LinearFilter;
+    starTexture.generateMipmaps = false;
+
+    // Brighter stars — particle count intentionally unchanged
     const particles = new THREE.Points(
       particleGeometry,
       new THREE.PointsMaterial({
         color: 0xffffff,
-        size: isMobile ? 0.058 : 0.072, // Brighter and more visible
+
+        // Slight brightness increase without making stars oversized
+        size: isMobile ? 0.065 : 0.078,
+
         map: starTexture,
         transparent: true,
         opacity: 1.0,
         depthWrite: false,
         blending: THREE.AdditiveBlending,
+        sizeAttenuation: true,
       })
     );
     scene.add(particles);
