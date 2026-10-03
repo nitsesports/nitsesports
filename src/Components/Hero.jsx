@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import * as THREE from "three";
-
+import appLogo from "../assets/logoo.png";
 const Hero = () => {
   const [showSponsors, setShowSponsors] = useState(false);
 
@@ -949,7 +949,7 @@ const Hero = () => {
         }
 
         .hero-scroll-button {
-          position: fixed !important;
+          position: absolute !important;
           left: 50% !important;
           bottom: 28px !important;
           top: auto !important;
@@ -1051,32 +1051,66 @@ const Hero = () => {
         }
 
         .hero-youtube-card {
-          position: fixed;
+          position: absolute;
           left: 22px;
           bottom: 22px;
           z-index: 900;
           width: 230px;
-          aspect-ratio: 16 / 9;
           overflow: hidden;
-          border: 1px solid rgba(255, 255, 255, 0.16);
+          border: 1px solid rgba(255, 255, 255, 0.22);
           border-radius: 10px;
-          background: rgba(6, 6, 10, 0.90);
-          box-shadow: 0 10px 35px rgba(0, 0, 0, 0.65);
+          background: rgba(6, 6, 10, 0.94);
+          box-shadow:
+            0 10px 35px rgba(0, 0, 0, 0.65),
+            0 0 0 1px rgba(255, 255, 255, 0.035) inset,
+            0 0 22px rgba(255, 255, 255, 0.045);
           -webkit-transform: translateZ(0);
           transform: translateZ(0);
           contain: content;
         }
 
+        .hero-youtube-label {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          min-height: 27px;
+          padding: 0 9px;
+          border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+          background: linear-gradient(
+            180deg,
+            rgba(255, 255, 255, 0.055),
+            rgba(255, 255, 255, 0.015)
+          );
+          font-family: 'The Last Shuriken', sans-serif;
+          font-size: 8px;
+          font-weight: 700;
+          letter-spacing: 0.16em;
+          text-transform: uppercase;
+          color: rgba(255, 255, 255, 0.76);
+          text-shadow: 0 2px 6px rgba(0, 0, 0, 0.75);
+        }
+
+        .hero-youtube-label::after {
+          content: "";
+          width: 5px;
+          height: 5px;
+          border-radius: 50%;
+          background: rgba(255, 255, 255, 0.78);
+          box-shadow: 0 0 8px rgba(255, 255, 255, 0.32);
+          flex: 0 0 5px;
+        }
+
         .hero-youtube-card iframe {
           display: block;
           width: 100%;
-          height: 100%;
+          aspect-ratio: 16 / 9;
+          height: auto;
           border: 0;
           contain: strict;
         }
 
         .hero-app-download {
-          position: fixed;
+          position: absolute;
           right: 22px;
           top: 164px;
           z-index: 900;
@@ -1102,13 +1136,17 @@ const Hero = () => {
         }
 
         .hero-app-logo {
-          width: 36px;
-          height: 36px;
-          flex: 0 0 36px;
-          border-radius: 50%;
-          object-fit: cover;
-          border: 1px solid rgba(255, 255, 255, 0.18);
-          background: rgba(255, 255, 255, 0.06);
+          width: 42px;
+          height: 42px;
+          flex: 0 0 42px;
+          display: block;
+          border-radius: 10px;
+          object-fit: contain;
+          object-position: center;
+          padding: 2px;
+          border: 1px solid rgba(255, 255, 255, 0.22);
+          background: rgba(255, 255, 255, 0.08);
+          box-sizing: border-box;
         }
 
         .hero-app-copy {
@@ -1145,13 +1183,22 @@ const Hero = () => {
           }
 
           .hero-youtube-card {
+            position: absolute;
             left: 10px;
             bottom: 16px;
             width: clamp(130px, 34vw, 155px);
             border-radius: 8px;
           }
 
+          .hero-youtube-label {
+            min-height: 23px;
+            padding: 0 7px;
+            font-size: 6.5px;
+            letter-spacing: 0.13em;
+          }
+
           .hero-app-download {
+            position: absolute;
             right: 10px;
             top: 156px;
             min-height: 40px;
@@ -1160,9 +1207,10 @@ const Hero = () => {
           }
 
           .hero-app-logo {
-            width: 28px;
-            height: 28px;
-            flex-basis: 28px;
+            width: 34px;
+            height: 34px;
+            flex-basis: 34px;
+            border-radius: 8px;
           }
 
           .hero-app-eyebrow {
@@ -1174,6 +1222,7 @@ const Hero = () => {
           }
 
           .hero-scroll-button {
+            position: absolute !important;
             left: 50% !important;
             bottom: 18px !important;
             transform: translateX(-50%) translateZ(0) !important;
@@ -1293,6 +1342,9 @@ const Hero = () => {
 
       {/* YOUTUBE VIDEO PREVIEW */}
       <div className="hero-youtube-card">
+        <div className="hero-youtube-label">
+          <span>Latest Video</span>
+        </div>
         <iframe
           src="https://www.youtube.com/embed/VIDEO_ID"
           title="NITS Esports YouTube Video"
@@ -1311,7 +1363,7 @@ const Hero = () => {
         aria-label="Download our app on Google Play"
       >
         <img
-          src="/app-logo.png"
+          src={appLogo}
           alt="App logo"
           className="hero-app-logo"
           loading="lazy"

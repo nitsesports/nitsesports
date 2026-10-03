@@ -693,7 +693,7 @@ const ScrollSection4 = () => {
            HERO-STYLE HEADING — SAME METALLIC TREATMENT
         ========================================================= */
 
-        .experience-heading-wrap {
+        .shining-heading-wrap {
           position: relative;
           display: inline-flex;
           align-items: center;
@@ -702,39 +702,14 @@ const ScrollSection4 = () => {
           line-height: 1;
         }
 
-        .experience-heading-svg {
+        .shining-heading-svg {
           display: block;
-          width: min(720px, 92vw);
+          width: min(760px, 92vw);
           height: auto;
           overflow: visible;
           pointer-events: none;
         }
 
-        .experience-heading-base {
-          fill: url(#experienceHeadingFillGradient);
-          stroke: none;
-          paint-order: normal;
-          filter: url(#experienceHeadingPremiumShadow);
-        }
-
-        .experience-heading-inner {
-          fill: url(#experienceHeadingInnerGradient);
-          stroke: none;
-          opacity: .34;
-          pointer-events: none;
-        }
-
-        .experience-heading-shine {
-          fill: url(#experienceHeadingShineGradient);
-          stroke: none;
-          paint-order: normal;
-          pointer-events: none;
-          opacity: .88;
-          mix-blend-mode: screen;
-          filter:
-            drop-shadow(0 0 4px rgba(255,255,255,.20))
-            drop-shadow(0 0 11px rgba(255,255,255,.08));
-        }
 
         /* =========================================================
            SAMURAI VIDEO FRAME
@@ -886,10 +861,10 @@ const ScrollSection4 = () => {
 
       <div className="experience-page relative z-10 flex min-h-screen w-full flex-col items-center justify-center px-5 py-20 sm:px-8 md:px-12">
 
-        {/* THE EXPERIENCE */}
+        {/* THE EXPERIENCE — SAME HEADING AS AMENDED FILE 1 */}
         <div
           className={`
-            experience-heading-wrap
+            shining-heading-wrap
             transform-gpu
             transition-all
             duration-[1000ms]
@@ -900,48 +875,55 @@ const ScrollSection4 = () => {
           `}
         >
           <svg
-            className="experience-heading-svg"
-            viewBox="0 0 720 105"
+            className="shining-heading-svg"
+            style={{
+              width: "min(760px, 92vw)",
+              height: "auto",
+              overflow: "visible",
+            }}
+            viewBox="0 0 760 100"
             preserveAspectRatio="xMidYMid meet"
             role="heading"
             aria-level="2"
             aria-label="THE EXPERIENCE"
           >
             <defs>
-              {/* SAME HERO METALLIC BASE */}
+              {/* FILE 1 STYLE — METALLIC GRADIENT */}
               <linearGradient
-                id="experienceHeadingFillGradient"
+                id="experienceFile1Metal"
                 x1="0%"
                 y1="0%"
                 x2="0%"
                 y2="100%"
               >
-                <stop offset="0%" stopColor="#ffffff" />
-                <stop offset="14%" stopColor="#f1f1f1" />
-                <stop offset="30%" stopColor="#c8c8c8" />
-                <stop offset="46%" stopColor="#7d7d7d" />
-                <stop offset="60%" stopColor="#555555" />
-                <stop offset="72%" stopColor="#8f8f8f" />
-                <stop offset="86%" stopColor="#d9d9d9" />
-                <stop offset="100%" stopColor="#ffffff" />
+                <stop offset="0%" stopColor="#f2f2f2" />
+                <stop offset="15%" stopColor="#d9d9d9" />
+                <stop offset="32%" stopColor="#a7a7a7" />
+                <stop offset="48%" stopColor="#4d4d4d" />
+                <stop offset="62%" stopColor="#303030" />
+                <stop offset="74%" stopColor="#777777" />
+                <stop offset="88%" stopColor="#c3c3c3" />
+                <stop offset="100%" stopColor="#eeeeee" />
               </linearGradient>
 
-              {/* SAME HERO INNER DEPTH */}
+              {/* FILE 1 STYLE — INNER METAL */}
               <linearGradient
-                id="experienceHeadingInnerGradient"
+                id="experienceFile1Inner"
                 x1="0%"
                 y1="0%"
                 x2="0%"
                 y2="100%"
               >
-                <stop offset="0%" stopColor="#ffffff" stopOpacity=".20" />
-                <stop offset="45%" stopColor="#000000" stopOpacity=".28" />
-                <stop offset="100%" stopColor="#ffffff" stopOpacity=".12" />
+                <stop offset="0%" stopColor="#eeeeee" />
+                <stop offset="38%" stopColor="#c8c8c8" />
+                <stop offset="58%" stopColor="#555555" />
+                <stop offset="78%" stopColor="#a0a0a0" />
+                <stop offset="100%" stopColor="#e5e5e5" />
               </linearGradient>
 
-              {/* SAME HERO MOVING SHINE */}
+              {/* FILE 1 STYLE — MOVING SHINE */}
               <linearGradient
-                id="experienceHeadingShineGradient"
+                id="experienceFile1Shine"
                 gradientUnits="userSpaceOnUse"
                 x1="-300"
                 y1="0"
@@ -950,7 +932,7 @@ const ScrollSection4 = () => {
               >
                 <stop offset="0%" stopColor="#ffffff" stopOpacity="0" />
                 <stop offset="38%" stopColor="#ffffff" stopOpacity="0" />
-                <stop offset="50%" stopColor="#ffffff" stopOpacity=".92" />
+                <stop offset="50%" stopColor="#ffffff" stopOpacity="0.82" />
                 <stop offset="62%" stopColor="#ffffff" stopOpacity="0" />
                 <stop offset="100%" stopColor="#ffffff" stopOpacity="0" />
 
@@ -964,73 +946,76 @@ const ScrollSection4 = () => {
                 />
               </linearGradient>
 
+              {/* FILE 1 STYLE — CLEAN DEEP SHADOW */}
               <filter
-                id="experienceHeadingPremiumShadow"
+                id="experienceFile1Shadow"
                 x="-30%"
                 y="-30%"
                 width="160%"
-                height="180%"
+                height="160%"
               >
                 <feDropShadow
                   dx="0"
-                  dy="7"
+                  dy="4"
                   stdDeviation="5"
                   floodColor="#000000"
-                  floodOpacity=".98"
+                  floodOpacity="0.90"
                 />
                 <feDropShadow
                   dx="0"
-                  dy="0"
-                  stdDeviation="2"
+                  dy="7"
+                  stdDeviation="9"
                   floodColor="#000000"
-                  floodOpacity=".70"
-                />
-                <feDropShadow
-                  dx="0"
-                  dy="0"
-                  stdDeviation="1"
-                  floodColor="#ffffff"
-                  floodOpacity=".10"
+                  floodOpacity="0.70"
                 />
               </filter>
             </defs>
 
+            {/* BASE METALLIC TEXT */}
             <text
-              x="50%"
-              y="76"
+              x="380"
+              y="72"
               textAnchor="middle"
-              fontFamily="The Last Shuriken, sans-serif"
+              fontFamily="The Last Shuriken, Arial, sans-serif"
               fontSize="76"
               fontWeight="700"
-              letterSpacing="-4"
-              className="experience-heading-base"
+              letterSpacing="0.015em"
+              fill="url(#experienceFile1Metal)"
+              filter="url(#experienceFile1Shadow)"
             >
               THE EXPERIENCE
             </text>
 
+            {/* INNER METAL TEXT */}
             <text
-              x="50%"
-              y="76"
+              x="380"
+              y="72"
               textAnchor="middle"
-              fontFamily="The Last Shuriken, sans-serif"
+              fontFamily="The Last Shuriken, Arial, sans-serif"
               fontSize="76"
               fontWeight="700"
-              letterSpacing="-4"
-              className="experience-heading-inner"
+              letterSpacing="0.015em"
+              fill="url(#experienceFile1Inner)"
+              opacity="0.30"
+              pointerEvents="none"
               aria-hidden="true"
             >
               THE EXPERIENCE
             </text>
 
+            {/* MOVING WHITE SHINE */}
             <text
-              x="50%"
-              y="76"
+              x="380"
+              y="72"
               textAnchor="middle"
-              fontFamily="The Last Shuriken, sans-serif"
+              fontFamily="The Last Shuriken, Arial, sans-serif"
               fontSize="76"
               fontWeight="700"
-              letterSpacing="-4"
-              className="experience-heading-shine"
+              letterSpacing="0.015em"
+              fill="url(#experienceFile1Shine)"
+              opacity="0.82"
+              style={{ mixBlendMode: "screen" }}
+              pointerEvents="none"
               aria-hidden="true"
             >
               THE EXPERIENCE

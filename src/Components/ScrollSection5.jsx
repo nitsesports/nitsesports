@@ -1,11 +1,7 @@
 import { useEffect, useId, useRef, useState } from "react";
 import * as THREE from "three";
 
-import f1 from "../assets/f1.png";
-import f2 from "../assets/f2.png";
-import f3 from "../assets/f3.png";
-import f4 from "../assets/f4.png";
-import f5 from "../assets/f5.png";
+import logoo from "../assets/logoo.png";
 import liw from "../assets/liw.png";
 import insw from "../assets/insw.png";
 import ytw from "../assets/ytw.png";
@@ -1773,44 +1769,66 @@ function CyberWeaponBackground() {
 // =========================================================
 const ShiningHeading = ({
   children,
-  size = 76,
-  maxWidth = 760,
+  size = 62,
+  maxWidth = 720,
   className = "",
 }) => {
   const uid = useId().replace(/:/g, "");
-  const fillId = `shineFill-${uid}`;
-  const innerId = `shineInner-${uid}`;
-  const shineId = `shineTravel-${uid}`;
-  const shadowId = `shineShadow-${uid}`;
+
+  const fillId = `samuraiMetal-${uid}`;
+  const innerId = `samuraiInner-${uid}`;
+  const shineId = `samuraiShine-${uid}`;
+  const shadowId = `samuraiShadow-${uid}`;
 
   return (
     <div className={`shining-heading-wrap ${className}`}>
       <svg
         className="shining-heading-svg"
-        style={{ width: `min(${maxWidth}px, 92vw)` }}
-        viewBox={`0 0 ${maxWidth} 105`}
+        style={{
+          width: `min(${maxWidth}px, 92vw)`,
+          height: "auto",
+          overflow: "visible",
+        }}
+        viewBox={`0 0 ${maxWidth} 100`}
         preserveAspectRatio="xMidYMid meet"
         role="heading"
         aria-level="2"
       >
         <defs>
-          <linearGradient id={fillId} x1="0%" y1="0%" x2="0%" y2="100%">
-            <stop offset="0%" stopColor="#ffffff" />
-            <stop offset="14%" stopColor="#f1f1f1" />
-            <stop offset="30%" stopColor="#c8c8c8" />
-            <stop offset="46%" stopColor="#7d7d7d" />
-            <stop offset="60%" stopColor="#555555" />
-            <stop offset="72%" stopColor="#8f8f8f" />
-            <stop offset="86%" stopColor="#d9d9d9" />
-            <stop offset="100%" stopColor="#ffffff" />
+          {/* FILE 2 STYLE — METALLIC GRADIENT */}
+          <linearGradient
+            id={fillId}
+            x1="0%"
+            y1="0%"
+            x2="0%"
+            y2="100%"
+          >
+            <stop offset="0%" stopColor="#f2f2f2" />
+            <stop offset="15%" stopColor="#d9d9d9" />
+            <stop offset="32%" stopColor="#a7a7a7" />
+            <stop offset="48%" stopColor="#4d4d4d" />
+            <stop offset="62%" stopColor="#303030" />
+            <stop offset="74%" stopColor="#777777" />
+            <stop offset="88%" stopColor="#c3c3c3" />
+            <stop offset="100%" stopColor="#eeeeee" />
           </linearGradient>
 
-          <linearGradient id={innerId} x1="0%" y1="0%" x2="0%" y2="100%">
-            <stop offset="0%" stopColor="#ffffff" stopOpacity=".20" />
-            <stop offset="45%" stopColor="#000000" stopOpacity=".28" />
-            <stop offset="100%" stopColor="#ffffff" stopOpacity=".12" />
+          {/* FILE 2 STYLE — INNER METAL */}
+          <linearGradient
+            id={innerId}
+            x1="0%"
+            y1="0%"
+            x2="0%"
+            y2="100%"
+          >
+            <stop offset="0%" stopColor="#eeeeee" />
+            <stop offset="38%" stopColor="#c8c8c8" />
+            <stop offset="58%" stopColor="#555555" />
+            <stop offset="78%" stopColor="#a0a0a0" />
+            <stop offset="100%" stopColor="#e5e5e5" />
           </linearGradient>
 
+          {/* FILE 2 STYLE — MOVING SHINE */}
           <linearGradient
             id={shineId}
             gradientUnits="userSpaceOnUse"
@@ -1821,7 +1839,7 @@ const ShiningHeading = ({
           >
             <stop offset="0%" stopColor="#ffffff" stopOpacity="0" />
             <stop offset="38%" stopColor="#ffffff" stopOpacity="0" />
-            <stop offset="50%" stopColor="#ffffff" stopOpacity=".92" />
+            <stop offset="50%" stopColor="#ffffff" stopOpacity="0.82" />
             <stop offset="62%" stopColor="#ffffff" stopOpacity="0" />
             <stop offset="100%" stopColor="#ffffff" stopOpacity="0" />
 
@@ -1835,77 +1853,75 @@ const ShiningHeading = ({
             />
           </linearGradient>
 
+          {/* FILE 2 STYLE — CLEAN DEEP SHADOW */}
           <filter
             id={shadowId}
             x="-30%"
             y="-30%"
             width="160%"
-            height="180%"
+            height="160%"
           >
             <feDropShadow
               dx="0"
-              dy="7"
+              dy="4"
               stdDeviation="5"
               floodColor="#000000"
-              floodOpacity=".98"
+              floodOpacity="0.90"
             />
+
             <feDropShadow
               dx="0"
-              dy="0"
-              stdDeviation="2"
+              dy="7"
+              stdDeviation="9"
               floodColor="#000000"
-              floodOpacity=".70"
-            />
-            <feDropShadow
-              dx="0"
-              dy="0"
-              stdDeviation="1"
-              floodColor="#ffffff"
-              floodOpacity=".10"
+              floodOpacity="0.70"
             />
           </filter>
         </defs>
 
+        {/* BASE METALLIC TEXT */}
         <text
-          x="50%"
-          y="76"
+          x={maxWidth / 2}
+          y="72"
           textAnchor="middle"
-          fontFamily="The Last Shuriken, sans-serif"
+          fontFamily="The Last Shuriken, Arial, sans-serif"
           fontSize={size}
           fontWeight="700"
-          letterSpacing="-4"
+          letterSpacing="0.015em"
           fill={`url(#${fillId})`}
           filter={`url(#${shadowId})`}
         >
           {children}
         </text>
 
+        {/* INNER METAL TEXT */}
         <text
-          x="50%"
-          y="76"
+          x={maxWidth / 2}
+          y="72"
           textAnchor="middle"
-          fontFamily="The Last Shuriken, sans-serif"
+          fontFamily="The Last Shuriken, Arial, sans-serif"
           fontSize={size}
           fontWeight="700"
-          letterSpacing="-4"
+          letterSpacing="0.015em"
           fill={`url(#${innerId})`}
-          opacity=".34"
+          opacity="0.30"
           pointerEvents="none"
           aria-hidden="true"
         >
           {children}
         </text>
 
+        {/* MOVING WHITE SHINE */}
         <text
-          x="50%"
-          y="76"
+          x={maxWidth / 2}
+          y="72"
           textAnchor="middle"
-          fontFamily="The Last Shuriken, sans-serif"
+          fontFamily="The Last Shuriken, Arial, sans-serif"
           fontSize={size}
           fontWeight="700"
-          letterSpacing="-4"
+          letterSpacing="0.015em"
           fill={`url(#${shineId})`}
-          opacity=".88"
+          opacity="0.82"
           style={{ mixBlendMode: "screen" }}
           pointerEvents="none"
           aria-hidden="true"
@@ -1988,24 +2004,8 @@ const ScrollSection5 = () => {
 
   const appLogos = [
     {
-      image: f1,
+      image: logoo,
       name: "App",
-    },
-    {
-      image: f2,
-      name: "Esports",
-    },
-    {
-      image: f3,
-      name: "Community",
-    },
-    {
-      image: f4,
-      name: "Events",
-    },
-    {
-      image: f5,
-      name: "Gaming",
     },
   ];
 
