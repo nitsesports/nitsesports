@@ -550,6 +550,7 @@ const ScrollSection = () => {
   const [qrLoadFailed, setQrLoadFailed] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [randomPairing, setRandomPairing] = useState(false);
+  const [randomPairingPromptOpen, setRandomPairingPromptOpen] = useState(false);
   const [cardsVisible, setCardsVisible] = useState(false);
   const sectionRef = useRef(null);
 
@@ -822,7 +823,7 @@ const ScrollSection = () => {
     registeredSportomaniaPlayerCount >= 1 &&
     registeredSportomaniaPlayerCount <= 3;
 
-  const handleFormSubmit = async (e) => {
+  const handleFormSubmit = async (e, forcedRandomPairing = null) => {
     e.preventDefault();
     if (isSubmitting) return;
 
@@ -845,6 +846,8 @@ const ScrollSection = () => {
         setFormError("PLAYER 1 NAME, IGN AND SCHOLAR ID are required.");
         return;
       }
+
+      const sportomaniaScholarIds = new Set();
 
       for (let i = 1; i <= mainPlayerCount; i += 1) {
         const name =
@@ -871,6 +874,15 @@ const ScrollSection = () => {
           );
           return;
         }
+
+        if (sportomaniaScholarIds.has(normalizedScholarId)) {
+          setFormError(
+            `SCHOLAR ID ${normalizedScholarId} CANNOT BE USED BY MORE THAN ONE PLAYER.`
+          );
+          return;
+        }
+
+        sportomaniaScholarIds.add(normalizedScholarId);
       }
 
       if (!/^\d{10}$/.test(rampageForm.phone1)) {
@@ -922,6 +934,27 @@ const ScrollSection = () => {
       return;
     }
 
+    // IMPORTANT:
+    // For Sportomania with 1–3 registered players, show an on-screen
+    // custom modal ONLY after the user clicks SUBMIT REGISTRATION.
+    // Do not use window.confirm/browser prompt.
+    if (
+      isSportomania &&
+      registeredSportomaniaPlayerCount >= 1 &&
+      registeredSportomaniaPlayerCount <= 3 &&
+      forcedRandomPairing === null
+    ) {
+      setRandomPairingPromptOpen(true);
+      return;
+    }
+
+    const effectiveRandomPairing =
+      isSportomania && registeredSportomaniaPlayerCount <= 3
+        ? Boolean(forcedRandomPairing)
+        : false;
+
+    setRandomPairing(effectiveRandomPairing);
+    setRandomPairingPromptOpen(false);
     setIsSubmitting(true);
     setFormError("");
 
@@ -1058,8 +1091,8 @@ const ScrollSection = () => {
           phone2: rampageForm.phone2 || null,
           payment_proof_path: uploadedProofPath || null,
           random_pairing:
-            isSportomania && registeredSportomaniaPlayerCount >= 1 && registeredSportomaniaPlayerCount <= 3
-              ? (randomPairing ? "YES" : "NO")
+            isSportomania && registeredSportomaniaPlayerCount <= 3
+              ? (effectiveRandomPairing ? "YES" : "NO")
               : "NO",
         });
 
@@ -1577,6 +1610,68 @@ const ScrollSection = () => {
                 </p>
               </div>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* RANDOM PAIRING SUBMIT POPUP — SPORTOMANIA 1–3 PLAYERS ONLY */}
+      {randomPairingPromptOpen && (
+        <div
+          className="fixed inset-0 z-[180] flex items-center justify-center bg-black/85 px-5 py-6 backdrop-blur-md"
+          onClick={() => setRandomPairingPromptOpen(false)}
+        >
+          <div
+            className="relative w-full max-w-md rounded-3xl border border-white/20 bg-[#050507]/98 p-7 text-center shadow-[0_25px_120px_rgba(0,0,0,.95)] sm:p-9"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="mx-auto mb-5 flex h-12 w-12 items-center justify-center rounded-full border border-white/20 bg-white/[0.06] text-white">
+              ?
+            </div>
+
+            <p className="text-[9px] font-bold uppercase tracking-[0.28em] text-white/40">
+              SPORTOMANIA
+            </p>
+
+            <h3 className="mt-3 text-xl font-bold uppercase leading-tight tracking-[-0.02em] text-white">
+              {registeredSportomaniaPlayerCount} PLAYER
+              {registeredSportomaniaPlayerCount === 1 ? "" : "S"} REGISTERED
+            </h3>
+
+            <p className="mt-4 text-[10px] font-bold uppercase leading-5 tracking-[0.13em] text-white/60">
+              DO YOU WANT RANDOM PAIRING WITH OTHER REGISTERED PLAYERS?
+            </p>
+
+            <div className="mt-7 grid grid-cols-2 gap-3">
+              <button
+                type="button"
+                onClick={() => {
+                  setRandomPairing(true);
+                  setRandomPairingPromptOpen(false);
+                  handleFormSubmit(
+                    { preventDefault: () => {} },
+                    true
+                  );
+                }}
+                className="rounded-xl border border-white/25 bg-white/[0.08] px-5 py-3 text-[9px] font-bold uppercase tracking-[0.20em] text-white transition hover:border-white hover:bg-white/[0.15]"
+              >
+                YES
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setRandomPairing(false);
+                  setRandomPairingPromptOpen(false);
+                  handleFormSubmit(
+                    { preventDefault: () => {} },
+                    false
+                  );
+                }}
+                className="rounded-xl border border-white/15 bg-white/[0.03] px-5 py-3 text-[9px] font-bold uppercase tracking-[0.20em] text-white/65 transition hover:border-white/40 hover:bg-white/[0.08] hover:text-white"
+              >
+                NO
+              </button>
+            </div>
           </div>
         </div>
       )}
