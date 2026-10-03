@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import * as THREE from "three";
 import { ArrowRight, CalendarDays, Trophy } from "lucide-react";
 import { createClient } from "@supabase/supabase-js";
+import sportomaniaQR from "../assets/events/sqr.png";
 
 import eventImage1 from "../assets/events/event1.png";
 import eventImage2 from "../assets/events/event2.png";
@@ -50,6 +51,7 @@ const tournamentDetails = {
 
 const RAMPAGE_LOGO = "/events/rampage-logo.png";
 const RAMPAGE_QR = "/events/rampage-qr.png";
+const SPORTOMANIA_QR = sportomaniaQR;
 const RAMPAGE_WHATSAPP_GROUP = "";
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
@@ -2065,14 +2067,16 @@ const ScrollSection = () => {
                   <div className="rounded-2xl border border-white/15 bg-white p-3 shadow-[0_0_35px_rgba(255,255,255,.08)]">
                     {!qrLoadFailed ? (
                       <img
-                        src={RAMPAGE_QR}
-                        alt="RAMPAGE 2026 payment QR code"
+                        src={isSportomania ? SPORTOMANIA_QR : RAMPAGE_QR}
+                        alt={`${isSportomania ? "SPORTOMANIA" : "RAMPAGE 2026"} payment QR code`}
                         className="h-52 w-52 object-contain sm:h-60 sm:w-60"
                         onError={() => setQrLoadFailed(true)}
                       />
                     ) : (
                       <div className="flex h-52 w-52 items-center justify-center p-5 text-center text-[10px] font-bold uppercase tracking-[0.12em] text-[#111] sm:h-60 sm:w-60">
-                        ADD RAMPAGE QR AT /events/rampage-qr.png
+                        {isSportomania
+                          ? "SPORTOMANIA QR COULD NOT BE LOADED"
+                          : "ADD RAMPAGE QR AT /events/rampage-qr.png"}
                       </div>
                     )}
                   </div>

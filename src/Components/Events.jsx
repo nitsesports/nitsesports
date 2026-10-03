@@ -2,6 +2,8 @@ import React, { useEffect, useState } from "react";
 import Navbar from "./Navbar";
 import * as THREE from "three";
 import { createClient } from "@supabase/supabase-js";
+import sportomaniaQR from "../assets/events/sqr.png";
+
 
 const upcomingEvents = [
   {
@@ -363,7 +365,8 @@ const EventSection = ({ title, subtitle, events, type, onViewMore }) => (
 ========================================================= */
 
 const RAMPAGE_LOGO = "/events/rampage-logo.png";
-const RAMPAGE_QR = "/events/rampage-qr.png";
+const RAMPAGE_QR = "/events/sqr.png";
+const SPORTOMANIA_QR = sportomaniaQR;
 // Replace this with the official Rampage WhatsApp group invite link.
 const RAMPAGE_WHATSAPP_GROUP = "";
 
@@ -1506,14 +1509,16 @@ const Events = () => {
                   <div className="rounded-2xl border border-white/15 bg-white p-3 shadow-[0_0_35px_rgba(255,255,255,.08)]">
                     {!qrLoadFailed ? (
                       <img
-                        src={RAMPAGE_QR}
-                        alt="RAMPAGE 2026 payment QR code"
+                        src={selectedEvent === "SPORTOMANIA" ? SPORTOMANIA_QR : RAMPAGE_QR}
+                        alt={`${selectedEvent === "SPORTOMANIA" ? "SPORTOMANIA" : "RAMPAGE 2026"} payment QR code`}
                         className="h-52 w-52 object-contain sm:h-60 sm:w-60"
                         onError={() => setQrLoadFailed(true)}
                       />
                     ) : (
                       <div className="flex h-52 w-52 items-center justify-center p-5 text-center text-[10px] font-bold uppercase tracking-[0.12em] text-[#111] sm:h-60 sm:w-60">
-                        ADD RAMPAGE QR AT /events/rampage-qr.png
+                        {selectedEvent === "SPORTOMANIA"
+                          ? "SPORTOMANIA QR COULD NOT BE LOADED"
+                          : "ADD RAMPAGE QR AT /events/rampage-qr.png"}
                       </div>
                     )}
                   </div>
