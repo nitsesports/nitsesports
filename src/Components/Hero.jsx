@@ -23,8 +23,12 @@ const Hero = () => {
     const trackG = (g) => { disposeGeometries.add(g); return g; };
     const trackM = (m) => { disposeMaterials.add(m); return m; };
 
-    // Accurate device profile
+    // Accurate device profile — keep desktop untouched, use a lighter
+    // render profile on phones/iPhone Safari to avoid WebGL frame drops.
     const isMobile = window.innerWidth <= 768;
+    const isIOS =
+      /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+      (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
 
     // =======================================================
     // GEOMETRY-MERGE HELPER (COLLAPSE DRAW CALLS)
@@ -110,8 +114,19 @@ const Hero = () => {
     // =======================================================
     // RENDERER (Capped for locked 60/120 FPS ProMotion)
     // =======================================================
-    const getPixelRatio = () =>
-      isMobile ? 1.0 : Math.min(window.devicePixelRatio || 1, 1.15);
+    const getPixelRatio = () => {
+      if (isMobile) {
+        // Lower internal WebGL resolution on phones. This is much cheaper
+        // on iPhone GPUs while keeping the portal visually sharp.
+        const phoneDpr = Math.min(window.devicePixelRatio || 1, 2);
+        return Math.min(phoneDpr * (isIOS ? 0.42 : 0.48), 0.90);
+      }
+      return Math.min(window.devicePixelRatio || 1, 1.15);
+    };
+
+    // Geometry quality is reduced only on mobile; desktop values remain exact.
+    const mobileRingSegments = isMobile ? 16 : 32;
+    const mobileSmallSegments = isMobile ? 14 : 32;
 
     const renderer = new THREE.WebGLRenderer({
       canvas,
@@ -166,7 +181,7 @@ const Hero = () => {
         depthWrite: false,
         blending: i % 2 === 0 ? THREE.AdditiveBlending : THREE.NormalBlending,
       }));
-      const geo = trackG(new THREE.RingGeometry(d[0], d[0] + d[1], isMobile ? 24 : 32));
+      const geo = trackG(new THREE.RingGeometry(d[0], d[0] + d[1], mobileRingSegments));
       const mesh = new THREE.Mesh(geo, material);
       mesh.rotation.x = Math.PI / 2;
       portal.add(mesh);
@@ -189,8 +204,9 @@ const Hero = () => {
     {
       const specsA = [];
       const specsB = [];
-      for (let i = 0; i < 48; i++) {
-        const a = (i / 48) * Math.PI * 2;
+      const segmentCount = isMobile ? 24 : 48;
+      for (let i = 0; i < segmentCount; i++) {
+        const a = (i / segmentCount) * Math.PI * 2;
         const spec = { geometry: segGeo, position: [Math.cos(a) * 2.72, Math.sin(a) * 2.72, 0], rotation: [0, 0, a] };
         (i % 3 === 0 ? specsA : specsB).push(spec);
       }
@@ -219,8 +235,9 @@ const Hero = () => {
     {
       const specsA = [];
       const specsB = [];
-      for (let i = 0; i < 36; i++) {
-        const rot = [0, 0, (i / 36) * Math.PI * 2];
+      const radialCount = isMobile ? 18 : 36;
+      for (let i = 0; i < radialCount; i++) {
+        const rot = [0, 0, (i / radialCount) * Math.PI * 2];
         const spec = { geometry: radGeo, position: [0, 0, 0], rotation: rot };
         (i % 4 === 0 ? specsA : specsB).push(spec);
       }
@@ -234,7 +251,8 @@ const Hero = () => {
     // INNER RINGS
     // =======================================================
     const innerRings = [];
-    for (let i = 0; i < 9; i++) {
+    const innerRingCount = isMobile ? 5 : 9;
+    for (let i = 0; i < innerRingCount; i++) {
       const r = 2.18 - i * 0.19;
       const baseOpacity = 0.58 - i * 0.025;
       const material = trackM(new THREE.MeshBasicMaterial({
@@ -243,7 +261,7 @@ const Hero = () => {
       material.userData.portalBaseOpacity = baseOpacity;
       registerFadeMaterial(material);
 
-      const mesh = new THREE.Mesh(trackG(new THREE.RingGeometry(r, r + 0.012, isMobile ? 22 : 32)), material);
+      const mesh = new THREE.Mesh(trackG(new THREE.RingGeometry(r, r + 0.012, mobileRingSegments)), material);
       mesh.rotation.x = Math.PI / 2;
       mesh.position.z = -i * 0.11;
       portal.add(mesh);
@@ -295,8 +313,9 @@ const Hero = () => {
     {
       const specsA = [];
       const specsB = [];
-      for (let i = 0; i < 24; i++) {
-        const a = (i / 24) * Math.PI * 2;
+      const armorCount = isMobile ? 12 : 24;
+      for (let i = 0; i < armorCount; i++) {
+        const a = (i / armorCount) * Math.PI * 2;
         const wIdx = i % 2 === 0 ? 0 : 2;
         const hIdx = i % 3 === 0 ? 0 : 1;
         const geo = armorGeos[wIdx + hIdx];
@@ -325,8 +344,9 @@ const Hero = () => {
     {
       const specsA = [];
       const specsB = [];
-      for (let i = 0; i < 20; i++) {
-        const a = (i / 20) * Math.PI * 2;
+      const lockCount = isMobile ? 10 : 20;
+      for (let i = 0; i < lockCount; i++) {
+        const a = (i / lockCount) * Math.PI * 2;
         const spec = { geometry: lockGeo, position: [Math.cos(a) * 0.91, Math.sin(a) * 0.91, 0.035], rotation: [0, 0, a] };
         (i % 5 === 0 ? specsA : specsB).push(spec);
       }
@@ -353,9 +373,10 @@ const Hero = () => {
     {
       const specsA = [];
       const specsB = [];
-      for (let i = 0; i < 40; i++) {
+      const spokeCount = isMobile ? 20 : 40;
+      for (let i = 0; i < spokeCount; i++) {
         const geo = i % 2 === 0 ? spokeGeo1 : spokeGeo2;
-        const rot = [0, 0, (i / 40) * Math.PI * 2];
+        const rot = [0, 0, (i / spokeCount) * Math.PI * 2];
         const spec = { geometry: geo, position: [0, 0, 0], rotation: rot };
         (i % 5 === 0 ? specsA : specsB).push(spec);
       }
@@ -397,7 +418,7 @@ const Hero = () => {
     const irisMat = trackM(new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.08, side: THREE.DoubleSide, blending: THREE.AdditiveBlending, depthWrite: false }));
     irisMat.userData.portalBaseOpacity = 0.08;
     registerFadeMaterial(irisMat);
-    const iris = new THREE.Mesh(trackG(new THREE.CircleGeometry(0.49, 22)), irisMat);
+    const iris = new THREE.Mesh(trackG(new THREE.CircleGeometry(0.49, mobileSmallSegments)), irisMat);
     iris.rotation.x = Math.PI / 2;
     iris.position.z = -0.32;
     reactor.add(iris);
@@ -405,7 +426,7 @@ const Hero = () => {
     const irisRingMat = trackM(new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.48, side: THREE.DoubleSide, blending: THREE.AdditiveBlending, depthWrite: false }));
     irisRingMat.userData.portalBaseOpacity = 0.48;
     registerFadeMaterial(irisRingMat);
-    const irisRing = new THREE.Mesh(trackG(new THREE.RingGeometry(0.49, 0.525, 22)), irisRingMat);
+    const irisRing = new THREE.Mesh(trackG(new THREE.RingGeometry(0.49, 0.525, mobileSmallSegments)), irisRingMat);
     irisRing.rotation.x = Math.PI / 2;
     irisRing.position.z = -0.26;
     reactor.add(irisRing);
@@ -413,7 +434,7 @@ const Hero = () => {
     const inIrisMat = trackM(new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.34, side: THREE.DoubleSide, blending: THREE.AdditiveBlending, depthWrite: false }));
     inIrisMat.userData.portalBaseOpacity = 0.34;
     registerFadeMaterial(inIrisMat);
-    const innerIris = new THREE.Mesh(trackG(new THREE.RingGeometry(0.31, 0.34, 22)), inIrisMat);
+    const innerIris = new THREE.Mesh(trackG(new THREE.RingGeometry(0.31, 0.34, mobileSmallSegments)), inIrisMat);
     innerIris.rotation.x = Math.PI / 2;
     innerIris.position.z = -0.38;
     reactor.add(innerIris);
@@ -423,15 +444,15 @@ const Hero = () => {
     // =======================================================
     const shutters = new THREE.Group();
     reactor.add(shutters);
-    const shutGeo = trackG(new THREE.RingGeometry(0.38, 0.405, 16, 1, 0.12, 0.34));
+    const shutGeo = trackG(new THREE.RingGeometry(0.38, 0.405, isMobile ? 12 : 16, 1, 0.12, 0.34));
     const shutMat = trackM(new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.20, side: THREE.DoubleSide, blending: THREE.AdditiveBlending, depthWrite: false }));
     shutMat.userData.portalBaseOpacity = 0.48;
     registerFadeMaterial(shutMat);
 
-    for (let i = 0; i < 8; i++) {
+    for (let i = 0; i < (isMobile ? 6 : 8); i++) {
       const mesh = new THREE.Mesh(shutGeo, shutMat);
       mesh.rotation.x = Math.PI / 2;
-      mesh.rotation.z = (i / 8) * Math.PI * 2;
+      mesh.rotation.z = (i / (isMobile ? 6 : 8)) * Math.PI * 2;
       mesh.position.z = -0.20;
       shutters.add(mesh);
     }
@@ -442,7 +463,7 @@ const Hero = () => {
     const coreDotMat = trackM(new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.72, blending: THREE.AdditiveBlending, depthWrite: false }));
     coreDotMat.userData.portalBaseOpacity = 1;
     registerFadeMaterial(coreDotMat);
-    const coreDot = new THREE.Mesh(trackG(new THREE.CircleGeometry(0.085, 18)), coreDotMat);
+    const coreDot = new THREE.Mesh(trackG(new THREE.CircleGeometry(0.085, isMobile ? 12 : 18)), coreDotMat);
     coreDot.rotation.x = Math.PI / 2;
     coreDot.position.z = -0.52;
     reactor.add(coreDot);
@@ -450,7 +471,7 @@ const Hero = () => {
     const coreGlowMat = trackM(new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.07, side: THREE.DoubleSide, blending: THREE.AdditiveBlending, depthWrite: false }));
     coreGlowMat.userData.portalBaseOpacity = 0.07;
     registerFadeMaterial(coreGlowMat);
-    const coreGlow = new THREE.Mesh(trackG(new THREE.RingGeometry(0.10, 0.20, 22)), coreGlowMat);
+    const coreGlow = new THREE.Mesh(trackG(new THREE.RingGeometry(0.10, 0.20, mobileSmallSegments)), coreGlowMat);
     coreGlow.rotation.x = Math.PI / 2;
     coreGlow.position.z = -0.49;
     reactor.add(coreGlow);
@@ -459,7 +480,7 @@ const Hero = () => {
     reactDepthMat.userData.portalBaseOpacity = 0.58;
     registerFadeMaterial(reactDepthMat);
 
-    const reactorDepth = new THREE.Mesh(trackG(new THREE.CircleGeometry(1.72, 22)), reactDepthMat);
+    const reactorDepth = new THREE.Mesh(trackG(new THREE.CircleGeometry(1.72, mobileSmallSegments)), reactDepthMat);
     reactorDepth.rotation.x = Math.PI / 2;
     reactorDepth.position.z = -0.88;
     reactorDepth.renderOrder = -2;
@@ -471,7 +492,7 @@ const Hero = () => {
     // SHOCKWAVE
     // =======================================================
     const shockMaterial = trackM(new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0, side: THREE.DoubleSide, blending: THREE.AdditiveBlending, depthWrite: false }));
-    const shock = new THREE.Mesh(trackG(new THREE.RingGeometry(0.05, 0.09, 22)), shockMaterial);
+    const shock = new THREE.Mesh(trackG(new THREE.RingGeometry(0.05, 0.09, isMobile ? 14 : 22)), shockMaterial);
     shock.rotation.x = Math.PI / 2;
     portal.add(shock);
 
@@ -522,21 +543,28 @@ const Hero = () => {
         1 - (progress * progress * (3 - 2 * progress));
     };
 
-    const applyPortalFade = (visibility) => {
+    let lastAppliedVisibility = -1;
+
+    const applyPortalFade = (visibility, force = false) => {
       const v = THREE.MathUtils.clamp(visibility, 0, 1);
 
+      // Avoid rewriting every material on every mobile frame.
+      if (!force && Math.abs(v - lastAppliedVisibility) < 0.0015) {
+        shockMaterial.opacity = shockLife * 0.85 * v;
+        return;
+      }
+
+      lastAppliedVisibility = v;
+
       for (const material of uniqueFadeMaterials) {
-        material.opacity =
-          material.userData.portalBaseOpacity * v;
+        material.opacity = material.userData.portalBaseOpacity * v;
       }
 
       for (let i = 0; i < rings.length; i++) {
-        rings[i].mesh.material.opacity =
-          rings[i].baseOpacity * v;
+        rings[i].mesh.material.opacity = rings[i].baseOpacity * v;
       }
 
       shockMaterial.opacity = shockLife * 0.85 * v;
-
     };
 
     // Scroll listener only records the latest page position.
@@ -601,13 +629,34 @@ const Hero = () => {
 
     let animationFrame;
     let time = 0;
+    let heroInViewport = true;
+    let lastMobileFrame = 0;
+
+    // On mobile, don't spend GPU time rendering the fixed WebGL background
+    // while the Hero is completely off-screen.
+    const heroObserver =
+      "IntersectionObserver" in window
+        ? new IntersectionObserver(
+            (entries) => {
+              heroInViewport = entries[0]?.isIntersecting ?? true;
+            },
+            { threshold: 0.01 }
+          )
+        : null;
+
+    if (heroObserver) heroObserver.observe(container);
 
     // =======================================================
-    // 60 / 120 FPS HIGH PRECISION RENDER LOOP
+    // MOBILE-OPTIMIZED RENDER LOOP
     // =======================================================
-    const animate = () => {
+    const animate = (now = performance.now()) => {
       animationFrame = requestAnimationFrame(animate);
-      if (!pageVisible) return;
+      if (!pageVisible || !heroInViewport) return;
+
+      // Keep iPhone rendering smooth without forcing the GPU to redraw
+      // unnecessarily faster than the mobile display can comfortably handle.
+      if (isMobile && now - lastMobileFrame < 16.0) return;
+      lastMobileFrame = now;
 
       const dt = Math.min(clock.getDelta(), 0.033);
       time += dt;
@@ -637,7 +686,7 @@ const Hero = () => {
         0,
         maxScroll * 1.2
       );
-      const scrollDamp = 1 - Math.exp(-9 * dt);
+      const scrollDamp = 1 - Math.exp(-(isMobile ? 7.5 : 9) * dt);
       scrollCurrent += (targetScrollFactor - scrollCurrent) * scrollDamp;
 
       // Preserve the original Hero portal scroll depth.
@@ -646,7 +695,7 @@ const Hero = () => {
       // The File 1 starfield movement is handled independently above.
       // Keep the camera in the same smooth range without a second jump.
       camera.position.z +=
-        (portalCameraZ - camera.position.z) * (1 - Math.exp(-9 * dt));
+        (portalCameraZ - camera.position.z) * (1 - Math.exp(-(isMobile ? 7.5 : 9) * dt));
 
       // Mouse Parallax (Desktop only)
       if (!isMobile) {
@@ -715,6 +764,7 @@ const Hero = () => {
       window.removeEventListener("resize", handleResize);
       window.removeEventListener("click", handleClick);
       document.removeEventListener("visibilitychange", handleVisibility);
+      if (heroObserver) heroObserver.disconnect();
 
       disposeGeometries.forEach((g) => g.dispose());
       disposeMaterials.forEach((m) => m.dispose());
@@ -1175,6 +1225,27 @@ const Hero = () => {
         }
 
         @media (max-width: 768px) {
+          /* Mobile compositor budget: avoid large blur surfaces and heavy
+             full-screen paint while keeping the same black/white look. */
+          .hero-atmosphere-glow {
+            width: 360px;
+            height: 300px;
+            filter: blur(38px);
+            opacity: 0.55;
+          }
+
+          .hero-atmosphere-shadow {
+            width: 390px;
+            height: 320px;
+            filter: blur(38px);
+            opacity: 0.45;
+          }
+
+          .hero-grid {
+            opacity: 0.045;
+            background-size: 110px 110px;
+          }
+
           .neon-title-base {
             filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.9));
           }
@@ -1282,12 +1353,12 @@ const Hero = () => {
       <div id="hero-cyber-portal" className="hero-cyber-portal" aria-hidden="true" />
 
       {/* CINEMATIC ATMOSPHERE */}
-      <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/15 via-transparent to-black/22" />
-      <div className="pointer-events-none absolute left-1/2 top-[48%] h-[520px] w-[620px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-white/[0.025] blur-[70px]" />
-      <div className="pointer-events-none absolute left-1/2 top-[52%] h-[560px] w-[680px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-black/25 blur-[70px]" />
+      <div className="hero-atmosphere-base pointer-events-none absolute inset-0 bg-gradient-to-b from-black/15 via-transparent to-black/22" />
+      <div className="hero-atmosphere-glow pointer-events-none absolute left-1/2 top-[48%] h-[520px] w-[620px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-white/[0.025] blur-[70px]" />
+      <div className="hero-atmosphere-shadow pointer-events-none absolute left-1/2 top-[52%] h-[560px] w-[680px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-black/25 blur-[70px]" />
 
       {/* GRID */}
-      <div className="pointer-events-none absolute inset-0 opacity-[0.08] [background-image:linear-gradient(rgba(255,255,255,0.08)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.055)_1px,transparent_1px)] [background-size:80px_80px]" />
+      <div className="hero-grid pointer-events-none absolute inset-0 opacity-[0.08] [background-image:linear-gradient(rgba(255,255,255,0.08)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.055)_1px,transparent_1px)] [background-size:80px_80px]" />
 
       {/* TICKER */}
       <div className="hero-font absolute left-0 right-0 top-[112px] z-40 h-9 overflow-hidden border-y border-white/10 bg-black/20">

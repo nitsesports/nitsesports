@@ -2041,28 +2041,6 @@ const ScrollSection = () => {
                 </div>
               </div>
 
-              {/* RANDOM PAIRING — SPORTOMANIA ONLY FOR 1–3 REGISTERED PLAYERS */}
-              {showRandomPairingOption && (
-                <div className="rounded-2xl border border-white/15 bg-white/[0.035] p-5 sm:p-6">
-                  <label className="flex cursor-pointer items-start gap-4">
-                    <input
-                      type="checkbox"
-                      checked={randomPairing}
-                      onChange={(e) => setRandomPairing(e.target.checked)}
-                      className="mt-0.5 h-4 w-4 cursor-pointer accent-white"
-                    />
-                    <div>
-                      <span className="block text-[9px] font-bold uppercase tracking-[0.20em] text-white/70">
-                        RANDOM PAIRING
-                      </span>
-                      <span className="mt-2 block text-[8px] uppercase leading-5 tracking-[0.14em] text-white/35">
-                        DO YOU WANT RANDOM PAIRING WITH OTHER REGISTERED PLAYERS?
-                      </span>
-                    </div>
-                  </label>
-                </div>
-              )}
-
               {/* PAYMENT & PROOF */}
               {(!isSportomania || sportomaniaFee > 0) && (
               <div className="rounded-2xl border border-white/15 bg-white/[0.035] p-5 sm:p-6">
