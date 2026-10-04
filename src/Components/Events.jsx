@@ -9,26 +9,28 @@ import rampagePoster from "../assets/rampage.png";
 
 const upcomingEvents = [
   {
+    title: "SPORTOMANIA",
+    date: "PROBABLE START: 7 • SEPTEMBER • 2026",
+    time: "REGISTRATIONS CLOSE: 6 • SEPTEMBER • EOD",
+    mode: "REGISTRATIONS LIVE",
+    game: "ESPORTS",
+    location: "NITS SILCHAR",
+    status: "REGISTRATIONS LIVE",
+    description:
+      "SPORTOMANIA — registrations are LIVE. FREE exclusively for Civil Engineering students; students from other branches can participate at ₹10 per person. Probable event start: 7 September 2026. Registrations close on 6 September 2026 at EOD.",
+    image: sportomaniaPoster,
+  },
+  {
     title: "RAMPAGE 2026",
     date: "PROBABLE DATE: TO BE ANNOUNCED",
     time: "TO BE ANNOUNCED",
-    mode: "TO BE ANNOUNCED",
+    mode: "UPCOMING",
     game: "ESPORTS",
     location: "TO BE ANNOUNCED",
+    status: "UPCOMING",
     description:
-      "RAMPAGE 2026 — the next major NITS Esports battle. Probable date and event details are to be announced.",
+      "RAMPAGE 2026 — the next major NITS Esports battle. Registrations and event details will be announced soon.",
     image: rampagePoster,
-  },
-  {
-    title: "SPORTOMANIA",
-    date: "PROBABLE DATE: TO BE ANNOUNCED",
-    time: "TO BE ANNOUNCED",
-    mode: "TO BE ANNOUNCED",
-    game: "ESPORTS",
-    location: "TO BE ANNOUNCED",
-    description:
-      "SPORTOMANIA EVENT 2 — an upcoming competitive event. Probable date and event details are to be announced.",
-    image: sportomaniaPoster,
   },
 ];
 
@@ -232,7 +234,7 @@ const EventCard = ({ event, index, upcoming, onViewMore }) => (
 
       {/* STATUS */}
       <div className="absolute left-4 top-4 rounded-full border border-white/20 bg-black/55 px-4 py-1.5 text-[9px] font-semibold uppercase tracking-[0.20em] text-white/75 backdrop-blur-xl">
-        {upcoming ? "UPCOMING" : "COMPLETED"}
+        {event.status || (upcoming ? "UPCOMING" : "COMPLETED")}
       </div>
 
       {/* NUMBER */}
@@ -1269,7 +1271,11 @@ const Events = () => {
                         <img
                           src={tournament.image}
                           alt={tournament.title}
-                          className="h-full w-full object-cover opacity-55 grayscale contrast-[1.12] saturate-0 transition-all duration-500 group-hover:scale-105 group-hover:opacity-75"
+                          className={`h-full w-full object-cover transition-all duration-500 group-hover:scale-105 ${
+                            selectedEvent === "SPORTOMANIA"
+                              ? "opacity-90 contrast-[1.05] saturate-100"
+                              : "opacity-55 grayscale contrast-[1.12] saturate-0 group-hover:opacity-75"
+                          }`}
                         />
                         <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/35 to-black/10" />
                         <div className="absolute left-4 top-4 rounded-full border border-white/20 bg-black/55 px-3 py-1.5 text-[8px] font-bold uppercase tracking-[0.18em] text-white/65 backdrop-blur-xl">
@@ -1285,7 +1291,9 @@ const Events = () => {
                           {tournament.title}
                         </h3>
                         <p className="mt-2 text-[9px] uppercase tracking-[0.14em] text-white/35">
-                          PROBABLE DATE: TO BE ANNOUNCED
+                          {selectedEvent === "SPORTOMANIA"
+                            ? "REGISTRATION CLOSES: 6 SEPTEMBER 2026 • EOD"
+                            : "PROBABLE DATE: TO BE ANNOUNCED"}
                         </p>
 
                         <button
@@ -1422,16 +1430,31 @@ const Events = () => {
                 {selectedTournament.title}
               </h2>
               <p className="mt-2 text-[9px] uppercase tracking-[0.18em] text-white/40">
-                Registration Fee: {isSportomania ? `₹${sportomaniaFee} Per Team` : "₹40 Per Team"}
+                {isSportomania
+                  ? sportomaniaFee === 0
+                    ? "REGISTRATION FEE: FREE FOR CIVIL STUDENTS"
+                    : `REGISTRATION FEE: ₹${sportomaniaFee} TOTAL • ₹10 PER OTHER-BRANCH PLAYER`
+                  : "REGISTRATION FEE: ₹40 PER TEAM"}
               </p>
             </div>
 
             <form onSubmit={handleFormSubmit} className="space-y-7">
               {isSportomania && (
-                <div className="rounded-xl border border-red-400/25 bg-red-500/[0.06] px-4 py-3 text-center">
-                  <p className="text-[9px] font-bold uppercase tracking-[0.14em] leading-5 text-red-200/85">
-                    PLEASE FILL THE FORM CAREFULLY. FALSE INFORMATION WILL LEAD TO DISQUALIFICATION FROM THE TOURNAMENT.
-                  </p>
+                <div className="space-y-3">
+                  <div className="rounded-xl border border-red-400/25 bg-red-500/[0.06] px-4 py-3 text-center">
+                    <p className="text-[9px] font-bold uppercase tracking-[0.14em] leading-5 text-red-200/85">
+                      PLEASE FILL THE FORM CAREFULLY. FALSE INFORMATION WILL LEAD TO DISQUALIFICATION FROM THE TOURNAMENT.
+                    </p>
+                  </div>
+
+                  <div className="rounded-xl border border-white/15 bg-white/[0.035] px-4 py-4 text-center">
+                    <p className="text-[9px] font-bold uppercase tracking-[0.14em] leading-5 text-white/70">
+                      SPORTOMANIA REGISTRATION NOTE
+                    </p>
+                    <p className="mt-2 text-[9px] font-semibold uppercase tracking-[0.10em] leading-5 text-white/45">
+                      FREE EXCLUSIVELY FOR CIVIL ENGINEERING STUDENTS. STUDENTS FROM OTHER BRANCHES PAY ₹10 PER PERSON. ONLY THE TEAM LEADER / IGL MUST JOIN THE OFFICIAL WHATSAPP GROUP PROVIDED IN THIS FORM.
+                    </p>
+                  </div>
                 </div>
               )}
 
@@ -1761,14 +1784,16 @@ const Events = () => {
                       PAYMENT
                     </p>
                     <h3 className="mt-2 text-lg font-bold uppercase text-white">
-                      PAY ₹{isSportomania ? sportomaniaFee : 40} PER TEAM
+                      PAY ₹{isSportomania ? sportomaniaFee : 40} TOTAL
                     </h3>
                     <p className="mt-1 text-[9px] uppercase tracking-[0.14em] text-white/35">
-                      Scan the QR below and complete the payment before uploading proof.
+                      {isSportomania
+                        ? "CIVIL STUDENTS ARE FREE • OTHER BRANCHES PAY ₹10 PER PERSON. SCAN THE QR AND UPLOAD PAYMENT PROOF IF PAYMENT IS REQUIRED."
+                        : "SCAN THE QR BELOW AND COMPLETE THE PAYMENT BEFORE UPLOADING PROOF."}
                     </p>
                   </div>
                   <span className="rounded-full border border-white/15 bg-white/[0.045] px-3 py-1.5 text-[8px] font-bold uppercase tracking-[0.18em] text-white/55">
-                    ₹{isSportomania ? sportomaniaFee : 40} / TEAM
+                    {isSportomania ? `₹${sportomaniaFee} TOTAL` : "₹40 / TEAM"}
                   </span>
                 </div>
 
@@ -1847,7 +1872,7 @@ const Events = () => {
             <p className="mx-auto mt-4 max-w-md text-[10px] leading-6 uppercase tracking-[0.12em] text-white/45">
               Registration submitted successfully for squad{" "}
               <span className="font-bold text-white">"{rampageForm.teamName}"</span> in{" "}
-              {selectedTournament?.title || "TOURNAMENT"}. Join the official WhatsApp group for bracket and fixture updates.
+              {selectedTournament?.title || "TOURNAMENT"}. Only the team leader / IGL needs to join the official WhatsApp group provided in the registration form for bracket and fixture updates.
             </p>
 
             <div className="mt-8 grid gap-3 sm:grid-cols-3">
@@ -1858,7 +1883,7 @@ const Events = () => {
                     window.open(RAMPAGE_WHATSAPP_GROUP, "_blank", "noopener,noreferrer");
                   } else {
                     setFormError(
-                      "Add the official Rampage WhatsApp group invite link in RAMPAGE_WHATSAPP_GROUP."
+                      "Add the official WhatsApp group invite link in RAMPAGE_WHATSAPP_GROUP."
                     );
                   }
                 }}
