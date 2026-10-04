@@ -1255,8 +1255,10 @@ const Events = () => {
                 }`}
               >
                 {tournamentDetails[selectedEvent].map((tournament, index) => {
+                  // RAMPAGE registration is temporarily locked.
+                  // SPORTOMANIA remains open and fully functional.
                   const isRegistrationOpen =
-                    selectedEvent === "RAMPAGE 2026" || selectedEvent === "SPORTOMANIA";
+                    selectedEvent === "SPORTOMANIA";
 
                   return (
                     <article
@@ -1305,7 +1307,7 @@ const Events = () => {
                               : "cursor-not-allowed border-white/10 bg-white/[0.02] text-white/30"
                           }`}
                         >
-                          {isRegistrationOpen ? "REGISTER NOW" : "REGISTRATION SOON"}
+                          {isRegistrationOpen ? "REGISTER NOW" : "REGISTRATION COMING SOON"}
                         </button>
                       </div>
                     </article>

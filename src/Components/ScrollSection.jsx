@@ -1456,34 +1456,39 @@ const ScrollSection = () => {
                     {event.description}
                   </p>
 
-                  <button
-                    type="button"
-                    onClick={() => {
-                      if (
-                        event.title === "RAMPAGE 2026" ||
-                        event.title === "SPORTOMANIA"
-                      ) {
-                        setFormError("");
-                        setPaymentProof(null);
-                        setQrLoadFailed(false);
-                        setRampageForm(initialRampageForm);
-                        setRandomPairing(false);
-                        setSelectedTournament(null);
-                        setRegistrationComplete(false);
-                        setSelectedEvent(event.title);
-                        // Open the same tournament selection flow for Sportomania.
-                        // The user chooses BGMI / FREE FIRE / COD / MLBB before the form opens.
-                        setSelectedTournament(null);
-                      }
-                    }}
-                    className="mt-4 inline-flex items-center gap-2 rounded-lg border border-white/25 bg-white/[0.06] px-4 py-2 text-[7px] font-bold uppercase tracking-[0.22em] text-white/70 backdrop-blur-md transition-all duration-300 hover:border-white hover:bg-white/[0.12] hover:text-white"
-                  >
-                    REGISTER NOW
-                    <ArrowRight
-                      size={11}
-                      className="transition-transform duration-300 group-hover:translate-x-1"
-                    />
-                  </button>
+                  {event.title === "RAMPAGE 2026" ? (
+                    <button
+                      type="button"
+                      disabled
+                      aria-disabled="true"
+                      className="mt-4 inline-flex cursor-not-allowed items-center gap-2 rounded-lg border border-white/15 bg-white/[0.035] px-4 py-2 text-[7px] font-bold uppercase tracking-[0.22em] text-white/45 backdrop-blur-md"
+                    >
+                      REGISTRATION COMING SOON
+                    </button>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (event.title === "SPORTOMANIA") {
+                          setFormError("");
+                          setPaymentProof(null);
+                          setQrLoadFailed(false);
+                          setRampageForm(initialRampageForm);
+                          setRandomPairing(false);
+                          setSelectedTournament(null);
+                          setRegistrationComplete(false);
+                          setSelectedEvent(event.title);
+                        }
+                      }}
+                      className="mt-4 inline-flex items-center gap-2 rounded-lg border border-white/25 bg-white/[0.06] px-4 py-2 text-[7px] font-bold uppercase tracking-[0.22em] text-white/70 backdrop-blur-md transition-all duration-300 hover:border-white hover:bg-white/[0.12] hover:text-white"
+                    >
+                      REGISTER NOW
+                      <ArrowRight
+                        size={11}
+                        className="transition-transform duration-300 group-hover:translate-x-1"
+                      />
+                    </button>
+                  )}
                 </div>
 
                 <div
@@ -1550,8 +1555,7 @@ const ScrollSection = () => {
                 }`}
               >
                 {tournamentDetails[selectedEvent].map((tournament, index) => {
-                  const isRegistrationOpen =
-                    selectedEvent === "RAMPAGE 2026" || selectedEvent === "SPORTOMANIA";
+                  const isRegistrationOpen = selectedEvent === "SPORTOMANIA";
 
                   return (
                     <article
@@ -1600,7 +1604,7 @@ const ScrollSection = () => {
                               : "cursor-not-allowed border-white/10 bg-white/[0.02] text-white/30"
                           }`}
                         >
-                          {isRegistrationOpen ? "REGISTER NOW" : "REGISTRATION SOON"}
+                          {isRegistrationOpen ? "REGISTER NOW" : "REGISTRATION COMING SOON"}
                         </button>
                       </div>
                     </article>

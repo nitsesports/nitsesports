@@ -1533,15 +1533,15 @@ const Hero = () => {
           <div className="event-ticker">
             <div className="ticker-group">
               <span className="ticker-premium-text text-[9px] font-semibold uppercase tracking-[0.22em]">
-                NITS ESPORTS CHAMPIONSHIP 2026
+                RAMPAGE REGISTRATIONS STARTING SOON
               </span>
               <span className="ticker-premium-symbol">◆</span>
               <span className="ticker-premium-text text-[9px] font-semibold uppercase tracking-[0.22em]">
-                REGISTRATIONS ARE NOW OPEN
+                SPORTOMANIA REGISTRATIONS ARE NOW OPEN
               </span>
               <span className="ticker-premium-symbol">◆</span>
               <span className="ticker-premium-text text-[9px] font-semibold uppercase tracking-[0.22em]">
-                BATTLE FOR THE CROWN
+                BATTLE BLAZE IS COMING
               </span>
               <span className="ticker-premium-symbol">◆</span>
             </div>
@@ -1566,7 +1566,7 @@ const Hero = () => {
       {/* YOUTUBE VIDEO PREVIEW */}
       <div className="hero-youtube-card">
         <div className="hero-youtube-label">
-          <span>Latest Video</span>
+          <span>Latest Updates</span>
         </div>
         <div className="relative aspect-video w-full overflow-hidden">
           <iframe
