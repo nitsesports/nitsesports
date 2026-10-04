@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import "./App.css";
 
@@ -29,7 +28,6 @@ import Schedule from "./Components/Schedule";
 import Login from "./Components/Login";
 import Register from "./Components/Register";
 
-
 /* =====================================================
    APP
 ===================================================== */
@@ -38,18 +36,37 @@ function App() {
   const [loading, setLoading] = useState(true);
   const [shattering, setShattering] = useState(false);
 
+  // Loading screen chalte waqt background scroll lock rahega
+  useEffect(() => {
+    if (loading || shattering) {
+      document.body.style.overflow = "hidden";
+      window.scrollTo(0, 0);
+    } else {
+      document.body.style.overflow = "auto";
+    }
+
+    return () => {
+      document.body.style.overflow = "auto";
+    };
+  }, [loading, shattering]);
+
   /* =====================================================
      LOADING COMPLETE
+     Nayi LoadingScreen 100% hone par ye trigger hoga
   ===================================================== */
-
   const handleLoadingComplete = () => {
-    setShattering(true);
+    // OPTION A (Default): Loading ke turant baad sidha Landing Page open hoga
+    setLoading(false);
+    setShattering(false);
+
+    // OPTION B: Agar aapko beech me ShatterTransition bhi chahiye,
+    // toh upar ki 2 lines hata kar niche wali line uncomment kar lein:
+    // setShattering(true);
   };
 
   /* =====================================================
-     SHATTER COMPLETE
+     SHATTER COMPLETE (Agar ShatterTransition use karein)
   ===================================================== */
-
   const handleShatterComplete = () => {
     setLoading(false);
     setShattering(false);
@@ -58,7 +75,6 @@ function App() {
   /* =====================================================
      WEBSITE READY
   ===================================================== */
-
   const websiteReady = !loading && !shattering;
 
   return (
@@ -67,20 +83,14 @@ function App() {
       {/* =================================================
           SCROLL TO TOP
       ================================================= */}
-
       <ScrollToTop />
-
 
       {/* =================================================
           ROUTES
       ================================================= */}
-
       <Routes>
 
-        {/* =================================================
-            HOME
-        ================================================= */}
-
+        {/* HOME */}
         <Route
           path="/"
           element={
@@ -90,11 +100,7 @@ function App() {
           }
         />
 
-
-        {/* =================================================
-            TEAM
-        ================================================= */}
-
+        {/* TEAM */}
         <Route
           path="/team"
           element={
@@ -104,11 +110,7 @@ function App() {
           }
         />
 
-
-        {/* =================================================
-            EVENTS
-        ================================================= */}
-
+        {/* EVENTS */}
         <Route
           path="/events"
           element={
@@ -118,11 +120,7 @@ function App() {
           }
         />
 
-
-        {/* =================================================
-            ABOUT
-        ================================================= */}
-
+        {/* ABOUT */}
         <Route
           path="/about"
           element={
@@ -132,11 +130,7 @@ function App() {
           }
         />
 
-
-        {/* =================================================
-            MERCHENDISE
-        ================================================= */}
-
+        {/* MERCHANDISE */}
         <Route
           path="/merchandise"
           element={
@@ -146,11 +140,7 @@ function App() {
           }
         />
 
-
-        {/* =================================================
-            SCHEDULE
-        ================================================= */}
-
+        {/* SCHEDULE */}
         <Route
           path="/schedule"
           element={
@@ -160,44 +150,25 @@ function App() {
           }
         />
 
-
-        {/* =================================================
-            LOGIN
-        ================================================= */}
-
+        {/* LOGIN */}
         <Route
           path="/login"
           element={<Login />}
         />
 
-
-        {/* =================================================
-            REGISTER
-        ================================================= */}
-
+        {/* REGISTER */}
         <Route
           path="/register"
           element={<Register />}
         />
 
-
-        {/* =================================================
-            REGISTER-TEST
-
-            Kept for compatibility with the existing
-            Sign Up link in Login.jsx.
-        ================================================= */}
-
+        {/* REGISTER-TEST */}
         <Route
           path="/register-test"
           element={<Register />}
         />
 
-
-        {/* =================================================
-            FALLBACK
-        ================================================= */}
-
+        {/* FALLBACK */}
         <Route
           path="*"
           element={
@@ -209,32 +180,25 @@ function App() {
 
       </Routes>
 
-
       {/* =================================================
           NAVBAR
-
-          Navbar remains visible on ALL pages,
-          including Login and Register.
       ================================================= */}
-
       {websiteReady && <NavbarController />}
 
-
       {/* =================================================
-          LOADING SCREEN
+          NEW CYBER LOADING SCREEN
       ================================================= */}
-
       {loading && !shattering && (
         <LoadingScreen
+          minDuration={3200} // 3.2 seconds loading animation
+          onComplete={handleLoadingComplete}
           onLoadingComplete={handleLoadingComplete}
         />
       )}
 
-
       {/* =================================================
-          SHATTER TRANSITION
+          SHATTER TRANSITION (Agar Option B enable karein)
       ================================================= */}
-
       {shattering && (
         <ShatterTransition
           onComplete={handleShatterComplete}
@@ -245,29 +209,16 @@ function App() {
   );
 }
 
-
 /* =====================================================
    NAVBAR CONTROLLER
 ===================================================== */
-
 function NavbarController() {
-  /*
-    Navbar is intentionally visible on every route,
-    including:
-
-    /login
-    /register
-    /register-test
-  */
-
   return <Navbar />;
 }
-
 
 /* =====================================================
    SCROLL TO TOP
 ===================================================== */
-
 function ScrollToTop() {
   const { pathname } = useLocation();
 
@@ -282,11 +233,9 @@ function ScrollToTop() {
   return null;
 }
 
-
 /* =====================================================
    HOME PAGE
 ===================================================== */
-
 function Home({ websiteReady }) {
   return (
     <main
@@ -301,7 +250,6 @@ function Home({ websiteReady }) {
       {/* =================================================
           HERO
       ================================================= */}
-
       <section
         id="home"
         className="
@@ -312,14 +260,6 @@ function Home({ websiteReady }) {
           bg-black
         "
       >
-
-        {/* =================================================
-            HERO CONTENT
-
-            Landing video completely removed.
-            Background is now pure black.
-        ================================================= */}
-
         {websiteReady && (
           <div
             className="
@@ -332,14 +272,11 @@ function Home({ websiteReady }) {
             <Hero />
           </div>
         )}
-
       </section>
-
 
       {/* =================================================
           SECTION 1
       ================================================= */}
-
       {websiteReady && (
         <section
           id="scroll-section"
@@ -354,11 +291,9 @@ function Home({ websiteReady }) {
         </section>
       )}
 
-
       {/* =================================================
           SECTION 2
       ================================================= */}
-
       {websiteReady && (
         <section
           id="scroll-section-2"
@@ -373,11 +308,9 @@ function Home({ websiteReady }) {
         </section>
       )}
 
-
       {/* =================================================
           SECTION 3
       ================================================= */}
-
       {websiteReady && (
         <section
           id="scroll-section-3"
@@ -392,11 +325,9 @@ function Home({ websiteReady }) {
         </section>
       )}
 
-
       {/* =================================================
-          SECTION 4
+          SECTION 4 (The Experience)
       ================================================= */}
-
       {websiteReady && (
         <section
           id="scroll-section-4"
@@ -411,11 +342,9 @@ function Home({ websiteReady }) {
         </section>
       )}
 
-
       {/* =================================================
           SECTION 5
       ================================================= */}
-
       {websiteReady && (
         <section
           id="scroll-section-5"
@@ -434,11 +363,9 @@ function Home({ websiteReady }) {
   );
 }
 
-
 /* =====================================================
    TEAM PAGE
 ===================================================== */
-
 function TeamPage({ websiteReady }) {
   return (
     <main
@@ -455,11 +382,9 @@ function TeamPage({ websiteReady }) {
   );
 }
 
-
 /* =====================================================
    EVENTS PAGE
 ===================================================== */
-
 function EventsPage({ websiteReady }) {
   return (
     <main
@@ -476,11 +401,9 @@ function EventsPage({ websiteReady }) {
   );
 }
 
-
 /* =====================================================
    ABOUT PAGE
 ===================================================== */
-
 function AboutPage({ websiteReady }) {
   return (
     <main
@@ -497,11 +420,9 @@ function AboutPage({ websiteReady }) {
   );
 }
 
-
 /* =====================================================
-   MERCHENDISE PAGE
+   MERCHANDISE PAGE
 ===================================================== */
-
 function MerchandisePage({ websiteReady }) {
   return (
     <main
@@ -518,11 +439,9 @@ function MerchandisePage({ websiteReady }) {
   );
 }
 
-
 /* =====================================================
    SCHEDULE PAGE
 ===================================================== */
-
 function SchedulePage({ websiteReady }) {
   return (
     <main
@@ -539,10 +458,4 @@ function SchedulePage({ websiteReady }) {
   );
 }
 
-
-/* =====================================================
-   EXPORT
-===================================================== */
-
 export default App;
-
