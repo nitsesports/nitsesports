@@ -3,6 +3,8 @@ import * as THREE from "three";
 import { ArrowRight, CalendarDays, Trophy } from "lucide-react";
 import { createClient } from "@supabase/supabase-js";
 import sportomaniaQR from "../assets/events/sqr.png";
+import sportomaniaPoster from "../assets/sportomania.png";
+import rampage2Poster from "../assets/rampage2.png";
 
 import eventImage1 from "../assets/events/event1.png";
 import eventImage2 from "../assets/events/event2.png";
@@ -11,7 +13,7 @@ import eventImage3 from "../assets/events/event3.png";
 const events = [
   {
     id: "01",
-    image: eventImage1,
+    image: rampage2Poster,
     category: "ESPORTS",
     title: "RAMPAGE 2026",
     date: "TO BE ANNOUNCED",
@@ -23,7 +25,7 @@ const events = [
   },
   {
     id: "02",
-    image: eventImage2,
+    image: sportomaniaPoster,
     category: "TOURNAMENT",
     title: "SPORTOMANIA",
     date: "TO BE ANNOUNCED",
@@ -1391,7 +1393,7 @@ const ScrollSection = () => {
                 key={event.id}
                 onMouseEnter={() => setActiveCard(index)}
                 onMouseLeave={() => setActiveCard(null)}
-                className={`events-card group relative mx-auto h-[240px] w-full max-w-[330px] cursor-pointer overflow-hidden rounded-2xl border ${
+                className={`events-card group relative mx-auto aspect-[4/5] w-full max-w-[330px] cursor-pointer overflow-hidden rounded-2xl border ${
                   style.border
                 } ${style.hoverBorder} bg-white/[0.07] transform transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] ${
                   cardsVisible
@@ -1402,7 +1404,7 @@ const ScrollSection = () => {
                 <img
                   src={event.image}
                   alt={event.title}
-                  className="absolute inset-0 h-full w-full object-cover opacity-85 brightness-[1.08] saturate-[1.12] transition-all duration-700 group-hover:scale-110 group-hover:opacity-90"
+                  className="absolute inset-0 h-full w-full object-cover object-[center_58%] opacity-85 brightness-[1.08] saturate-[1.12] transition-all duration-700 group-hover:scale-110 group-hover:opacity-90"
                 />
 
                 <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/25 to-black/5" />

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import * as THREE from "three";
 import appLogo from "../assets/logoo.png";
+import thumbnail from "../assets/thumbnail.png";
 const Hero = () => {
   const [showSponsors, setShowSponsors] = useState(false);
  
@@ -1423,13 +1424,21 @@ const Hero = () => {
         <div className="hero-youtube-label">
           <span>Latest Video</span>
         </div>
-        <iframe
-          src="https://www.youtube.com/embed/VIDEO_ID"
-          title="NITS Esports YouTube Video"
-          loading="lazy"
-          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-          allowFullScreen
-        />
+        <div className="relative aspect-video w-full overflow-hidden">
+          <iframe
+            src="https://www.youtube.com/embed/VIDEO_ID"
+            title="NITS Esports YouTube Video"
+            loading="lazy"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            allowFullScreen
+            className="absolute inset-0 h-full w-full border-0"
+          />
+          <img
+            src={thumbnail}
+            alt="Latest Video Thumbnail"
+            className="pointer-events-none absolute inset-0 h-full w-full object-cover"
+          />
+        </div>
       </div>
  
       {/* APP DOWNLOAD */}

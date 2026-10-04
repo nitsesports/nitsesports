@@ -1,6 +1,9 @@
 import React, { useEffect } from "react";
 import * as THREE from "three";
 
+import rampagePoster from "../assets/rampage.png";
+import sportomaniaPoster from "../assets/sportomania2.png";
+
 const Schedule = () => {
   // =========================================================
   // EVENT DATA
@@ -14,7 +17,7 @@ const Schedule = () => {
       teams: "TO BE ANNOUNCED",
       prize: "TO BE ANNOUNCED",
       status: "Upcoming",
-      image: "/events/neon-clash.jpg",
+      image: rampagePoster,
     },
     {
       title: "SPORTOMANIA",
@@ -23,7 +26,7 @@ const Schedule = () => {
       teams: "TO BE ANNOUNCED",
       prize: "TO BE ANNOUNCED",
       status: "Upcoming",
-      image: "/events/cyber-warfare.jpg",
+      image: sportomaniaPoster,
     },
   ];
 
@@ -455,10 +458,10 @@ const Schedule = () => {
               h-full
               w-full
               object-cover
-              opacity-80
-              grayscale
-              contrast-[1.12]
-              saturate-0
+              opacity-100
+              saturate-100
+              contrast-100
+              brightness-100
               transition-all
               duration-700
               group-hover:scale-110

@@ -2,7 +2,8 @@ import React, { useEffect, useState } from "react";
 import Navbar from "./Navbar";
 import * as THREE from "three";
 import { createClient } from "@supabase/supabase-js";
-import sportomaniaQR from "../assets/events/sqr.png";
+import sportomaniaPoster from "../assets/sportomania2.png";
+import rampagePoster from "../assets/rampage.png";
 
 
 const upcomingEvents = [
@@ -15,7 +16,7 @@ const upcomingEvents = [
     location: "TO BE ANNOUNCED",
     description:
       "RAMPAGE 2026 — the next major NITS Esports battle. Probable date and event details are to be announced.",
-    image: "/events/upcoming-01.jpg",
+    image: rampagePoster,
   },
   {
     title: "SPORTOMANIA",
@@ -26,7 +27,7 @@ const upcomingEvents = [
     location: "TO BE ANNOUNCED",
     description:
       "SPORTOMANIA EVENT 2 — an upcoming competitive event. Probable date and event details are to be announced.",
-    image: "/events/upcoming-02.jpg",
+    image: sportomaniaPoster,
   },
 ];
 
@@ -73,10 +74,10 @@ const tournamentDetails = {
     { title: "MLBB TOURNAMENT", game: "MLBB", image: "/events/upcoming-01.jpg" },
   ],
   SPORTOMANIA: [
-    { title: "BGMI TOURNAMENT", game: "BGMI", image: "/events/upcoming-02.jpg" },
-    { title: "FREE FIRE TOURNAMENT", game: "FREE FIRE", image: "/events/upcoming-02.jpg" },
-    { title: "MLBB TOURNAMENT", game: "MLBB", image: "/events/upcoming-02.jpg" },
-    { title: "COD TOURNAMENT", game: "COD", image: "/events/upcoming-02.jpg" },
+    { title: "BGMI TOURNAMENT", game: "BGMI", image: sportomaniaPoster },
+    { title: "FREE FIRE TOURNAMENT", game: "FREE FIRE", image: sportomaniaPoster },
+    { title: "MLBB TOURNAMENT", game: "MLBB", image: sportomaniaPoster },
+    { title: "COD TOURNAMENT", game: "COD", image: sportomaniaPoster },
   ],
 };
 
@@ -206,19 +207,19 @@ const EventCard = ({ event, index, upcoming, onViewMore }) => (
       <img
         src={event.image}
         alt={event.title}
-        className="
+        className={`
           h-full
           w-full
           object-cover
-          opacity-75
-          grayscale
-          contrast-[1.14]
-          saturate-0
+          ${event.title === "SPORTOMANIA" ? "object-[center_58%]" : "object-center"}
+          opacity-100
+          contrast-[1.08]
+          saturate-100
           transition-all
           duration-700
           group-hover:scale-110
           group-hover:opacity-95
-        "
+        `}
         onError={(e) => {
           e.currentTarget.style.display = "none";
         }}
@@ -366,7 +367,6 @@ const EventSection = ({ title, subtitle, events, type, onViewMore }) => (
 
 const RAMPAGE_LOGO = "/events/rampage-logo.png";
 const RAMPAGE_QR = "/events/sqr.png";
-const SPORTOMANIA_QR = sportomaniaQR;
 // Replace this with the official Rampage WhatsApp group invite link.
 const RAMPAGE_WHATSAPP_GROUP = "";
 
@@ -1509,16 +1509,14 @@ const Events = () => {
                   <div className="rounded-2xl border border-white/15 bg-white p-3 shadow-[0_0_35px_rgba(255,255,255,.08)]">
                     {!qrLoadFailed ? (
                       <img
-                        src={selectedEvent === "SPORTOMANIA" ? SPORTOMANIA_QR : RAMPAGE_QR}
-                        alt={`${selectedEvent === "SPORTOMANIA" ? "SPORTOMANIA" : "RAMPAGE 2026"} payment QR code`}
+                        src={RAMPAGE_QR}
+                        alt="RAMPAGE 2026 payment QR code"
                         className="h-52 w-52 object-contain sm:h-60 sm:w-60"
                         onError={() => setQrLoadFailed(true)}
                       />
                     ) : (
                       <div className="flex h-52 w-52 items-center justify-center p-5 text-center text-[10px] font-bold uppercase tracking-[0.12em] text-[#111] sm:h-60 sm:w-60">
-                        {selectedEvent === "SPORTOMANIA"
-                          ? "SPORTOMANIA QR COULD NOT BE LOADED"
-                          : "ADD RAMPAGE QR AT /events/rampage-qr.png"}
+                        ADD RAMPAGE QR AT /events/rampage-qr.png
                       </div>
                     )}
                   </div>
