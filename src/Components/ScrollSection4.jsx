@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import * as THREE from "three";
-
+import experienceThumb from "../assets/experience.png";
 
 /* =========================================================
    THREE.JS — CYBER CONSOLE BACKGROUND
@@ -391,8 +391,6 @@ const CyberConsoleBackground = () => {
   );
 };
 
-
-
 /* =========================================================
    THREE.JS — FULLSCREEN CYBER KATANA SLASH
    Hover / click driven. No circular click effect.
@@ -457,14 +455,12 @@ const CyberKatanaSlashes = () => {
     };
 
     const createSlash = (worldX, worldY) => {
-      // Small local katana cut: intentionally compact, never fullscreen.
       const group = new THREE.Group();
       group.position.set(worldX, worldY, 0);
       group.rotation.z = -0.55 + (Math.random() - 0.5) * 0.20;
       group.scale.setScalar(0.78 + Math.random() * 0.10);
       scene.add(group);
 
-      // Curved primary blade path.
       const bladePoints = [];
       for (let i = 0; i <= 30; i++) {
         const t = i / 30;
@@ -475,8 +471,6 @@ const CyberKatanaSlashes = () => {
       const blade = makeLine(bladePoints, 0.95);
       group.add(blade);
 
-      // Fine parallel razor glints make the slash read like a katana cut,
-      // without turning it into a giant glowing bar.
       const glints = [];
       [-0.026, 0.026].forEach((offset, index) => {
         const pts = bladePoints.map(
@@ -487,7 +481,6 @@ const CyberKatanaSlashes = () => {
         glints.push(line);
       });
 
-      // Tiny broken steel fragments concentrated around the click.
       const fragments = [];
       for (let i = 0; i < 18; i++) {
         const px = (Math.random() - 0.5) * 0.72;
@@ -506,7 +499,6 @@ const CyberKatanaSlashes = () => {
         fragments.push(frag);
       }
 
-      // Very small impact spark at the exact click point.
       const sparks = [];
       for (let i = 0; i < 10; i++) {
         const a = Math.random() * Math.PI * 2;
@@ -544,7 +536,6 @@ const CyberKatanaSlashes = () => {
       const sectionRect = getSectionRect();
       if (!sectionRect || !pointInside(event.clientX, event.clientY, sectionRect)) return;
 
-      // Keep the video controls completely usable.
       const videoRect = getVideoRect();
       if (pointInside(event.clientX, event.clientY, videoRect)) return;
 
@@ -584,7 +575,6 @@ const CyberKatanaSlashes = () => {
         slash.age += 0.045;
         slash.life = Math.max(0, 1 - slash.age);
 
-        // Fast attack, clean short decay. No screen-wide wake.
         const attack = Math.min(1, slash.age / 0.11);
         const fade = Math.pow(slash.life, 1.7);
         const intensity = attack * fade;
@@ -606,7 +596,6 @@ const CyberKatanaSlashes = () => {
           spark.material.opacity = 0.45 * intensity;
         });
 
-        // A restrained slicing motion around the click point only.
         slash.group.position.x += 0.0028 * intensity;
         slash.group.scale.x = 0.82 + attack * 0.22;
         slash.group.scale.y = 0.82 + attack * 0.06;
@@ -642,7 +631,6 @@ const CyberKatanaSlashes = () => {
     />
   );
 };
-
 
 const ScrollSection4 = () => {
   const sectionRef = useRef(null);
@@ -709,7 +697,6 @@ const ScrollSection4 = () => {
           overflow: visible;
           pointer-events: none;
         }
-
 
         /* =========================================================
            SAMURAI VIDEO FRAME
@@ -1061,7 +1048,14 @@ const ScrollSection4 = () => {
           <div className="samurai-video-inner">
             {!videoStarted ? (
               <div className="absolute inset-0 z-[4] flex items-center justify-center bg-black">
-                <div className="absolute inset-0 opacity-80 bg-[radial-gradient(circle_at_50%_50%,rgba(255,255,255,0.055),transparent_34%)]" />
+                {/* EXPERIENCE THUMBNAIL */}
+                <img
+                  src={experienceThumb}
+                  alt="The Experience Thumbnail"
+                  className="pointer-events-none absolute inset-0 h-full w-full object-cover opacity-80"
+                />
+                <div className="pointer-events-none absolute inset-0 bg-black/35" />
+                <div className="pointer-events-none absolute inset-0 opacity-80 bg-[radial-gradient(circle_at_50%_50%,rgba(255,255,255,0.055),transparent_34%)]" />
 
                 <div className="relative flex flex-col items-center justify-center">
                   <div className="mb-7 flex items-center gap-3">
