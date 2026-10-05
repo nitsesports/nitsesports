@@ -10,14 +10,14 @@ import rampagePoster from "../assets/rampage.png";
 const upcomingEvents = [
   {
     title: "SPORTOMANIA",
-    date: "PROBABLE START: 7 • SEPTEMBER • 2026",
-    time: "REGISTRATIONS CLOSE: 6 • SEPTEMBER • EOD",
+    date: "PROBABLE START: 7 • OCTOBER • 2026",
+    time: "REGISTRATIONS CLOSE: 6 • OCTOBER • EOD",
     mode: "REGISTRATIONS LIVE",
     game: "ESPORTS",
     location: "NITS SILCHAR",
     status: "REGISTRATIONS LIVE",
     description:
-      "SPORTOMANIA — registrations are LIVE. FREE exclusively for Civil Engineering students; students from other branches can participate at ₹10 per person. Probable event start: 7 September 2026. Registrations close on 6 September 2026 at EOD.",
+      "SPORTOMANIA — registrations are LIVE. FREE exclusively for Civil Engineering students; students from other branches can participate at ₹10 per person. Probable event start: 7 October 2026. Registrations close on 6 October 2026 at EOD.",
     image: sportomaniaPoster,
   },
   {
@@ -80,7 +80,6 @@ const tournamentDetails = {
     { title: "BGMI TOURNAMENT", game: "BGMI", image: sportomaniaPoster },
     { title: "FREE FIRE TOURNAMENT", game: "FREE FIRE", image: sportomaniaPoster },
     { title: "MLBB TOURNAMENT", game: "MLBB", image: sportomaniaPoster },
-    { title: "COD TOURNAMENT", game: "COD", image: sportomaniaPoster },
   ],
 };
 
@@ -398,11 +397,27 @@ const isSportomaniaScholarId = (scholarId = "") => {
 const getSportomaniaFee = (form, playerCount) => {
   let payablePlayers = 0;
 
+  // Main players: Civil Scholar IDs are free; other branches are ₹10/person.
   for (let i = 1; i <= playerCount; i += 1) {
     const scholarId = form[`scholarId${i}`] || "";
     if (scholarId && !isSportomaniaScholarId(scholarId)) {
       payablePlayers += 1;
     }
+  }
+
+  // Substitute is counted only when the COMPLETE substitute entry is filled.
+  // If any substitute field is entered, name + IGN + Scholar ID are required.
+  const substituteName = (form.substituteName || "").trim();
+  const substituteIgn = (form.substituteIgn || "").trim();
+  const substituteScholarId = (form.substituteScholarId || "").trim();
+
+  if (
+    substituteName &&
+    substituteIgn &&
+    substituteScholarId &&
+    !isSportomaniaScholarId(substituteScholarId)
+  ) {
+    payablePlayers += 1;
   }
 
   return payablePlayers * 10;
@@ -663,7 +678,7 @@ const Events = () => {
   // This must be available to the JSX below so opening the form never
   // references an undefined variable.
   const isSportomania = selectedEvent === "SPORTOMANIA";
-  const sportomaniaMainPlayerCount = selectedTournament?.game === "MLBB" ? 5 : 4;
+  const sportomaniaMainPlayerCount = 4;
   const sportomaniaFee = isSportomania
     ? getSportomaniaFee(rampageForm, sportomaniaMainPlayerCount)
     : 40;
@@ -696,7 +711,7 @@ const Events = () => {
 
     const game = selectedTournament?.game;
     const isSportomania = selectedEvent === "SPORTOMANIA";
-    const mainPlayerCount = game === "MLBB" ? 5 : 4;
+    const mainPlayerCount = 4;
     const sportomaniaFee = isSportomania
       ? getSportomaniaFee(rampageForm, mainPlayerCount)
       : 40;
@@ -781,11 +796,65 @@ const Events = () => {
       }
     }
 
-    const hasSubstitute = Boolean(
-      rampageForm.substituteName.trim() ||
-        rampageForm.substituteIgn.trim() ||
-        rampageForm.substituteScholarId.trim()
+    // SUBSTITUTE VALIDATION:
+    // Exactly the same logic as the main players:
+    // if the user enters a substitute Scholar ID (or any other substitute
+    // field), the complete substitute entry is mandatory before registration
+    // can be completed.
+    const substituteName = rampageForm.substituteName.trim();
+    const substituteIgn = rampageForm.substituteIgn.trim();
+    const substituteScholarId = rampageForm.substituteScholarId.trim();
+
+    const hasAnySubstituteData = Boolean(
+      substituteName || substituteIgn || substituteScholarId
     );
+
+    const hasCompleteSubstitute = Boolean(
+      substituteName && substituteIgn && substituteScholarId
+    );
+
+    if (hasAnySubstituteData && !hasCompleteSubstitute) {
+      setFormError(
+        "SUBSTITUTE PLAYER NAME, IGN AND SCHOLAR ID are all required. Complete all three fields or leave the substitute section completely empty."
+      );
+      return;
+    }
+
+    if (hasCompleteSubstitute) {
+      const normalizedSubstituteScholarId = substituteScholarId.toUpperCase();
+
+      if (
+        !/^(?:\d{7}|[A-Z0-9]{1,9})$/.test(normalizedSubstituteScholarId) ||
+        !/\d/.test(normalizedSubstituteScholarId)
+      ) {
+        setFormError(
+          "SUBSTITUTE SCHOLAR ID must be 7 digits or up to 9 letters/numbers."
+        );
+        return;
+      }
+
+      // Substitute Scholar ID cannot duplicate any registered main player.
+      const mainScholarIds = new Set();
+
+      for (let i = 1; i <= mainPlayerCount; i += 1) {
+        const mainScholarId = (rampageForm[`scholarId${i}`] || "")
+          .trim()
+          .toUpperCase();
+
+        if (mainScholarId) {
+          mainScholarIds.add(mainScholarId);
+        }
+      }
+
+      if (mainScholarIds.has(normalizedSubstituteScholarId)) {
+        setFormError(
+          `SCHOLAR ID ${normalizedSubstituteScholarId} CANNOT BE USED BY MORE THAN ONE PLAYER.`
+        );
+        return;
+      }
+    }
+
+    const hasSubstitute = hasCompleteSubstitute;
 
     if ((!isSportomania || sportomaniaFee > 0) && !paymentProof) {
       setFormError(
@@ -926,24 +995,11 @@ const Events = () => {
             ? (player4Present ? rampageForm.scholarId4.trim() : null)
             : rampageForm.scholarId4,
 
-          player5_name:
-            game === "MLBB"
-              ? (isSportomania
-                  ? (player5Present ? rampageForm.player5Name.trim() : null)
-                  : rampageForm.player5Name.trim())
-              : null,
-          player5_ign:
-            game === "MLBB"
-              ? (isSportomania
-                  ? (player5Present ? rampageForm.player5Ign.trim() : null)
-                  : rampageForm.player5Ign.trim())
-              : null,
-          scholar_id_5:
-            game === "MLBB"
-              ? (isSportomania
-                  ? (player5Present ? rampageForm.scholarId5.trim() : null)
-                  : rampageForm.scholarId5)
-              : null,
+          // Keep player-5 database columns for Supabase compatibility.
+          // No player-5 field is exposed in the frontend for the current games.
+          player5_name: null,
+          player5_ign: null,
+          scholar_id_5: null,
 
           substitute_name: hasSubstitute
             ? rampageForm.substituteName.trim()
@@ -1292,7 +1348,7 @@ const Events = () => {
                         </h3>
                         <p className="mt-2 text-[9px] uppercase tracking-[0.14em] text-white/35">
                           {selectedEvent === "SPORTOMANIA"
-                            ? "REGISTRATION CLOSES: 6 SEPTEMBER 2026 • EOD"
+                            ? "REGISTRATION CLOSES: 6 OCTOBER 2026 • EOD"
                             : "PROBABLE DATE: TO BE ANNOUNCED"}
                         </p>
 
@@ -1433,7 +1489,7 @@ const Events = () => {
                 {isSportomania
                   ? sportomaniaFee === 0
                     ? "REGISTRATION FEE: FREE FOR CIVIL STUDENTS"
-                    : `REGISTRATION FEE: ₹${sportomaniaFee} TOTAL • ₹10 PER OTHER-BRANCH PLAYER`
+                    : `REGISTRATION FEE: ₹${sportomaniaFee} TOTAL • ₹10 PER OTHER-BRANCH PLAYER (SUBSTITUTE INCLUDED)`
                   : "REGISTRATION FEE: ₹40 PER TEAM"}
               </p>
             </div>
@@ -1452,7 +1508,7 @@ const Events = () => {
                       SPORTOMANIA REGISTRATION NOTE
                     </p>
                     <p className="mt-2 text-[9px] font-semibold uppercase tracking-[0.10em] leading-5 text-white/45">
-                      FREE EXCLUSIVELY FOR CIVIL ENGINEERING STUDENTS. STUDENTS FROM OTHER BRANCHES PAY ₹10 PER PERSON. ONLY THE TEAM LEADER / IGL MUST JOIN THE OFFICIAL WHATSAPP GROUP PROVIDED IN THIS FORM.
+                      FREE EXCLUSIVELY FOR CIVIL ENGINEERING STUDENTS. STUDENTS FROM OTHER BRANCHES PAY ₹10 PER PERSON. SUBSTITUTE PLAYER ALSO FOLLOWS THE SAME SCHOLAR ID FEE RULE. ONLY THE TEAM LEADER / IGL MUST JOIN THE OFFICIAL WHATSAPP GROUP PROVIDED IN THIS FORM.
                     </p>
                   </div>
                 </div>
@@ -1516,9 +1572,6 @@ const Events = () => {
                     ["PLAYER 2 NAME", "player2Name"],
                     ["PLAYER 3 NAME", "player3Name"],
                     ["PLAYER 4 NAME", "player4Name"],
-                    ...(selectedTournament.game === "MLBB"
-                      ? [["PLAYER 5 NAME", "player5Name"]]
-                      : []),
                   ].map(([label, key]) => (
                     <label key={key} className="block">
                       <span className="mb-2 block text-[9px] font-bold uppercase tracking-[0.20em] text-white/45">
@@ -1544,8 +1597,7 @@ const Events = () => {
                 <div className="mb-4 flex items-center gap-3">
                   <span className="h-px flex-1 bg-white/10" />
                   <span className="text-[9px] font-bold uppercase tracking-[0.24em] text-white/40">
-                    PLAYER IN-GAME NAME (IGN) —{" "}
-                    {selectedTournament.game === "MLBB" ? "PLAYERS 1–5" : "PLAYERS 1–4"}
+                    PLAYER IN-GAME NAME (IGN) — PLAYERS 1–4
                   </span>
                   <span className="h-px flex-1 bg-white/10" />
                 </div>
@@ -1571,9 +1623,6 @@ const Events = () => {
                     ["PLAYER 2 IN-GAME NAME (IGN)", "player2Ign"],
                     ["PLAYER 3 IN-GAME NAME (IGN)", "player3Ign"],
                     ["PLAYER 4 IN-GAME NAME (IGN)", "player4Ign"],
-                    ...(selectedTournament.game === "MLBB"
-                      ? [["PLAYER 5 IN-GAME NAME (IGN)", "player5Ign"]]
-                      : []),
                   ].map(([label, key]) => (
                     <label key={key} className="block">
                       <span className="mb-2 block text-[9px] font-bold uppercase tracking-[0.20em] text-white/45">
@@ -1611,6 +1660,11 @@ const Events = () => {
                     </span>
                     <input
                       name="substituteName"
+                      required={Boolean(
+                        rampageForm.substituteName ||
+                        rampageForm.substituteIgn ||
+                        rampageForm.substituteScholarId
+                      )}
                       value={rampageForm.substituteName}
                       onChange={(e) =>
                         setRampageForm({
@@ -1629,6 +1683,11 @@ const Events = () => {
                     </span>
                     <input
                       name="substituteIgn"
+                      required={Boolean(
+                        rampageForm.substituteName ||
+                        rampageForm.substituteIgn ||
+                        rampageForm.substituteScholarId
+                      )}
                       value={rampageForm.substituteIgn}
                       onChange={(e) =>
                         setRampageForm({
@@ -1647,6 +1706,11 @@ const Events = () => {
                     </span>
                     <input
                       name="substituteScholarId"
+                      required={Boolean(
+                        rampageForm.substituteName ||
+                        rampageForm.substituteIgn ||
+                        rampageForm.substituteScholarId
+                      )}
                       type="text"
                       inputMode="text"
                       pattern={isSportomania ? "[A-Za-z0-9]{1,9}" : "[0-9]{7}"}
@@ -1727,10 +1791,7 @@ const Events = () => {
                   <span className="h-px flex-1 bg-white/10" />
                 </div>
                 <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-                  {(selectedTournament.game === "MLBB"
-                    ? [1, 2, 3, 4, 5]
-                    : [1, 2, 3, 4]
-                  ).map((number) => {
+                  {[1, 2, 3, 4].map((number) => {
                     const key = `scholarId${number}`;
                     const isIgl = number === 1;
 

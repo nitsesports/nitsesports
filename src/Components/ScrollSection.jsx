@@ -4,6 +4,7 @@ import { ArrowRight, CalendarDays, Trophy } from "lucide-react";
 import { createClient } from "@supabase/supabase-js";
 import sportomaniaQR from "../assets/events/sqr.png";
 import sportomaniaPoster from "../assets/sportomania.png";
+import sportomania2Poster from "../assets/sportomania2.png";
 import rampage2Poster from "../assets/rampage2.png";
 
 import eventImage1 from "../assets/events/event1.png";
@@ -28,11 +29,11 @@ const events = [
     image: sportomaniaPoster,
     category: "TOURNAMENT",
     title: "SPORTOMANIA",
-    date: "TO BE ANNOUNCED",
+    date: "PROBABLE START: 7 SEPTEMBER 2026",
     location: "NIT SILCHAR",
-    status: "UPCOMING",
+    status: "REGISTRATIONS LIVE",
     description:
-      "Squad up, enter the arena and compete against the strongest gaming teams on campus.",
+      "SPORTOMANIA — REGISTRATIONS ARE LIVE.REGISTRATIONS CLOSE ON 6 SEPTEMBER 2026 AT EOD.",
     color: "blue",
   },
 ];
@@ -44,10 +45,9 @@ const tournamentDetails = {
     { title: "MLBB TOURNAMENT", game: "MLBB", image: "/events/upcoming-01.jpg" },
   ],
   SPORTOMANIA: [
-    { title: "BGMI TOURNAMENT", game: "BGMI", image: "/events/upcoming-02.jpg" },
-    { title: "FREE FIRE TOURNAMENT", game: "FREE FIRE", image: "/events/upcoming-02.jpg" },
-    { title: "MLBB TOURNAMENT", game: "MLBB", image: "/events/upcoming-02.jpg" },
-    { title: "COD TOURNAMENT", game: "COD", image: "/events/upcoming-02.jpg" },
+    { title: "BGMI TOURNAMENT", game: "BGMI", image: sportomania2Poster },
+    { title: "FREE FIRE TOURNAMENT", game: "FREE FIRE", image: sportomania2Poster },
+    { title: "MLBB TOURNAMENT", game: "MLBB", image: sportomania2Poster },
   ],
 };
 
@@ -86,6 +86,15 @@ const getSportomaniaFee = (form, playerCount) => {
     if (scholarId && !isSportomaniaScholarId(scholarId)) {
       payablePlayers += 1;
     }
+  }
+
+  // Substitute follows the exact same Scholar ID fee rule.
+  const substituteScholarId = form.substituteScholarId || "";
+  if (
+    substituteScholarId &&
+    !isSportomaniaScholarId(substituteScholarId)
+  ) {
+    payablePlayers += 1;
   }
 
   return payablePlayers * 10;
@@ -889,6 +898,44 @@ const ScrollSection = () => {
         sportomaniaScholarIds.add(normalizedScholarId);
       }
 
+      // Sportomania substitute is optional, but once any substitute field
+      // is entered, all three fields (name, IGN and Scholar ID) are required.
+      const substituteName = rampageForm.substituteName.trim();
+      const substituteIgn = rampageForm.substituteIgn.trim();
+      const substituteScholarId = rampageForm.substituteScholarId.trim();
+      const hasAnySubstituteData = Boolean(
+        substituteName || substituteIgn || substituteScholarId
+      );
+
+      if (hasAnySubstituteData) {
+        if (!substituteName || !substituteIgn || !substituteScholarId) {
+          setFormError(
+            "SUBSTITUTE PLAYER NAME, IGN AND SCHOLAR ID are all required."
+          );
+          return;
+        }
+
+        const normalizedSubstituteScholarId =
+          substituteScholarId.toUpperCase();
+
+        if (
+          !/^(?:\d{7}|[A-Z0-9]{1,9})$/.test(normalizedSubstituteScholarId) ||
+          !/\d/.test(normalizedSubstituteScholarId)
+        ) {
+          setFormError(
+            "SUBSTITUTE SCHOLAR ID must be 7 digits or up to 9 letters/numbers."
+          );
+          return;
+        }
+
+        if (sportomaniaScholarIds.has(normalizedSubstituteScholarId)) {
+          setFormError(
+            `SCHOLAR ID ${normalizedSubstituteScholarId} CANNOT BE USED BY MORE THAN ONE PLAYER.`
+          );
+          return;
+        }
+      }
+
       if (!/^\d{10}$/.test(rampageForm.phone1)) {
         setFormError("Phone Number 1 must contain exactly 10 digits.");
         return;
@@ -1566,7 +1613,7 @@ const ScrollSection = () => {
                         <img
                           src={tournament.image}
                           alt={tournament.title}
-                          className="h-full w-full object-cover opacity-55 grayscale contrast-[1.12] saturate-0 transition-all duration-500 group-hover:scale-105 group-hover:opacity-75"
+                          className={`h-full w-full object-cover opacity-55 transition-all duration-500 group-hover:scale-105 group-hover:opacity-75 ${selectedEvent === "SPORTOMANIA" ? "saturate-[1.12] contrast-[1.05]" : "grayscale contrast-[1.12] saturate-0"}`}
                         />
                         <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/35 to-black/10" />
                         <div className="absolute left-4 top-4 rounded-full border border-white/20 bg-black/55 px-3 py-1.5 text-[8px] font-bold uppercase tracking-[0.18em] text-white/65 backdrop-blur-xl">
@@ -1725,10 +1772,21 @@ const ScrollSection = () => {
 
             <form onSubmit={handleFormSubmit} className="space-y-7">
               {isSportomania && (
-                <div className="rounded-xl border border-red-400/25 bg-red-500/[0.06] px-4 py-3 text-center">
-                  <p className="text-[9px] font-bold uppercase tracking-[0.14em] leading-5 text-red-200/85">
-                    PLEASE FILL THE FORM CAREFULLY. FALSE INFORMATION WILL LEAD TO DISQUALIFICATION FROM THE TOURNAMENT.
-                  </p>
+                <div className="space-y-3">
+                  <div className="rounded-xl border border-red-400/25 bg-red-500/[0.06] px-4 py-3 text-center">
+                    <p className="text-[9px] font-bold uppercase tracking-[0.14em] leading-5 text-red-200/85">
+                      PLEASE FILL THE FORM CAREFULLY. FALSE INFORMATION WILL LEAD TO DISQUALIFICATION FROM THE TOURNAMENT.
+                    </p>
+                  </div>
+
+                  <div className="rounded-xl border border-white/15 bg-white/[0.035] px-4 py-4 text-center">
+                    <p className="text-[9px] font-bold uppercase tracking-[0.14em] leading-5 text-white/70">
+                      SPORTOMANIA REGISTRATION NOTE
+                    </p>
+                    <p className="mt-2 text-[9px] font-semibold uppercase tracking-[0.10em] leading-5 text-white/45">
+                      FREE EXCLUSIVELY FOR CIVIL ENGINEERING STUDENTS. STUDENTS FROM OTHER BRANCHES PAY ₹10 PER PERSON. SUBSTITUTE PLAYER ALSO FOLLOWS THE SAME SCHOLAR ID FEE RULE. ONLY THE TEAM LEADER / IGL MUST JOIN THE OFFICIAL WHATSAPP GROUP PROVIDED IN THIS FORM.
+                    </p>
+                  </div>
                 </div>
               )}
 
