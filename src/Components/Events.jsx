@@ -678,7 +678,7 @@ const Events = () => {
   // This must be available to the JSX below so opening the form never
   // references an undefined variable.
   const isSportomania = selectedEvent === "SPORTOMANIA";
-  const sportomaniaMainPlayerCount = 4;
+  const sportomaniaMainPlayerCount = selectedTournament?.game === "MLBB" ? 5 : 4;
   const sportomaniaFee = isSportomania
     ? getSportomaniaFee(rampageForm, sportomaniaMainPlayerCount)
     : 40;
@@ -711,7 +711,7 @@ const Events = () => {
 
     const game = selectedTournament?.game;
     const isSportomania = selectedEvent === "SPORTOMANIA";
-    const mainPlayerCount = 4;
+    const mainPlayerCount = game === "MLBB" ? 5 : 4;
     const sportomaniaFee = isSportomania
       ? getSportomaniaFee(rampageForm, mainPlayerCount)
       : 40;
@@ -995,11 +995,18 @@ const Events = () => {
             ? (player4Present ? rampageForm.scholarId4.trim() : null)
             : rampageForm.scholarId4,
 
-          // Keep player-5 database columns for Supabase compatibility.
-          // No player-5 field is exposed in the frontend for the current games.
-          player5_name: null,
-          player5_ign: null,
-          scholar_id_5: null,
+          // MLBB is a 5-player game. Supabase already has player-5 columns.
+          // Sportomania keeps player 5 optional, while MLBB in other events
+          // requires all 5 main players through the same validation logic.
+          player5_name: isSportomania
+            ? (player5Present ? rampageForm.player5Name.trim() : null)
+            : rampageForm.player5Name.trim(),
+          player5_ign: isSportomania
+            ? (player5Present ? rampageForm.player5Ign.trim() : null)
+            : rampageForm.player5Ign.trim(),
+          scholar_id_5: isSportomania
+            ? (player5Present ? rampageForm.scholarId5.trim() : null)
+            : rampageForm.scholarId5,
 
           substitute_name: hasSubstitute
             ? rampageForm.substituteName.trim()
@@ -1572,6 +1579,9 @@ const Events = () => {
                     ["PLAYER 2 NAME", "player2Name"],
                     ["PLAYER 3 NAME", "player3Name"],
                     ["PLAYER 4 NAME", "player4Name"],
+                    ...(selectedTournament?.game === "MLBB"
+                      ? [["PLAYER 5 NAME", "player5Name"]]
+                      : []),
                   ].map(([label, key]) => (
                     <label key={key} className="block">
                       <span className="mb-2 block text-[9px] font-bold uppercase tracking-[0.20em] text-white/45">
@@ -1597,7 +1607,7 @@ const Events = () => {
                 <div className="mb-4 flex items-center gap-3">
                   <span className="h-px flex-1 bg-white/10" />
                   <span className="text-[9px] font-bold uppercase tracking-[0.24em] text-white/40">
-                    PLAYER IN-GAME NAME (IGN) — PLAYERS 1–4
+                    PLAYER IN-GAME NAME (IGN) — PLAYERS {selectedTournament?.game === "MLBB" ? "1–5" : "1–4"}
                   </span>
                   <span className="h-px flex-1 bg-white/10" />
                 </div>
@@ -1623,6 +1633,9 @@ const Events = () => {
                     ["PLAYER 2 IN-GAME NAME (IGN)", "player2Ign"],
                     ["PLAYER 3 IN-GAME NAME (IGN)", "player3Ign"],
                     ["PLAYER 4 IN-GAME NAME (IGN)", "player4Ign"],
+                    ...(selectedTournament?.game === "MLBB"
+                      ? [["PLAYER 5 IN-GAME NAME (IGN)", "player5Ign"]]
+                      : []),
                   ].map(([label, key]) => (
                     <label key={key} className="block">
                       <span className="mb-2 block text-[9px] font-bold uppercase tracking-[0.20em] text-white/45">
@@ -1791,7 +1804,10 @@ const Events = () => {
                   <span className="h-px flex-1 bg-white/10" />
                 </div>
                 <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-                  {[1, 2, 3, 4].map((number) => {
+                  {Array.from(
+                    { length: selectedTournament?.game === "MLBB" ? 5 : 4 },
+                    (_, index) => index + 1
+                  ).map((number) => {
                     const key = `scholarId${number}`;
                     const isIgl = number === 1;
 
