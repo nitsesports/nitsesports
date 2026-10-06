@@ -160,6 +160,20 @@ const checkScholarIdsAlreadyRegisteredForGame = async (
     const { data, error } = results[i];
 
     if (error) {
+      // Supabase RLS may intentionally block public SELECT access.
+      // Registration should NOT fail just because duplicate-check SELECT
+      // permission is unavailable. The actual INSERT policy will still
+      // control whether the registration can be saved.
+      if (
+        error.code === "42501" ||
+        /permission denied for table/i.test(error.message || "")
+      ) {
+        console.warn(
+          `Scholar ID duplicate check skipped for ${tables[i]} because SELECT permission is denied by Supabase RLS.`
+        );
+        continue;
+      }
+
       throw new Error(
         `Unable to verify Scholar ID registration: ${error.message}`
       );
@@ -1035,10 +1049,49 @@ const ScrollSection = () => {
         return;
       }
     } else {
+      // Rampage: validate Scholar IDs AND prevent the same Scholar ID
+      // from being used by two players in the same registration.
+      const rampageScholarIds = new Set();
+
       for (let i = 1; i <= mainPlayerCount; i += 1) {
-        const scholarId = rampageForm[`scholarId${i}`] || "";
+        const scholarId = (rampageForm[`scholarId${i}`] || "").trim();
+
         if (!/^\d{7}$/.test(scholarId)) {
           setFormError(`PLAYER ${i} SCHOLAR ID must contain exactly 7 digits.`);
+          return;
+        }
+
+        const normalizedScholarId = scholarId.toUpperCase();
+
+        if (rampageScholarIds.has(normalizedScholarId)) {
+          setFormError(
+            `SCHOLAR ID ${normalizedScholarId} CANNOT BE USED BY MORE THAN ONE PLAYER.`
+          );
+          return;
+        }
+
+        rampageScholarIds.add(normalizedScholarId);
+      }
+
+      // Substitute is optional for Rampage, but if provided its Scholar ID
+      // must also be unique within this registration.
+      const rampageSubstituteScholarId = (
+        rampageForm.substituteScholarId || ""
+      ).trim();
+
+      if (rampageSubstituteScholarId) {
+        if (!/^\d{7}$/.test(rampageSubstituteScholarId)) {
+          setFormError("SUBSTITUTE SCHOLAR ID must contain exactly 7 digits.");
+          return;
+        }
+
+        const normalizedSubstituteScholarId =
+          rampageSubstituteScholarId.toUpperCase();
+
+        if (rampageScholarIds.has(normalizedSubstituteScholarId)) {
+          setFormError(
+            `SCHOLAR ID ${normalizedSubstituteScholarId} CANNOT BE USED BY MORE THAN ONE PLAYER.`
+          );
           return;
         }
       }
