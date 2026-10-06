@@ -1,6 +1,10 @@
 import { useEffect, useRef, useState } from "react";
 import * as THREE from "three";
 import klogo from "../assets/klogo.png";
+import sponser1 from "../assets/sponser1.png";
+import sponser2 from "../assets/sponser2.png";
+import sponser3 from "../assets/sponser3.png";
+import sponser4 from "../assets/sponser4.png";
 
 const ScrollSection3 = () => {
   const sectionRef = useRef(null);
@@ -1928,7 +1932,9 @@ const ScrollSection3 = () => {
 
         .samurai-logo {
           width: 140px;
+          max-width: 100%;
           height: auto;
+          max-height: 56px;
           object-fit: contain;
 
           filter:
@@ -2512,7 +2518,7 @@ const ScrollSection3 = () => {
           </div>
 
           {/* =====================================================
-              PARTNER CARD
+              PARTNER CARDS
           ===================================================== */}
 
           <div
@@ -2521,8 +2527,13 @@ const ScrollSection3 = () => {
               relative
               z-40
               mt-7
+              flex
               w-full
-              max-w-[300px]
+              max-w-[1050px]
+              flex-wrap
+              items-center
+              justify-center
+              gap-5
               ${visible ? "visible" : ""}
             `}
             style={{
@@ -2533,40 +2544,45 @@ const ScrollSection3 = () => {
             }}
           >
 
-            <div
-              className="
-                samurai-card
-                px-5
-                py-5
-              "
-            >
-
+            {[
+              { src: klogo, alt: "Partner Logo" },
+              { src: sponser1, alt: "Sponsor Logo 1" },
+              { src: sponser2, alt: "Sponsor Logo 2" },
+              { src: sponser3, alt: "Sponsor Logo 3" },
+              { src: sponser4, alt: "Sponsor Logo 4" },
+            ].map((partner, index) => (
               <div
+                key={index}
                 className="
-                  samurai-card-shine
-                "
-              />
-
-              <div
-                className="
-                  relative
-                  z-10
-                  flex
-                  h-[76px]
-                  items-center
-                  justify-center
+                  samurai-card
+                  w-full
+                  max-w-[190px]
+                  flex-1
+                  min-w-[140px]
+                  px-4
+                  py-5
                 "
               >
+                <div className="samurai-card-shine" />
 
-                <img
-                  src={klogo}
-                  alt="Partner Logo"
-                  className="samurai-logo"
-                />
-
+                <div
+                  className="
+                    relative
+                    z-10
+                    flex
+                    h-[76px]
+                    items-center
+                    justify-center
+                  "
+                >
+                  <img
+                    src={partner.src}
+                    alt={partner.alt}
+                    className="samurai-logo"
+                  />
+                </div>
               </div>
-
-            </div>
+            ))}
 
           </div>
 

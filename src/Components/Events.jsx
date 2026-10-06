@@ -5,6 +5,9 @@ import { createClient } from "@supabase/supabase-js";
 import sportomaniaPoster from "../assets/sportomania2.png";
 import sportomaniaQR from "../assets/events/sqr.png";
 import rampagePoster from "../assets/rampage.png";
+import event1 from "../assets/events/event1.png";
+import event2 from "../assets/events/event2.png";
+import event3 from "../assets/events/event3.png";
 
 
 const upcomingEvents = [
@@ -36,38 +39,73 @@ const upcomingEvents = [
 
 const pastEvents = [
   {
-    title: "WINTER WARZONE",
-    date: "12 • JANUARY • 2026",
-    time: "5:00 PM",
-    mode: "ONLINE",
-    game: "VALORANT",
-    location: "ONLINE ARENA",
-    description:
-      "A fast-paced tournament featuring competitive teams and memorable plays.",
-    image: "/events/past-01.jpg",
-  },
-  {
-    title: "ARENA INVITATIONAL",
-    date: "22 • FEBRUARY • 2026",
-    time: "3:00 PM",
-    mode: "OFFLINE",
+    title: "VANGUARD ARENA",
+    date: "15 – 18 • JANUARY • 2026",
+    time: "PRIZE POOL: ₹50,000",
+    prizePool: "PRIZE POOL: ₹50,000",
+    mode: "HYBRID (LAN FINALS)",
     game: "MULTI-GAME",
-    location: "ESPORTS ARENA",
+    location: "ONLINE QUALIFIERS + LAN FINALS, NIT SILCHAR",
     description:
-      "Players came together for an action-packed day of competition and community.",
-    image: "/events/past-02.jpg",
+      "Games Played: BGMI, RC24 (Real Cricket 24), FIFA 26, MLBB (Mobile Legends: Bang Bang), VALORANT.",
+    image: event1,
   },
   {
-    title: "SPRING SKIRMISH",
+    title: "HONOUR OF KINGS",
     date: "18 • APRIL • 2026",
-    time: "7:00 PM",
-    mode: "ONLINE",
-    game: "BGMI",
-    location: "ONLINE ARENA",
-    description:
-      "A competitive community event filled with teamwork, strategy and close finishes.",
-    image: "/events/past-03.jpg",
+    time: "PRIZE POOL: INFINIX GT 5G + MERCHANDISE (WORTH ₹30,000+)",
+    prizePool: "PRIZE POOL: INFINIX GT 5G + MERCHANDISE (WORTH ₹30,000+)",
+    mode: "OFFLINE (LAN)",
+    game: "HONOR OF KINGS",
+    location: "GYMKHANA PARK, NIT SILCHAR",
+    description: "Games Played: Honor of Kings (5v5 MOBA).",
+    image: event2,
   },
+  {
+    title: "POWERSURGE",
+    date: "13 – 14 • APRIL • 2026",
+    time: "PRIZE POOL: ₹2,500",
+    prizePool: "PRIZE POOL: ₹2,500",
+    mode: "ONLINE",
+    game: "BGMI & FREE FIRE",
+    location: "ONLINE (ELECTRICAL ENGINEERING DEPT, NIT SILCHAR)",
+    description: "Games Played: BGMI (Battlegrounds Mobile India), Free Fire.",
+    image: event3,
+  },
+  {
+    title: "GENESIS CUP",
+    date: "28 • OCTOBER – 5 • NOVEMBER • 2025",
+    time: "PRIZE POOL: FREE ENTRY (INTER-NIT CHAMPIONSHIP)",
+    prizePool: "PRIZE POOL: FREE ENTRY (INTER-NIT CHAMPIONSHIP)",
+    mode: "ONLINE",
+    game: "MULTI-GAME",
+    location: "ONLINE (15 NITS NATIONWIDE)",
+    description:
+      "Games Played: BGMI, Free Fire, Clash Royale, eFootball, CODM, Valorant, Clash of Clans.",
+    image: event1,
+  },
+  {
+    title: "LOCK AND LOAD",
+    date: "12 – 19 • OCTOBER • 2025",
+    time: "PRIZE POOL: ₹10,000",
+    prizePool: "PRIZE POOL: ₹10,000",
+    mode: "HYBRID (LAN FINALS)",
+    game: "MULTI-GAME",
+    location: "ONLINE QUALIFIERS + LAN FINALS, NIT SILCHAR",
+    description: "Games Played: BGMI, CODM, MLBB, Valorant, Free Fire.",
+    image: event2,
+  },
+  {
+    title: "ARTHNITI 2.0",
+    date: "FEBRUARY 2026",
+    time: "PRIZE POOL: ₹4,000",
+    prizePool: "PRIZE POOL: ₹4,000",
+    mode: "ONLINE",
+    game: "Free Fire",
+    location: "ONLINE",
+    description: "Games Played: Free Fire.",
+    image: event1,
+  }
 ];
 
 const tournamentDetails = {
@@ -272,12 +310,21 @@ const EventCard = ({ event, index, upcoming, onViewMore }) => (
           <span>{event.date}</span>
         </div>
 
-        <div className="flex items-center gap-3 text-[14px] text-white/65">
-          <span className="text-white/45">
-            <ClockIcon />
-          </span>
-          <span>{event.time}</span>
-        </div>
+        {event.prizePool ? (
+          <div className="flex items-center gap-3 text-[14px] text-white/65">
+            <span className="text-white/45">
+              <TrophyIcon />
+            </span>
+            <span>{event.prizePool}</span>
+          </div>
+        ) : event.time ? (
+          <div className="flex items-center gap-3 text-[14px] text-white/65">
+            <span className="text-white/45">
+              <ClockIcon />
+            </span>
+            <span>{event.time}</span>
+          </div>
+        ) : null}
 
         <div className="flex items-center gap-3 text-[14px] text-white/65">
           <span className="text-white/45">

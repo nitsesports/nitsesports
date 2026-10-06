@@ -1551,6 +1551,262 @@ const About = () => {
 
             </div>
 
+            {/* GENESIS CUP */}
+            <div
+              className="
+                journey-item
+                grid
+                grid-cols-1
+                gap-3
+                py-6
+                min-[700px]:grid-cols-[100px_1fr]
+                min-[700px]:gap-5
+              "
+            >
+              <div className="journey-year text-[20px] tracking-[.12em]">
+                2025
+              </div>
+
+              <div>
+                <div className="mb-2 flex flex-wrap items-center gap-2">
+                  <span className="rounded-full border border-white/15 bg-white/5 px-2.5 py-0.5 text-[11px] font-medium tracking-[0.08em] text-white/70">
+                    28th Oct – 5th Nov 2025
+                  </span>
+                  <span className="rounded-full border border-white/15 bg-white/5 px-2.5 py-0.5 text-[11px] font-medium tracking-[0.08em] text-white/70">
+                    Online
+                  </span>
+                </div>
+
+                <h3
+                  className="
+                    journey-title
+                    mb-2
+                    text-[23px]
+                    uppercase
+                    text-white
+                  "
+                >
+                  Genesis Cup (Inter-NIT Esports)
+                </h3>
+
+                <p className="samurai-body mb-2 text-[14px] text-white/75">
+                  <span className="font-semibold text-white/90">Games Played:</span>{" "}
+                  <strong className="text-white/85">BGMI</strong> (Organised &amp; Managed by NITS Esports),{" "}
+                  <strong className="text-white/85">Free Fire</strong>,{" "}
+                  <strong className="text-white/85">Valorant</strong>,{" "}
+                  <strong className="text-white/85">CODM</strong>,{" "}
+                  <strong className="text-white/85">Clash Royale</strong>,{" "}
+                  <strong className="text-white/85">eFootball</strong>, and{" "}
+                  <strong className="text-white/85">Clash of Clans</strong>.
+                </p>
+
+                <p className="samurai-body m-0 text-[16px] leading-[1.7]">
+                  A nationwide Inter-NIT esports tournament uniting <strong className="text-white/90">15 National Institutes of Technology</strong> and over <strong className="text-white/90">1,400+ participants</strong> across 7 gaming titles, hosted entirely free of cost. NITS Esports Club spearheaded the complete organisation and administration of the marquee <strong className="text-white/85">BGMI</strong> championship, orchestrating competition for <strong className="text-white/90">73 registered squads</strong> across 4 groups and culminating in an intense 2-day, 16-team Grand Finals testing squads on consistency, adaptability, and high-pressure execution across repeated competitive lobbies.
+                </p>
+              </div>
+            </div>
+
+            {/* VANGUARD ARENA */}
+            <div
+              className="
+                journey-item
+                grid
+                grid-cols-1
+                gap-3
+                py-6
+                min-[700px]:grid-cols-[100px_1fr]
+                min-[700px]:gap-5
+              "
+            >
+              <div className="journey-year text-[20px] tracking-[.12em]">
+                2026
+              </div>
+
+              <div>
+                <div className="mb-2 flex flex-wrap items-center gap-2">
+                  <span className="rounded-full border border-white/15 bg-white/5 px-2.5 py-0.5 text-[11px] font-medium tracking-[0.08em] text-white/70">
+                    15th – 18th January 2026
+                  </span>
+                  <span className="rounded-full border border-white/15 bg-white/5 px-2.5 py-0.5 text-[11px] font-medium tracking-[0.08em] text-white/70">
+                    Hybrid (Online Qualifiers + LAN Finals)
+                  </span>
+                </div>
+
+                <h3
+                  className="
+                    journey-title
+                    mb-2
+                    text-[23px]
+                    uppercase
+                    text-white
+                  "
+                >
+                  Vanguard Arena — Tecnoesis 2026
+                </h3>
+
+                <p className="samurai-body mb-2 text-[14px] text-white/75">
+                  <span className="font-semibold text-white/90">Games Played:</span>{" "}
+                  <strong className="text-white/85">BGMI</strong>,{" "}
+                  <strong className="text-white/85">RC24 (Real Cricket 24)</strong>,{" "}
+                  <strong className="text-white/85">FIFA 26</strong>,{" "}
+                  <strong className="text-white/85">MLBB (Mobile Legends: Bang Bang)</strong>, and{" "}
+                  <strong className="text-white/85">VALORANT</strong>.
+                </p>
+
+                <p className="samurai-body m-0 text-[16px] leading-[1.7]">
+                  The official Esports module of Tecnoesis 2026, organized by NITS Esports Club, featuring a structured hybrid tournament framework and securing a <strong className="text-white/90">₹50,000 sponsorship from Krafton India Esports</strong> under the College Campus Tour initiative. The module brought together competitive action across 5 diverse titles: <strong className="text-white/85">BGMI</strong> (74 teams, ₹25,000 prize pool), <strong className="text-white/85">VALORANT</strong> (8 elite squads, ₹5,000 prize pool), <strong className="text-white/85">RC24</strong> (32 teams cricket simulation, ₹5,000 prize pool), <strong className="text-white/85">MLBB</strong> (32 teams 5v5 MOBA double elimination, ₹5,000 prize pool), and <strong className="text-white/85">FIFA 26</strong> (24 players football simulation, ₹5,000 prize pool).
+                </p>
+              </div>
+            </div>
+
+            {/* ARTHNITI 2.0 */}
+            <div
+              className="
+                journey-item
+                grid
+                grid-cols-1
+                gap-3
+                py-6
+                min-[700px]:grid-cols-[100px_1fr]
+                min-[700px]:gap-5
+              "
+            >
+              <div className="journey-year text-[20px] tracking-[.12em]">
+                2026
+              </div>
+
+              <div>
+                <div className="mb-2 flex flex-wrap items-center gap-2">
+                  <span className="rounded-full border border-white/15 bg-white/5 px-2.5 py-0.5 text-[11px] font-medium tracking-[0.08em] text-white/70">
+                    February 2026
+                  </span>
+                  <span className="rounded-full border border-white/15 bg-white/5 px-2.5 py-0.5 text-[11px] font-medium tracking-[0.08em] text-white/70">
+                    Online
+                  </span>
+                </div>
+
+                <h3
+                  className="
+                    journey-title
+                    mb-2
+                    text-[23px]
+                    uppercase
+                    text-white
+                  "
+                >
+                  ARTHNITI 2.0
+                </h3>
+
+                <p className="samurai-body mb-2 text-[14px] text-white/75">
+                  <span className="font-semibold text-white/90">Games Played:</span>{" "}
+                  <strong className="text-white/85">Free Fire</strong>.
+                </p>
+
+                <p className="samurai-body m-0 text-[16px] leading-[1.7]">
+                  Organized in association with the Finance &amp; Investment Club (FIC) as part of ARTHNITI 2.0. The event brought high-octane battle royale action featuring a prize pool of <strong className="text-white/90">₹4,000</strong>, with competitive squads battling across dynamic elimination lobbies that tested survival strategy, rapid rotations, and sharp mechanical coordination.
+                </p>
+              </div>
+            </div>
+
+            {/* POWERSURGE */}
+            <div
+              className="
+                journey-item
+                grid
+                grid-cols-1
+                gap-3
+                py-6
+                min-[700px]:grid-cols-[100px_1fr]
+                min-[700px]:gap-5
+              "
+            >
+              <div className="journey-year text-[20px] tracking-[.12em]">
+                2026
+              </div>
+
+              <div>
+                <div className="mb-2 flex flex-wrap items-center gap-2">
+                  <span className="rounded-full border border-white/15 bg-white/5 px-2.5 py-0.5 text-[11px] font-medium tracking-[0.08em] text-white/70">
+                    13th – 14th April
+                  </span>
+                  <span className="rounded-full border border-white/15 bg-white/5 px-2.5 py-0.5 text-[11px] font-medium tracking-[0.08em] text-white/70">
+                    Online
+                  </span>
+                </div>
+
+                <h3
+                  className="
+                    journey-title
+                    mb-2
+                    text-[23px]
+                    uppercase
+                    text-white
+                  "
+                >
+                  Powersurge
+                </h3>
+
+                <p className="samurai-body mb-2 text-[14px] text-white/75">
+                  <span className="font-semibold text-white/90">Games Played:</span>{" "}
+                  <strong className="text-white/85">BGMI (Battlegrounds Mobile India)</strong> and{" "}
+                  <strong className="text-white/85">Free Fire</strong>.
+                </p>
+
+                <p className="samurai-body m-0 text-[16px] leading-[1.7]">
+                  An intra-departmental competitive esports initiative organized jointly by the Electrical Society and NITS Esports Club, exclusively for Electrical Engineering Department students. Fostering grassroots competitive gaming and departmental bonding, the tournament showcased high-pressure battle royale action across <strong className="text-white/85">BGMI</strong> (10 teams, ₹1,250 prize pool) and <strong className="text-white/85">Free Fire</strong> (12 teams, ₹1,250 prize pool).
+                </p>
+              </div>
+            </div>
+
+            {/* HONOUR OF KINGS */}
+            <div
+              className="
+                journey-item
+                grid
+                grid-cols-1
+                gap-3
+                py-6
+                min-[700px]:grid-cols-[100px_1fr]
+                min-[700px]:gap-5
+              "
+            >
+              <div className="journey-year text-[20px] tracking-[.12em]">
+                2026
+              </div>
+
+              <div>
+                <div className="mb-2 flex flex-wrap items-center gap-2">
+                  <span className="rounded-full border border-white/15 bg-white/5 px-2.5 py-0.5 text-[11px] font-medium tracking-[0.08em] text-white/70">
+                    18th April 2026
+                  </span>
+                  <span className="rounded-full border border-white/15 bg-white/5 px-2.5 py-0.5 text-[11px] font-medium tracking-[0.08em] text-white/70">
+                    Gymkhana Park, NIT Silchar • Offline LAN &amp; On-Ground Activation
+                  </span>
+                </div>
+
+                <h3
+                  className="
+                    journey-title
+                    mb-2
+                    text-[23px]
+                    uppercase
+                    text-white
+                  "
+                >
+                  Honour of Kings — Campus Tour
+                </h3>
+
+                <p className="samurai-body mb-2 text-[14px] text-white/75">
+                  <span className="font-semibold text-white/90">Games Played:</span>{" "}
+                  <strong className="text-white/85">Honor of Kings (5v5 MOBA)</strong>.
+                </p>
+
+                <p className="samurai-body m-0 text-[16px] leading-[1.7]">
+                  An official promotional tour bringing the world-renowned 5v5 multiplayer online battle arena (MOBA) title directly to NIT Silchar at Gymkhana Park. The event transformed the venue into a live esports arena featuring on-spot registrations, exhibition matches, and interactive gaming challenges. Teams of 5 competed through structured knockout LAN rounds testing hero drafts, objective control, and clutch execution under live pressure, with top performers awarded an <strong className="text-white/90">Infinix GT 5G Gaming Smartphone</strong> and official exclusive merchandise valued at <strong className="text-white/90">₹30,000+</strong>.
+                </p>
+              </div>
+            </div>
+
           </div>
 
         </section>

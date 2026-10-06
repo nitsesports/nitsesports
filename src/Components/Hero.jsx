@@ -2,6 +2,10 @@ import { useEffect, useState } from "react";
 import * as THREE from "three";
 import appLogo from "../assets/logoo.png";
 import thumbnail from "../assets/thumbnail.png";
+import sponser1 from "../assets/sponser1.png";
+import sponser2 from "../assets/sponser2.png";
+import sponser3 from "../assets/sponser3.png";
+import sponser4 from "../assets/sponser4.png";
 
 const Hero = () => {
   const [showSponsors, setShowSponsors] = useState(false);
@@ -943,7 +947,7 @@ const Hero = () => {
   // =========================================================
   // SPONSORS
   // =========================================================
-  const sponsorLogos = ["/brand1.png", "/brand2.png", "/brand3.png", "/brand4.png"];
+  const sponsorLogos = [sponser1, sponser2, sponser3, sponser4];
 
   useEffect(() => {
     const interval = setInterval(() => {
