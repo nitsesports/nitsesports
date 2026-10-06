@@ -424,14 +424,15 @@ const getSportomaniaFee = (form, playerCount) => {
 };
 
 /* =========================================================
-   SCHOLAR ID UNIQUENESS — GAME SCOPED
+   SCHOLAR ID UNIQUENESS — GAME + EVENT TABLE SCOPED
    ---------------------------------------------------------
-   Rule:
-   1. One Scholar ID can register ONLY ONCE for the SAME GAME.
-   2. The same Scholar ID CAN register for DIFFERENT GAMES.
-   3. This check covers both registration tables because
-      SPORTOMANIA and RAMPAGE use separate Supabase tables.
-   4. Main players + substitute are checked.
+   SPORTOMANIA -> sportomania_registrations ONLY
+   RAMPAGE    -> rampage_registrations ONLY
+
+   Same Scholar ID + same GAME + same EVENT = reject.
+   Same Scholar ID + different GAME = allow.
+   Same Scholar ID in Sportomania does NOT block Rampage.
+   Same Scholar ID in Rampage does NOT block Sportomania.
    ========================================================= */
 
 const SCHOLAR_ID_COLUMNS = [
@@ -451,6 +452,7 @@ const getFormScholarIds = (form, mainPlayerCount) => {
 
   for (let i = 1; i <= mainPlayerCount; i += 1) {
     const scholarId = normalizeScholarId(form[`scholarId${i}`] || "");
+
     if (scholarId) {
       ids.push({
         scholarId,
@@ -459,7 +461,10 @@ const getFormScholarIds = (form, mainPlayerCount) => {
     }
   }
 
-  const substituteScholarId = normalizeScholarId(form.substituteScholarId || "");
+  const substituteScholarId = normalizeScholarId(
+    form.substituteScholarId || ""
+  );
+
   if (substituteScholarId) {
     ids.push({
       scholarId: substituteScholarId,
@@ -471,18 +476,21 @@ const getFormScholarIds = (form, mainPlayerCount) => {
 };
 
 /**
- * Checks all existing registrations for the selected GAME.
+ * Checks ONLY the table belonging to the selected event.
  *
- * IMPORTANT:
- * We filter by `game`, so:
- *   BGMI + Scholar ID 1234567 -> duplicate if already registered
- *   FREE FIRE + Scholar ID 1234567 -> allowed
+ * SPORTOMANIA -> sportomania_registrations
+ * RAMPAGE     -> rampage_registrations
  *
- * Both registration tables are checked because the two events
- * store registrations separately.
+ * The same Scholar ID can therefore register in:
+ * - different games within the same event
+ * - the other event
  */
-const findExistingScholarIdForGame = async (game, scholarIds) => {
-  if (!supabase || !game || !scholarIds.length) {
+const findExistingScholarIdForGame = async (
+  registrationTable,
+  game,
+  scholarIds
+) => {
+  if (!supabase || !registrationTable || !game || !scholarIds.length) {
     return null;
   }
 
@@ -498,47 +506,34 @@ const findExistingScholarIdForGame = async (game, scholarIds) => {
     )
     .join(",");
 
-  const tablesToCheck = [
-    RAMPAGE_REGISTRATION_TABLE,
-    SPORTOMANIA_REGISTRATION_TABLE,
-  ];
+  const { data, error } = await supabase
+    .from(registrationTable)
+    .select(SCHOLAR_ID_COLUMNS.join(","))
+    .eq("game", game)
+    .or(duplicateConditions)
+    .limit(100);
 
-  const results = await Promise.all(
-    tablesToCheck.map(async (table) => {
-      const { data, error } = await supabase
-        .from(table)
-        .select(SCHOLAR_ID_COLUMNS.join(","))
-        .eq("game", game)
-        .or(duplicateConditions)
-        .limit(100);
+  if (error) {
+    throw new Error(
+      `Could not verify Scholar ID availability in ${registrationTable}: ${error.message}`
+    );
+  }
 
-      if (error) {
-        throw new Error(
-          `Could not verify Scholar ID availability in ${table}: ${error.message}`
+  for (const row of data || []) {
+    for (const column of SCHOLAR_ID_COLUMNS) {
+      const existingScholarId = normalizeScholarId(row?.[column] || "");
+
+      if (existingScholarId && normalizedIds.has(existingScholarId)) {
+        const submittedPlayer = scholarIds.find(
+          (item) =>
+            normalizeScholarId(item.scholarId) === existingScholarId
         );
-      }
 
-      return { table, rows: data || [] };
-    })
-  );
-
-  for (const { table, rows } of results) {
-    for (const row of rows) {
-      for (const column of SCHOLAR_ID_COLUMNS) {
-        const existingScholarId = normalizeScholarId(row?.[column] || "");
-
-        if (existingScholarId && normalizedIds.has(existingScholarId)) {
-          const submittedPlayer = scholarIds.find(
-            (item) =>
-              normalizeScholarId(item.scholarId) === existingScholarId
-          );
-
-          return {
-            scholarId: existingScholarId,
-            table,
-            playerLabel: submittedPlayer?.playerLabel || "PLAYER",
-          };
-        }
+        return {
+          scholarId: existingScholarId,
+          table: registrationTable,
+          playerLabel: submittedPlayer?.playerLabel || "PLAYER",
+        };
       }
     }
   }
@@ -1027,7 +1022,7 @@ const Events = () => {
     }
 
     /* =========================================================
-       DATABASE DUPLICATE CHECK — GAME SCOPED
+       DATABASE DUPLICATE CHECK — GAME + EVENT TABLE SCOPED
        ---------------------------------------------------------
        THIS IS THE IMPORTANT FIX.
 
@@ -1043,7 +1038,12 @@ const Events = () => {
        ========================================================= */
 
     try {
+      const registrationTableForDuplicateCheck = isSportomania
+        ? SPORTOMANIA_REGISTRATION_TABLE
+        : RAMPAGE_REGISTRATION_TABLE;
+
       const existingRegistration = await findExistingScholarIdForGame(
+        registrationTableForDuplicateCheck,
         game,
         formScholarIds
       );
