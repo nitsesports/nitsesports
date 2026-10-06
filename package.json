@@ -30,5 +30,17 @@
     "globals": "^17.11.0",
     "tailwindcss": "^4.3.3",
     "vite": "^8.2.2"
-  }
+  },
+  "description": "This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.",
+  "main": "eslint.config.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nitsesports/nitsesports.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/nitsesports/nitsesports/issues"
+  },
+  "homepage": "https://github.com/nitsesports/nitsesports#readme"
 }
