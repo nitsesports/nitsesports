@@ -423,6 +423,129 @@ const getSportomaniaFee = (form, playerCount) => {
   return payablePlayers * 10;
 };
 
+/* =========================================================
+   SCHOLAR ID UNIQUENESS — GAME SCOPED
+   ---------------------------------------------------------
+   Rule:
+   1. One Scholar ID can register ONLY ONCE for the SAME GAME.
+   2. The same Scholar ID CAN register for DIFFERENT GAMES.
+   3. This check covers both registration tables because
+      SPORTOMANIA and RAMPAGE use separate Supabase tables.
+   4. Main players + substitute are checked.
+   ========================================================= */
+
+const SCHOLAR_ID_COLUMNS = [
+  "scholar_id_1",
+  "scholar_id_2",
+  "scholar_id_3",
+  "scholar_id_4",
+  "scholar_id_5",
+  "substitute_scholar_id",
+];
+
+const normalizeScholarId = (value = "") =>
+  String(value).trim().toUpperCase();
+
+const getFormScholarIds = (form, mainPlayerCount) => {
+  const ids = [];
+
+  for (let i = 1; i <= mainPlayerCount; i += 1) {
+    const scholarId = normalizeScholarId(form[`scholarId${i}`] || "");
+    if (scholarId) {
+      ids.push({
+        scholarId,
+        playerLabel: `PLAYER ${i}`,
+      });
+    }
+  }
+
+  const substituteScholarId = normalizeScholarId(form.substituteScholarId || "");
+  if (substituteScholarId) {
+    ids.push({
+      scholarId: substituteScholarId,
+      playerLabel: "SUBSTITUTE PLAYER",
+    });
+  }
+
+  return ids;
+};
+
+/**
+ * Checks all existing registrations for the selected GAME.
+ *
+ * IMPORTANT:
+ * We filter by `game`, so:
+ *   BGMI + Scholar ID 1234567 -> duplicate if already registered
+ *   FREE FIRE + Scholar ID 1234567 -> allowed
+ *
+ * Both registration tables are checked because the two events
+ * store registrations separately.
+ */
+const findExistingScholarIdForGame = async (game, scholarIds) => {
+  if (!supabase || !game || !scholarIds.length) {
+    return null;
+  }
+
+  const normalizedIds = new Set(
+    scholarIds.map((item) => normalizeScholarId(item.scholarId))
+  );
+
+  const duplicateConditions = [...normalizedIds]
+    .flatMap((scholarId) =>
+      SCHOLAR_ID_COLUMNS.map(
+        (column) => `${column}.ilike.${scholarId}`
+      )
+    )
+    .join(",");
+
+  const tablesToCheck = [
+    RAMPAGE_REGISTRATION_TABLE,
+    SPORTOMANIA_REGISTRATION_TABLE,
+  ];
+
+  const results = await Promise.all(
+    tablesToCheck.map(async (table) => {
+      const { data, error } = await supabase
+        .from(table)
+        .select(SCHOLAR_ID_COLUMNS.join(","))
+        .eq("game", game)
+        .or(duplicateConditions)
+        .limit(100);
+
+      if (error) {
+        throw new Error(
+          `Could not verify Scholar ID availability in ${table}: ${error.message}`
+        );
+      }
+
+      return { table, rows: data || [] };
+    })
+  );
+
+  for (const { table, rows } of results) {
+    for (const row of rows) {
+      for (const column of SCHOLAR_ID_COLUMNS) {
+        const existingScholarId = normalizeScholarId(row?.[column] || "");
+
+        if (existingScholarId && normalizedIds.has(existingScholarId)) {
+          const submittedPlayer = scholarIds.find(
+            (item) =>
+              normalizeScholarId(item.scholarId) === existingScholarId
+          );
+
+          return {
+            scholarId: existingScholarId,
+            table,
+            playerLabel: submittedPlayer?.playerLabel || "PLAYER",
+          };
+        }
+      }
+    }
+  }
+
+  return null;
+};
+
 if (import.meta.env.DEV) {
   console.log("RAMPAGE SUPABASE CONFIG:", {
     configured: Boolean(SUPABASE_URL && SUPABASE_PUBLISHABLE_KEY),
@@ -712,98 +835,109 @@ const Events = () => {
     const game = selectedTournament?.game;
     const isSportomania = selectedEvent === "SPORTOMANIA";
     const mainPlayerCount = game === "MLBB" ? 5 : 4;
-    const sportomaniaFee = isSportomania
+    const currentSportomaniaFee = isSportomania
       ? getSportomaniaFee(rampageForm, mainPlayerCount)
       : 40;
 
+    /* =========================================================
+       MAIN PLAYER VALIDATION
+       ========================================================= */
+
     if (isSportomania) {
-      // Sportomania allows a minimum of one player. Player 1 is mandatory;
-      // every additional player is optional, but a filled player slot must
-      // contain all three fields: name, IGN and Scholar ID.
+      // Sportomania allows 1–5 registered players depending on game.
+      // Player 1 is mandatory. Additional filled slots are optional.
       const player1Name = rampageForm.iglName.trim();
       const player1Ign = rampageForm.iglIgn.trim();
-      const player1ScholarId = rampageForm.scholarId1.trim();
+      const player1ScholarId = normalizeScholarId(rampageForm.scholarId1);
 
       if (!player1Name || !player1Ign || !player1ScholarId) {
         setFormError("PLAYER 1 NAME, IGN AND SCHOLAR ID are required.");
         return;
       }
+    }
 
-      const sportomaniaScholarIds = new Set();
+    for (let i = 1; i <= mainPlayerCount; i += 1) {
+      const name =
+        i === 1
+          ? rampageForm.iglName.trim()
+          : (rampageForm[`player${i}Name`] || "").trim();
 
-      for (let i = 1; i <= mainPlayerCount; i += 1) {
-        const name =
-          i === 1 ? rampageForm.iglName.trim() : rampageForm[`player${i}Name`].trim();
-        const ign =
-          i === 1 ? rampageForm.iglIgn.trim() : rampageForm[`player${i}Ign`].trim();
-        const scholarId = (rampageForm[`scholarId${i}`] || "").trim();
+      const ign =
+        i === 1
+          ? rampageForm.iglIgn.trim()
+          : (rampageForm[`player${i}Ign`] || "").trim();
 
-        const hasAnyPlayerData = Boolean(name || ign || scholarId);
-        if (!hasAnyPlayerData) continue;
+      const scholarId = normalizeScholarId(
+        rampageForm[`scholarId${i}`] || ""
+      );
 
-        if (!name || !ign || !scholarId) {
-          setFormError(`PLAYER ${i} NAME, IGN AND SCHOLAR ID are all required.`);
-          return;
-        }
+      const hasAnyPlayerData = Boolean(name || ign || scholarId);
 
-        const normalizedScholarId = scholarId.toUpperCase();
+      // For Sportomania, an empty optional player slot is allowed.
+      if (isSportomania && !hasAnyPlayerData) {
+        continue;
+      }
+
+      // For non-Sportomania games all players are mandatory.
+      if (!isSportomania && (!name || !ign || !scholarId)) {
+        setFormError(
+          `PLAYER ${i} NAME, IGN AND SCHOLAR ID are all required.`
+        );
+        return;
+      }
+
+      // If an optional Sportomania slot has been started,
+      // all three fields are mandatory.
+      if (isSportomania && (!name || !ign || !scholarId)) {
+        setFormError(
+          `PLAYER ${i} NAME, IGN AND SCHOLAR ID are all required.`
+        );
+        return;
+      }
+
+      if (isSportomania) {
         if (
-          !/^(?:\d{7}|[A-Z0-9]{1,9})$/.test(normalizedScholarId) ||
-          !/\d/.test(normalizedScholarId)
+          !/^(?:\d{7}|[A-Z0-9]{1,9})$/.test(scholarId) ||
+          !/\d/.test(scholarId)
         ) {
           setFormError(
             `PLAYER ${i} SCHOLAR ID must be 7 digits or up to 9 letters/numbers.`
           );
           return;
         }
-
-        if (sportomaniaScholarIds.has(normalizedScholarId)) {
-          setFormError(
-            `SCHOLAR ID ${normalizedScholarId} CANNOT BE USED BY MORE THAN ONE PLAYER.`
-          );
-          return;
-        }
-
-        sportomaniaScholarIds.add(normalizedScholarId);
-      }
-
-      if (!/^\d{10}$/.test(rampageForm.phone1)) {
-        setFormError("Phone Number 1 must contain exactly 10 digits.");
-        return;
-      }
-
-      if (rampageForm.phone2 && !/^\d{10}$/.test(rampageForm.phone2)) {
-        setFormError("Phone Number 2 must contain exactly 10 digits if provided.");
-        return;
-      }
-    } else {
-      for (let i = 1; i <= mainPlayerCount; i += 1) {
-        const scholarId = rampageForm[`scholarId${i}`] || "";
-        if (!/^\d{7}$/.test(scholarId)) {
-          setFormError(`PLAYER ${i} SCHOLAR ID must contain exactly 7 digits.`);
-          return;
-        }
-      }
-
-      if (!/^\d{10}$/.test(rampageForm.phone1)) {
-        setFormError("Phone Number 1 must contain exactly 10 digits.");
-        return;
-      }
-
-      if (rampageForm.phone2 && !/^\d{10}$/.test(rampageForm.phone2)) {
-        setFormError("Phone Number 2 must contain exactly 10 digits if provided.");
+      } else if (!/^\d{7}$/.test(scholarId)) {
+        setFormError(
+          `PLAYER ${i} SCHOLAR ID must contain exactly 7 digits.`
+        );
         return;
       }
     }
 
-    // SUBSTITUTE VALIDATION:
-    // Exactly the same logic as the main players:
-    // if the user enters a substitute Scholar ID (or any other substitute
-    // field), the complete substitute entry is mandatory before registration
-    // can be completed.
+    /* =========================================================
+       PHONE VALIDATION
+       ========================================================= */
+
+    if (!/^\d{10}$/.test(rampageForm.phone1)) {
+      setFormError("Phone Number 1 must contain exactly 10 digits.");
+      return;
+    }
+
+    if (rampageForm.phone2 && !/^\d{10}$/.test(rampageForm.phone2)) {
+      setFormError(
+        "Phone Number 2 must contain exactly 10 digits if provided."
+      );
+      return;
+    }
+
+    /* =========================================================
+       SUBSTITUTE VALIDATION
+       ========================================================= */
+
     const substituteName = rampageForm.substituteName.trim();
     const substituteIgn = rampageForm.substituteIgn.trim();
-    const substituteScholarId = rampageForm.substituteScholarId.trim();
+    const substituteScholarId = normalizeScholarId(
+      rampageForm.substituteScholarId
+    );
 
     const hasAnySubstituteData = Boolean(
       substituteName || substituteIgn || substituteScholarId
@@ -821,47 +955,69 @@ const Events = () => {
     }
 
     if (hasCompleteSubstitute) {
-      const normalizedSubstituteScholarId = substituteScholarId.toUpperCase();
-
-      if (
-        !/^(?:\d{7}|[A-Z0-9]{1,9})$/.test(normalizedSubstituteScholarId) ||
-        !/\d/.test(normalizedSubstituteScholarId)
-      ) {
-        setFormError(
-          "SUBSTITUTE SCHOLAR ID must be 7 digits or up to 9 letters/numbers."
-        );
-        return;
-      }
-
-      // Substitute Scholar ID cannot duplicate any registered main player.
-      const mainScholarIds = new Set();
-
-      for (let i = 1; i <= mainPlayerCount; i += 1) {
-        const mainScholarId = (rampageForm[`scholarId${i}`] || "")
-          .trim()
-          .toUpperCase();
-
-        if (mainScholarId) {
-          mainScholarIds.add(mainScholarId);
+      if (isSportomania) {
+        if (
+          !/^(?:\d{7}|[A-Z0-9]{1,9})$/.test(substituteScholarId) ||
+          !/\d/.test(substituteScholarId)
+        ) {
+          setFormError(
+            "SUBSTITUTE SCHOLAR ID must be 7 digits or up to 9 letters/numbers."
+          );
+          return;
         }
-      }
-
-      if (mainScholarIds.has(normalizedSubstituteScholarId)) {
+      } else if (!/^\d{7}$/.test(substituteScholarId)) {
         setFormError(
-          `SCHOLAR ID ${normalizedSubstituteScholarId} CANNOT BE USED BY MORE THAN ONE PLAYER.`
+          "SUBSTITUTE SCHOLAR ID must contain exactly 7 digits."
         );
         return;
       }
     }
+
+    /* =========================================================
+       SAME-FORM DUPLICATE CHECK
+       ---------------------------------------------------------
+       A Scholar ID cannot appear twice in the SAME GAME,
+       including main players + substitute.
+       ========================================================= */
+
+    const formScholarIds = getFormScholarIds(
+      rampageForm,
+      mainPlayerCount
+    );
+
+    const seenScholarIds = new Map();
+
+    for (const item of formScholarIds) {
+      const normalized = normalizeScholarId(item.scholarId);
+
+      if (seenScholarIds.has(normalized)) {
+        setFormError(
+          `SCHOLAR ID ${normalized} CANNOT BE USED BY MORE THAN ONE PLAYER IN THE SAME GAME.`
+        );
+        return;
+      }
+
+      seenScholarIds.set(normalized, item.playerLabel);
+    }
+
+    /* =========================================================
+       PAYMENT VALIDATION
+       ========================================================= */
 
     const hasSubstitute = hasCompleteSubstitute;
 
-    if ((!isSportomania || sportomaniaFee > 0) && !paymentProof) {
+    if ((!isSportomania || currentSportomaniaFee > 0) && !paymentProof) {
       setFormError(
-        `Payment proof is required. Registration cannot be completed without uploading the payment screenshot for ₹${isSportomania ? sportomaniaFee : 40}.`
+        `Payment proof is required. Registration cannot be completed without uploading the payment screenshot for ₹${
+          isSportomania ? currentSportomaniaFee : 40
+        }.`
       );
       return;
     }
+
+    /* =========================================================
+       SUPABASE CONFIGURATION
+       ========================================================= */
 
     if (!supabase) {
       setFormError(
@@ -870,10 +1026,53 @@ const Events = () => {
       return;
     }
 
-    // IMPORTANT:
-    // For Sportomania with 1–3 registered players, show an on-screen
-    // custom modal ONLY after the user clicks SUBMIT REGISTRATION.
-    // Do not use window.confirm/browser prompt.
+    /* =========================================================
+       DATABASE DUPLICATE CHECK — GAME SCOPED
+       ---------------------------------------------------------
+       THIS IS THE IMPORTANT FIX.
+
+       Same Scholar ID + SAME GAME:
+         ❌ Reject
+
+       Same Scholar ID + DIFFERENT GAME:
+         ✅ Allow
+
+       Example:
+         2312345 + BGMI      -> already registered -> REJECT
+         2312345 + FREE FIRE -> not registered      -> ALLOW
+       ========================================================= */
+
+    try {
+      const existingRegistration = await findExistingScholarIdForGame(
+        game,
+        formScholarIds
+      );
+
+      if (existingRegistration) {
+        setFormError(
+          `SCHOLAR ID ${existingRegistration.scholarId} IS ALREADY REGISTERED FOR ${game}. THE SAME SCHOLAR ID CAN REGISTER FOR A DIFFERENT GAME, BUT NOT TWICE IN THE SAME GAME.`
+        );
+        return;
+      }
+    } catch (duplicateCheckError) {
+      console.error(
+        "SCHOLAR ID DUPLICATE CHECK ERROR:",
+        duplicateCheckError
+      );
+
+      setFormError(
+        duplicateCheckError?.message ||
+          "Could not verify Scholar ID availability. Please try again."
+      );
+      return;
+    }
+
+    /* =========================================================
+       SPORTOMANIA RANDOM PAIRING PROMPT
+       ========================================================= */
+
+    // Only show the pairing prompt AFTER all validation,
+    // including database Scholar ID validation, has passed.
     if (
       isSportomania &&
       registeredSportomaniaPlayerCount >= 1 &&
@@ -899,30 +1098,48 @@ const Events = () => {
     const registrationTable = isSportomania
       ? SPORTOMANIA_REGISTRATION_TABLE
       : RAMPAGE_REGISTRATION_TABLE;
+
     const paymentBucket = isSportomania
       ? SPORTOMANIA_PAYMENT_BUCKET
       : RAMPAGE_PAYMENT_BUCKET;
-    const registrationEventName = isSportomania ? "SPORTOMANIA" : "RAMPAGE 2026";
+
+    const registrationEventName = isSportomania
+      ? "SPORTOMANIA"
+      : "RAMPAGE 2026";
 
     try {
-      if (!isSportomania || sportomaniaFee > 0) {
+      /* =======================================================
+         PAYMENT PROOF UPLOAD
+         ======================================================= */
+
+      if (!isSportomania || currentSportomaniaFee > 0) {
         const safeFileName = paymentProof.name
           .toLowerCase()
           .replace(/[^a-z0-9._-]/g, "-");
 
-        const uniqueId = globalThis.crypto?.randomUUID?.() || `${Date.now()}-${Math.random().toString(36).slice(2, 11)}`;
-        const proofPath = `${isSportomania ? "sportomania" : "rampage-2026"}/${Date.now()}-${uniqueId}-${safeFileName}`;
+        const uniqueId =
+          globalThis.crypto?.randomUUID?.() ||
+          `${Date.now()}-${Math.random().toString(36).slice(2, 11)}`;
+
+        const proofPath = `${
+          isSportomania ? "sportomania" : "rampage-2026"
+        }/${Date.now()}-${uniqueId}-${safeFileName}`;
 
         const { error: uploadError } = await supabase.storage
           .from(paymentBucket)
           .upload(proofPath, paymentProof, {
             cacheControl: "3600",
             upsert: false,
-            contentType: paymentProof.type || "application/octet-stream",
+            contentType:
+              paymentProof.type || "application/octet-stream",
           });
 
         if (uploadError) {
-          console.error("RAMPAGE SUPABASE STORAGE ERROR:", uploadError);
+          console.error(
+            "RAMPAGE SUPABASE STORAGE ERROR:",
+            uploadError
+          );
+
           throw new Error(
             `Payment proof upload failed: ${uploadError.message}. ` +
               `Check that the "${paymentBucket}" bucket exists and has an INSERT policy for anon users.`
@@ -932,26 +1149,37 @@ const Events = () => {
         uploadedProofPath = proofPath;
       }
 
+      /* =======================================================
+         PLAYER PRESENCE
+         ======================================================= */
+
       const player2Present = Boolean(
         rampageForm.player2Name.trim() ||
           rampageForm.player2Ign.trim() ||
           rampageForm.scholarId2.trim()
       );
+
       const player3Present = Boolean(
         rampageForm.player3Name.trim() ||
           rampageForm.player3Ign.trim() ||
           rampageForm.scholarId3.trim()
       );
+
       const player4Present = Boolean(
         rampageForm.player4Name.trim() ||
           rampageForm.player4Ign.trim() ||
           rampageForm.scholarId4.trim()
       );
+
       const player5Present = Boolean(
         rampageForm.player5Name.trim() ||
           rampageForm.player5Ign.trim() ||
           rampageForm.scholarId5.trim()
       );
+
+      /* =======================================================
+         INSERT REGISTRATION
+         ======================================================= */
 
       const { error: insertError } = await supabase
         .from(registrationTable)
@@ -963,72 +1191,113 @@ const Events = () => {
 
           igl_name: rampageForm.iglName.trim(),
           igl_ign: rampageForm.iglIgn.trim(),
-          scholar_id_1: rampageForm.scholarId1,
+          scholar_id_1: normalizeScholarId(rampageForm.scholarId1),
 
           player2_name: isSportomania
-            ? (player2Present ? rampageForm.player2Name.trim() : null)
+            ? player2Present
+              ? rampageForm.player2Name.trim()
+              : null
             : rampageForm.player2Name.trim(),
+
           player2_ign: isSportomania
-            ? (player2Present ? rampageForm.player2Ign.trim() : null)
+            ? player2Present
+              ? rampageForm.player2Ign.trim()
+              : null
             : rampageForm.player2Ign.trim(),
+
           scholar_id_2: isSportomania
-            ? (player2Present ? rampageForm.scholarId2.trim() : null)
-            : rampageForm.scholarId2,
+            ? player2Present
+              ? normalizeScholarId(rampageForm.scholarId2)
+              : null
+            : normalizeScholarId(rampageForm.scholarId2),
 
           player3_name: isSportomania
-            ? (player3Present ? rampageForm.player3Name.trim() : null)
+            ? player3Present
+              ? rampageForm.player3Name.trim()
+              : null
             : rampageForm.player3Name.trim(),
+
           player3_ign: isSportomania
-            ? (player3Present ? rampageForm.player3Ign.trim() : null)
+            ? player3Present
+              ? rampageForm.player3Ign.trim()
+              : null
             : rampageForm.player3Ign.trim(),
+
           scholar_id_3: isSportomania
-            ? (player3Present ? rampageForm.scholarId3.trim() : null)
-            : rampageForm.scholarId3,
+            ? player3Present
+              ? normalizeScholarId(rampageForm.scholarId3)
+              : null
+            : normalizeScholarId(rampageForm.scholarId3),
 
           player4_name: isSportomania
-            ? (player4Present ? rampageForm.player4Name.trim() : null)
+            ? player4Present
+              ? rampageForm.player4Name.trim()
+              : null
             : rampageForm.player4Name.trim(),
-          player4_ign: isSportomania
-            ? (player4Present ? rampageForm.player4Ign.trim() : null)
-            : rampageForm.player4Ign.trim(),
-          scholar_id_4: isSportomania
-            ? (player4Present ? rampageForm.scholarId4.trim() : null)
-            : rampageForm.scholarId4,
 
-          // MLBB is a 5-player game. Supabase already has player-5 columns.
-          // Sportomania keeps player 5 optional, while MLBB in other events
-          // requires all 5 main players through the same validation logic.
+          player4_ign: isSportomania
+            ? player4Present
+              ? rampageForm.player4Ign.trim()
+              : null
+            : rampageForm.player4Ign.trim(),
+
+          scholar_id_4: isSportomania
+            ? player4Present
+              ? normalizeScholarId(rampageForm.scholarId4)
+              : null
+            : normalizeScholarId(rampageForm.scholarId4),
+
+          // MLBB is a 5-player game.
+          // Sportomania keeps player 5 optional,
+          // while MLBB requires all 5 through validation.
           player5_name: isSportomania
-            ? (player5Present ? rampageForm.player5Name.trim() : null)
+            ? player5Present
+              ? rampageForm.player5Name.trim()
+              : null
             : rampageForm.player5Name.trim(),
+
           player5_ign: isSportomania
-            ? (player5Present ? rampageForm.player5Ign.trim() : null)
+            ? player5Present
+              ? rampageForm.player5Ign.trim()
+              : null
             : rampageForm.player5Ign.trim(),
+
           scholar_id_5: isSportomania
-            ? (player5Present ? rampageForm.scholarId5.trim() : null)
-            : rampageForm.scholarId5,
+            ? player5Present
+              ? normalizeScholarId(rampageForm.scholarId5)
+              : null
+            : normalizeScholarId(rampageForm.scholarId5),
 
           substitute_name: hasSubstitute
             ? rampageForm.substituteName.trim()
             : null,
+
           substitute_ign: hasSubstitute
             ? rampageForm.substituteIgn.trim()
             : null,
+
           substitute_scholar_id: hasSubstitute
-            ? rampageForm.substituteScholarId
+            ? normalizeScholarId(rampageForm.substituteScholarId)
             : null,
 
           phone1: rampageForm.phone1,
           phone2: rampageForm.phone2 || null,
           payment_proof_path: uploadedProofPath || null,
+
           random_pairing:
             isSportomania && registeredSportomaniaPlayerCount <= 3
-              ? (effectiveRandomPairing ? "YES" : "NO")
+              ? effectiveRandomPairing
+                ? "YES"
+                : "NO"
               : "NO",
         });
 
       if (insertError) {
-        console.error("RAMPAGE SUPABASE INSERT ERROR:", insertError);
+        console.error(
+          "RAMPAGE SUPABASE INSERT ERROR:",
+          insertError
+        );
+
         throw new Error(
           `Registration save failed: ${insertError.message}${
             insertError.code ? ` [${insertError.code}]` : ""
@@ -1044,6 +1313,7 @@ const Events = () => {
           .remove([uploadedProofPath])
           .catch(() => {});
       }
+
       setFormError(
         error?.message || "Registration failed. Please try again."
       );

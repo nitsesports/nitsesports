@@ -100,6 +100,95 @@ const getSportomaniaFee = (form, playerCount) => {
   return payablePlayers * 10;
 };
 
+/* ==========================================================
+   SCHOLAR ID — GAME-WISE DUPLICATE CHECK
+   Same Scholar ID cannot register twice for the SAME GAME.
+   The same Scholar ID IS allowed for DIFFERENT games.
+   ========================================================== */
+
+const normalizeScholarId = (scholarId = "") =>
+  scholarId.trim().toUpperCase();
+
+const getFormScholarIds = (form, playerCount) => {
+  const ids = [];
+
+  for (let i = 1; i <= playerCount; i += 1) {
+    const scholarId = normalizeScholarId(form[`scholarId${i}`] || "");
+    if (scholarId) ids.push(scholarId);
+  }
+
+  const substituteScholarId = normalizeScholarId(form.substituteScholarId || "");
+  if (substituteScholarId) ids.push(substituteScholarId);
+
+  return [...new Set(ids)];
+};
+
+const checkScholarIdsAlreadyRegisteredForGame = async (
+  game,
+  scholarIds
+) => {
+  if (!supabase || !game || !scholarIds.length) {
+    return null;
+  }
+
+  const normalizedIds = new Set(scholarIds.map(normalizeScholarId));
+
+  const columns = [
+    "scholar_id_1",
+    "scholar_id_2",
+    "scholar_id_3",
+    "scholar_id_4",
+    "scholar_id_5",
+    "substitute_scholar_id",
+  ].join(", ");
+
+  const tables = [
+    RAMPAGE_REGISTRATION_TABLE,
+    SPORTOMANIA_REGISTRATION_TABLE,
+  ];
+
+  const results = await Promise.all(
+    tables.map((table) =>
+      supabase
+        .from(table)
+        .select(columns)
+        .eq("game", game)
+    )
+  );
+
+  for (let i = 0; i < results.length; i += 1) {
+    const { data, error } = results[i];
+
+    if (error) {
+      throw new Error(
+        `Unable to verify Scholar ID registration: ${error.message}`
+      );
+    }
+
+    for (const row of data || []) {
+      const rowScholarIds = [
+        row.scholar_id_1,
+        row.scholar_id_2,
+        row.scholar_id_3,
+        row.scholar_id_4,
+        row.scholar_id_5,
+        row.substitute_scholar_id,
+      ];
+
+      for (const existingId of rowScholarIds) {
+        const normalizedExistingId = normalizeScholarId(existingId || "");
+
+        if (normalizedExistingId && normalizedIds.has(normalizedExistingId)) {
+          return normalizedExistingId;
+        }
+      }
+    }
+  }
+
+  return null;
+};
+
+
 if (import.meta.env.DEV) {
   console.log("RAMPAGE SUPABASE CONFIG:", {
     configured: Boolean(SUPABASE_URL && SUPABASE_PUBLISHABLE_KEY),
@@ -981,6 +1070,38 @@ const ScrollSection = () => {
     if (!supabase) {
       setFormError(
         "Supabase is not configured. Add VITE_SUPABASE_URL and VITE_SUPABASE_PUBLISHABLE_KEY to your .env.local file."
+      );
+      return;
+    }
+
+    // ----------------------------------------------------------
+    // GAME-WISE SCHOLAR ID DUPLICATE CHECK
+    // Same Scholar ID + same game = NOT allowed.
+    // Same Scholar ID + different game = allowed.
+    // ----------------------------------------------------------
+    const formScholarIds = getFormScholarIds(rampageForm, mainPlayerCount);
+
+    try {
+      const alreadyRegisteredScholarId =
+        await checkScholarIdsAlreadyRegisteredForGame(
+          game,
+          formScholarIds
+        );
+
+      if (alreadyRegisteredScholarId) {
+        setFormError(
+          `SCHOLAR ID ${alreadyRegisteredScholarId} IS ALREADY REGISTERED FOR ${game}. THE SAME SCHOLAR ID CAN REGISTER FOR A DIFFERENT GAME, BUT NOT TWICE FOR THE SAME GAME.`
+        );
+        return;
+      }
+    } catch (scholarCheckError) {
+      console.error(
+        "SCHOLAR ID DUPLICATE CHECK ERROR:",
+        scholarCheckError
+      );
+      setFormError(
+        scholarCheckError?.message ||
+          "Unable to verify Scholar ID. Please try again."
       );
       return;
     }
