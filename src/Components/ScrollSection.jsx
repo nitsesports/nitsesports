@@ -3,9 +3,13 @@ import * as THREE from "three";
 import { ArrowRight, CalendarDays, Trophy } from "lucide-react";
 import { createClient } from "@supabase/supabase-js";
 import sportomaniaQR from "../assets/events/sqr.png";
+import rampageQR from "../assets/rqr.png";
 import sportomaniaPoster from "../assets/sportomania.png";
 import sportomania2Poster from "../assets/sportomania2.png";
 import rampage2Poster from "../assets/rampage2.png";
+import rampageMLBBPoster from "../assets/1.png";
+import rampageFreeFirePoster from "../assets/2.png";
+import rampageBGMIPoster from "../assets/3.png";
 
 const events = [
   {
@@ -13,11 +17,11 @@ const events = [
     image: rampage2Poster,
     category: "ESPORTS",
     title: "RAMPAGE 2026",
-    date: "TO BE ANNOUNCED",
+    date: "PROBABLE START: 10 OCTOBER 2026",
     location: "NIT SILCHAR",
     status: "REGISTRATIONS LIVE",
     description:
-      "A high-intensity competitive gaming experience built for the next generation of esports players.",
+      "RAMPAGE 2026 — REGISTRATIONS ARE LIVE. BGMI, FREE FIRE & MLBB. REGISTRATIONS CLOSE ON 9 OCTOBER 2026 AT EOD.",
     color: "magenta",
   },
   {
@@ -36,9 +40,9 @@ const events = [
 
 const tournamentDetails = {
   "RAMPAGE 2026": [
-    { title: "BGMI TOURNAMENT", game: "BGMI", image: "/events/upcoming-01.jpg" },
-    { title: "FREE FIRE TOURNAMENT", game: "FREE FIRE", image: "/events/upcoming-01.jpg" },
-    { title: "MLBB TOURNAMENT", game: "MLBB", image: "/events/upcoming-01.jpg" },
+    { title: "BGMI TOURNAMENT", game: "BGMI", image: rampageBGMIPoster },
+    { title: "FREE FIRE TOURNAMENT", game: "FREE FIRE", image: rampageFreeFirePoster },
+    { title: "MLBB TOURNAMENT", game: "MLBB", image: rampageMLBBPoster },
   ],
   SPORTOMANIA: [
     { title: "BGMI TOURNAMENT", game: "BGMI", image: sportomania2Poster },
@@ -48,7 +52,7 @@ const tournamentDetails = {
 };
 
 const RAMPAGE_LOGO = "/events/rampage-logo.png";
-const RAMPAGE_QR = "/events/rampage-qr.png";
+const RAMPAGE_QR = rampageQR;
 const SPORTOMANIA_QR = sportomaniaQR;
 const RAMPAGE_WHATSAPP_GROUP = "";
 
@@ -1727,7 +1731,7 @@ const ScrollSection = () => {
                           className={`h-full w-full object-cover transition-all duration-500 group-hover:scale-105 ${
                             selectedEvent === "SPORTOMANIA"
                               ? "opacity-90 contrast-[1.05] saturate-100"
-                              : "opacity-55 grayscale contrast-[1.12] saturate-0 group-hover:opacity-75"
+                              : "opacity-90 contrast-[1.05] saturate-100 group-hover:opacity-95"
                           }`}
                         />
                         <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/35 to-black/10" />
@@ -2282,7 +2286,7 @@ const ScrollSection = () => {
                         <div className="flex h-52 w-52 items-center justify-center p-5 text-center text-[10px] font-bold uppercase tracking-[0.12em] text-[#111] sm:h-60 sm:w-60">
                           {isSportomania
                             ? "SPORTOMANIA QR COULD NOT BE LOADED"
-                            : "ADD RAMPAGE QR AT /events/rampage-qr.png"}
+                            : "RAMPAGE QR COULD NOT BE LOADED"}
                         </div>
                       )}
                     </div>

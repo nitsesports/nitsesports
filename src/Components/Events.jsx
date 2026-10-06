@@ -4,13 +4,29 @@ import * as THREE from "three";
 import { createClient } from "@supabase/supabase-js";
 import sportomaniaPoster from "../assets/sportomania2.png";
 import sportomaniaQR from "../assets/events/sqr.png";
+import rampageQR from "../assets/rqr.png";
 import rampagePoster from "../assets/rampage.png";
+import rampageMLBBPoster from "../assets/1.png";
+import rampageFreeFirePoster from "../assets/2.png";
+import rampageBGMIPoster from "../assets/3.png";
 import event1 from "../assets/events/event1.png";
 import event2 from "../assets/events/event2.png";
 import event3 from "../assets/events/event3.png";
 
 
 const upcomingEvents = [
+  {
+    title: "RAMPAGE 2026",
+    date: "PROBABLE START: 10 • OCTOBER • 2026",
+    time: "REGISTRATIONS CLOSE: 9 • OCTOBER • EOD",
+    mode: "REGISTRATIONS LIVE",
+    game: "ESPORTS",
+    location: "NITS SILCHAR",
+    status: "REGISTRATIONS LIVE",
+    description:
+      "RAMPAGE 2026 — registrations are LIVE for BGMI, FREE FIRE and MLBB. Entry fee: ₹40 per team for BGMI/Free Fire and ₹50 per team for MLBB. Probable event start: 10 October 2026. Registrations close on 9 October 2026 at EOD.",
+    image: rampagePoster,
+  },
   {
     title: "SPORTOMANIA",
     date: "PROBABLE START: 7 • OCTOBER • 2026",
@@ -22,18 +38,6 @@ const upcomingEvents = [
     description:
       "SPORTOMANIA — registrations are LIVE. FREE exclusively for Civil Engineering students; students from other branches can participate at ₹10 per person. Probable event start: 7 October 2026. Registrations close on 6 October 2026 at EOD.",
     image: sportomaniaPoster,
-  },
-  {
-    title: "RAMPAGE 2026",
-    date: "REGISTRATIONS LIVE",
-    time: "RAMPAGE 2026",
-    mode: "REGISTRATIONS LIVE",
-    game: "ESPORTS",
-    location: "NITS SILCHAR",
-    status: "REGISTRATIONS LIVE",
-    description:
-      "RAMPAGE 2026 — registrations are LIVE for BGMI, FREE FIRE and MLBB. Entry fee: ₹40 per team for BGMI/Free Fire and ₹50 per team for MLBB.",
-    image: rampagePoster,
   },
 ];
 
@@ -110,9 +114,9 @@ const pastEvents = [
 
 const tournamentDetails = {
   "RAMPAGE 2026": [
-    { title: "BGMI TOURNAMENT", game: "BGMI", image: "/events/upcoming-01.jpg" },
-    { title: "FREE FIRE TOURNAMENT", game: "FREE FIRE", image: "/events/upcoming-01.jpg" },
-    { title: "MLBB TOURNAMENT", game: "MLBB", image: "/events/upcoming-01.jpg" },
+    { title: "BGMI TOURNAMENT", game: "BGMI", image: rampageBGMIPoster },
+    { title: "FREE FIRE TOURNAMENT", game: "FREE FIRE", image: rampageFreeFirePoster },
+    { title: "MLBB TOURNAMENT", game: "MLBB", image: rampageMLBBPoster },
   ],
   SPORTOMANIA: [
     { title: "BGMI TOURNAMENT", game: "BGMI", image: sportomaniaPoster },
@@ -415,7 +419,7 @@ const EventSection = ({ title, subtitle, events, type, onViewMore }) => (
 ========================================================= */
 
 const RAMPAGE_LOGO = "/events/rampage-logo.png";
-const RAMPAGE_QR = "/events/rampage-qr.png";
+const RAMPAGE_QR = rampageQR;
 const SPORTOMANIA_QR = sportomaniaQR;
 const RAMPAGE_WHATSAPP_GROUP = "";
 
@@ -1608,7 +1612,7 @@ const Events = () => {
                           className={`h-full w-full object-cover transition-all duration-500 group-hover:scale-105 ${
                             selectedEvent === "SPORTOMANIA"
                               ? "opacity-90 contrast-[1.05] saturate-100"
-                              : "opacity-55 grayscale contrast-[1.12] saturate-0 group-hover:opacity-75"
+                              : "opacity-90 contrast-[1.05] saturate-100"
                           }`}
                         />
                         <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/35 to-black/10" />
@@ -2163,7 +2167,7 @@ const Events = () => {
                       <div className="flex h-52 w-52 items-center justify-center p-5 text-center text-[10px] font-bold uppercase tracking-[0.12em] text-[#111] sm:h-60 sm:w-60">
                         {isSportomania
                           ? "SPORTOMANIA QR COULD NOT BE LOADED"
-                          : "ADD RAMPAGE QR AT /events/rampage-qr.png"}
+                          : "RAMPAGE PAYMENT QR COULD NOT BE LOADED"}
                       </div>
                     )}
                   </div>
