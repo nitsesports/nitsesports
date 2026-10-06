@@ -886,7 +886,7 @@ const Events = () => {
 
       if (!/^(?:\d{7}|[A-Z0-9]{9})$/.test(scholarId)) {
         setFormError(
-          `PLAYER ${i} SCHOLAR ID must be exactly 7 digits or 9 letters/numbers.`
+          `PLAYER ${i} SCHOLAR ID must be exactly 7 digits or 9 alphanumeric characters.`
         );
         return;
       }
@@ -936,7 +936,7 @@ const Events = () => {
     if (hasCompleteSubstitute) {
       if (!/^(?:\d{7}|[A-Z0-9]{9})$/.test(substituteScholarId)) {
         setFormError(
-          "SUBSTITUTE SCHOLAR ID must be exactly 7 digits or 9 letters/numbers."
+          "SUBSTITUTE SCHOLAR ID must be exactly 7 digits or 9 alphanumeric characters."
         );
         return;
       }
@@ -1976,7 +1976,7 @@ const Events = () => {
                         })
                       }
                       className="w-full rounded-xl border border-white/15 bg-white/[0.045] px-4 py-3 text-sm text-white outline-none transition placeholder:text-white/20 focus:border-white/50"
-                      placeholder="7 digit Scholar ID"
+                      placeholder="7 digits or 9 alphanumeric characters"
                     />
                   </label>
                 </div>
@@ -2071,8 +2071,8 @@ const Events = () => {
                           className="w-full rounded-xl border border-white/15 bg-white/[0.045] px-4 py-3 text-sm text-white outline-none transition placeholder:text-white/20 focus:border-white/50"
                           placeholder={
                             isSportomania
-                              ? "7 digits or up to 9 letters/numbers"
-                              : "7 digit Scholar ID"
+                              ? "7 digits or 9 alphanumeric characters"
+                              : "7 digits or 9 alphanumeric characters"
                           }
                         />
                       </label>
