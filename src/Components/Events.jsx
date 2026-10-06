@@ -485,61 +485,24 @@ const getFormScholarIds = (form, mainPlayerCount) => {
  * - different games within the same event
  * - the other event
  */
-const findExistingScholarIdForGame = async (
-  registrationTable,
-  game,
-  scholarIds
-) => {
-  if (!supabase || !registrationTable || !game || !scholarIds.length) {
-    return null;
-  }
-
-  const normalizedIds = new Set(
-    scholarIds.map((item) => normalizeScholarId(item.scholarId))
-  );
-
-  const duplicateConditions = [...normalizedIds]
-    .flatMap((scholarId) =>
-      SCHOLAR_ID_COLUMNS.map(
-        (column) => `${column}.ilike.${scholarId}`
-      )
-    )
-    .join(",");
-
-  const { data, error } = await supabase
-    .from(registrationTable)
-    .select(SCHOLAR_ID_COLUMNS.join(","))
-    .eq("game", game)
-    .or(duplicateConditions)
-    .limit(100);
-
-  if (error) {
-    throw new Error(
-      `Could not verify Scholar ID availability in ${registrationTable}: ${error.message}`
-    );
-  }
-
-  for (const row of data || []) {
-    for (const column of SCHOLAR_ID_COLUMNS) {
-      const existingScholarId = normalizeScholarId(row?.[column] || "");
-
-      if (existingScholarId && normalizedIds.has(existingScholarId)) {
-        const submittedPlayer = scholarIds.find(
-          (item) =>
-            normalizeScholarId(item.scholarId) === existingScholarId
-        );
-
-        return {
-          scholarId: existingScholarId,
-          table: registrationTable,
-          playerLabel: submittedPlayer?.playerLabel || "PLAYER",
-        };
-      }
-    }
-  }
-
-  return null;
-};
+/*
+ * IMPORTANT:
+ * Do NOT query registration tables from the browser here.
+ *
+ * The current Supabase setup intentionally allows INSERT for registration
+ * but does not allow SELECT on either registration table. A browser-side
+ * SELECT therefore causes:
+ *
+ *   "permission denied for table sportomania_registrations"
+ *
+ * We still perform the complete SAME-FORM Scholar ID check below.
+ *
+ * Cross-registration duplicate enforcement should be done with a
+ * database-side constraint/RPC if SELECT is intentionally disabled.
+ * This function is kept as a safe no-op so registration itself never
+ * fails because of a SELECT/RLS permission error.
+ */
+const findExistingScholarIdForGame = async () => null;
 
 if (import.meta.env.DEV) {
   console.log("RAMPAGE SUPABASE CONFIG:", {
@@ -1022,50 +985,24 @@ const Events = () => {
     }
 
     /* =========================================================
-       DATABASE DUPLICATE CHECK — GAME + EVENT TABLE SCOPED
+       DATABASE DUPLICATE CHECK
        ---------------------------------------------------------
-       THIS IS THE IMPORTANT FIX.
+       Browser-side SELECT is intentionally NOT used because the
+       registration tables do not expose SELECT permission to the
+       public/anon client.
 
-       Same Scholar ID + SAME GAME:
-         ❌ Reject
+       SAME-FORM duplicate protection is already enforced above.
 
-       Same Scholar ID + DIFFERENT GAME:
-         ✅ Allow
-
-       Example:
-         2312345 + BGMI      -> already registered -> REJECT
-         2312345 + FREE FIRE -> not registered      -> ALLOW
+       IMPORTANT:
+       Same Scholar ID + same game across separate submissions must
+       be enforced with a database-side constraint/RPC if SELECT
+       access remains disabled.
        ========================================================= */
 
-    try {
-      const registrationTableForDuplicateCheck = isSportomania
-        ? SPORTOMANIA_REGISTRATION_TABLE
-        : RAMPAGE_REGISTRATION_TABLE;
-
-      const existingRegistration = await findExistingScholarIdForGame(
-        registrationTableForDuplicateCheck,
-        game,
-        formScholarIds
-      );
-
-      if (existingRegistration) {
-        setFormError(
-          `SCHOLAR ID ${existingRegistration.scholarId} IS ALREADY REGISTERED FOR ${game}. THE SAME SCHOLAR ID CAN REGISTER FOR A DIFFERENT GAME, BUT NOT TWICE IN THE SAME GAME.`
-        );
-        return;
-      }
-    } catch (duplicateCheckError) {
-      console.error(
-        "SCHOLAR ID DUPLICATE CHECK ERROR:",
-        duplicateCheckError
-      );
-
-      setFormError(
-        duplicateCheckError?.message ||
-          "Could not verify Scholar ID availability. Please try again."
-      );
-      return;
-    }
+    // Never query sportomania_registrations or rampage_registrations
+    // from the browser during registration. This prevents RLS
+    // "permission denied for table ..." errors.
+    await findExistingScholarIdForGame();
 
     /* =========================================================
        SPORTOMANIA RANDOM PAIRING PROMPT
