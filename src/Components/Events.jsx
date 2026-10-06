@@ -22,14 +22,14 @@ const upcomingEvents = [
   },
   {
     title: "RAMPAGE 2026",
-    date: "PROBABLE DATE: TO BE ANNOUNCED",
-    time: "TO BE ANNOUNCED",
-    mode: "UPCOMING",
+    date: "REGISTRATIONS LIVE",
+    time: "RAMPAGE 2026",
+    mode: "REGISTRATIONS LIVE",
     game: "ESPORTS",
-    location: "TO BE ANNOUNCED",
-    status: "UPCOMING",
+    location: "NITS SILCHAR",
+    status: "REGISTRATIONS LIVE",
     description:
-      "RAMPAGE 2026 — the next major NITS Esports battle. Registrations and event details will be announced soon.",
+      "RAMPAGE 2026 — registrations are LIVE for BGMI, FREE FIRE and MLBB. Entry fee: ₹40 per team for BGMI/Free Fire and ₹50 per team for MLBB.",
     image: rampagePoster,
   },
 ];
@@ -423,6 +423,12 @@ const getSportomaniaFee = (form, playerCount) => {
   return payablePlayers * 10;
 };
 
+const getRampageFee = (game = "") => {
+  if (game === "MLBB") return 50;
+  if (game === "BGMI" || game === "FREE FIRE") return 40;
+  return 40;
+};
+
 /* =========================================================
    SCHOLAR ID UNIQUENESS — GAME + EVENT TABLE SCOPED
    ---------------------------------------------------------
@@ -503,6 +509,9 @@ const getFormScholarIds = (form, mainPlayerCount) => {
  * fails because of a SELECT/RLS permission error.
  */
 const findExistingScholarIdForGame = async () => null;
+// Rampage cross-submission same-game Scholar ID uniqueness is enforced
+// by the database trigger supplied with this update. We intentionally do
+// not SELECT registration rows from the browser because RLS blocks SELECT.
 
 if (import.meta.env.DEV) {
   console.log("RAMPAGE SUPABASE CONFIG:", {
@@ -759,10 +768,14 @@ const Events = () => {
   // This must be available to the JSX below so opening the form never
   // references an undefined variable.
   const isSportomania = selectedEvent === "SPORTOMANIA";
+  const isRampage = selectedEvent === "RAMPAGE 2026";
   const sportomaniaMainPlayerCount = selectedTournament?.game === "MLBB" ? 5 : 4;
   const sportomaniaFee = isSportomania
     ? getSportomaniaFee(rampageForm, sportomaniaMainPlayerCount)
-    : 40;
+    : 0;
+  const rampageFee = isRampage
+    ? getRampageFee(selectedTournament?.game)
+    : 0;
 
   const registeredSportomaniaPlayerCount = isSportomania
     ? Array.from({ length: sportomaniaMainPlayerCount }, (_, index) => index + 1).filter(
@@ -781,10 +794,31 @@ const Events = () => {
       ).length
     : 0;
 
+  const registeredRampagePlayerCount = isRampage
+    ? Array.from({ length: selectedTournament?.game === "MLBB" ? 5 : 4 }, (_, index) => index + 1).filter(
+        (number) => {
+          const name =
+            number === 1
+              ? rampageForm.iglName.trim()
+              : rampageForm[`player${number}Name`].trim();
+          const ign =
+            number === 1
+              ? rampageForm.iglIgn.trim()
+              : rampageForm[`player${number}Ign`].trim();
+          const scholarId = (rampageForm[`scholarId${number}`] || "").trim();
+          return Boolean(name && ign && scholarId);
+        }
+      ).length
+    : 0;
+
+  const registeredPlayerCount = isSportomania
+    ? registeredSportomaniaPlayerCount
+    : registeredRampagePlayerCount;
+
   const showRandomPairingOption =
-    isSportomania &&
-    registeredSportomaniaPlayerCount >= 1 &&
-    registeredSportomaniaPlayerCount <= 3;
+    (isSportomania || isRampage) &&
+    registeredPlayerCount >= 1 &&
+    registeredPlayerCount <= (selectedTournament?.game === "MLBB" ? 4 : 3);
 
   const handleFormSubmit = async (e, forcedRandomPairing = null) => {
     e.preventDefault();
@@ -792,26 +826,29 @@ const Events = () => {
 
     const game = selectedTournament?.game;
     const isSportomania = selectedEvent === "SPORTOMANIA";
+    const isRampage = selectedEvent === "RAMPAGE 2026";
     const mainPlayerCount = game === "MLBB" ? 5 : 4;
     const currentSportomaniaFee = isSportomania
       ? getSportomaniaFee(rampageForm, mainPlayerCount)
-      : 40;
+      : 0;
+    const currentRampageFee = isRampage ? getRampageFee(game) : 0;
+    const registrationFee = isSportomania
+      ? currentSportomaniaFee
+      : currentRampageFee;
 
     /* =========================================================
        MAIN PLAYER VALIDATION
        ========================================================= */
 
-    if (isSportomania) {
-      // Sportomania allows 1–5 registered players depending on game.
-      // Player 1 is mandatory. Additional filled slots are optional.
-      const player1Name = rampageForm.iglName.trim();
-      const player1Ign = rampageForm.iglIgn.trim();
-      const player1ScholarId = normalizeScholarId(rampageForm.scholarId1);
+    // Both Sportomania and Rampage require Player 1.
+    // Players 2+ are optional, but partial player details are invalid.
+    const player1Name = rampageForm.iglName.trim();
+    const player1Ign = rampageForm.iglIgn.trim();
+    const player1ScholarId = normalizeScholarId(rampageForm.scholarId1);
 
-      if (!player1Name || !player1Ign || !player1ScholarId) {
-        setFormError("PLAYER 1 NAME, IGN AND SCHOLAR ID are required.");
-        return;
-      }
+    if (!player1Name || !player1Ign || !player1ScholarId) {
+      setFormError("PLAYER 1 NAME, IGN AND SCHOLAR ID are required.");
+      return;
     }
 
     for (let i = 1; i <= mainPlayerCount; i += 1) {
@@ -831,41 +868,25 @@ const Events = () => {
 
       const hasAnyPlayerData = Boolean(name || ign || scholarId);
 
-      // For Sportomania, an empty optional player slot is allowed.
-      if (isSportomania && !hasAnyPlayerData) {
+      // Sportomania-style player logic for BOTH events:
+      // Player 1 is mandatory. Every additional player slot is optional.
+      // An entirely empty optional slot is valid.
+      if (i > 1 && !hasAnyPlayerData) {
         continue;
       }
 
-      // For non-Sportomania games all players are mandatory.
-      if (!isSportomania && (!name || !ign || !scholarId)) {
+      // If an optional player slot has been started, all three fields
+      // must be completed. Half-filled player details are invalid.
+      if (!name || !ign || !scholarId) {
         setFormError(
-          `PLAYER ${i} NAME, IGN AND SCHOLAR ID are all required.`
+          `PLAYER ${i} NAME, IGN AND SCHOLAR ID are all required. Complete all three fields or leave this player slot completely empty.`
         );
         return;
       }
 
-      // If an optional Sportomania slot has been started,
-      // all three fields are mandatory.
-      if (isSportomania && (!name || !ign || !scholarId)) {
+      if (!/^(?:\d{7}|[A-Z0-9]{9})$/.test(scholarId)) {
         setFormError(
-          `PLAYER ${i} NAME, IGN AND SCHOLAR ID are all required.`
-        );
-        return;
-      }
-
-      if (isSportomania) {
-        if (
-          !/^(?:\d{7}|[A-Z0-9]{1,9})$/.test(scholarId) ||
-          !/\d/.test(scholarId)
-        ) {
-          setFormError(
-            `PLAYER ${i} SCHOLAR ID must be 7 digits or up to 9 letters/numbers.`
-          );
-          return;
-        }
-      } else if (!/^\d{7}$/.test(scholarId)) {
-        setFormError(
-          `PLAYER ${i} SCHOLAR ID must contain exactly 7 digits.`
+          `PLAYER ${i} SCHOLAR ID must be exactly 7 digits or 9 letters/numbers.`
         );
         return;
       }
@@ -913,19 +934,9 @@ const Events = () => {
     }
 
     if (hasCompleteSubstitute) {
-      if (isSportomania) {
-        if (
-          !/^(?:\d{7}|[A-Z0-9]{1,9})$/.test(substituteScholarId) ||
-          !/\d/.test(substituteScholarId)
-        ) {
-          setFormError(
-            "SUBSTITUTE SCHOLAR ID must be 7 digits or up to 9 letters/numbers."
-          );
-          return;
-        }
-      } else if (!/^\d{7}$/.test(substituteScholarId)) {
+      if (!/^(?:\d{7}|[A-Z0-9]{9})$/.test(substituteScholarId)) {
         setFormError(
-          "SUBSTITUTE SCHOLAR ID must contain exactly 7 digits."
+          "SUBSTITUTE SCHOLAR ID must be exactly 7 digits or 9 letters/numbers."
         );
         return;
       }
@@ -964,11 +975,9 @@ const Events = () => {
 
     const hasSubstitute = hasCompleteSubstitute;
 
-    if ((!isSportomania || currentSportomaniaFee > 0) && !paymentProof) {
+    if (registrationFee > 0 && !paymentProof) {
       setFormError(
-        `Payment proof is required. Registration cannot be completed without uploading the payment screenshot for ₹${
-          isSportomania ? currentSportomaniaFee : 40
-        }.`
+        `Payment proof is required. Registration cannot be completed without uploading the payment screenshot for ₹${registrationFee}.`
       );
       return;
     }
@@ -1011,9 +1020,9 @@ const Events = () => {
     // Only show the pairing prompt AFTER all validation,
     // including database Scholar ID validation, has passed.
     if (
-      isSportomania &&
-      registeredSportomaniaPlayerCount >= 1 &&
-      registeredSportomaniaPlayerCount <= 3 &&
+      (isSportomania || isRampage) &&
+      registeredPlayerCount >= 1 &&
+      registeredPlayerCount <= (selectedTournament?.game === "MLBB" ? 4 : 3) &&
       forcedRandomPairing === null
     ) {
       setRandomPairingPromptOpen(true);
@@ -1021,7 +1030,8 @@ const Events = () => {
     }
 
     const effectiveRandomPairing =
-      isSportomania && registeredSportomaniaPlayerCount <= 3
+      (isSportomania || isRampage) &&
+      registeredPlayerCount <= (selectedTournament?.game === "MLBB" ? 4 : 3)
         ? Boolean(forcedRandomPairing)
         : false;
 
@@ -1049,7 +1059,7 @@ const Events = () => {
          PAYMENT PROOF UPLOAD
          ======================================================= */
 
-      if (!isSportomania || currentSportomaniaFee > 0) {
+      if (registrationFee > 0) {
         const safeFileName = paymentProof.name
           .toLowerCase()
           .replace(/[^a-z0-9._-]/g, "-");
@@ -1222,7 +1232,7 @@ const Events = () => {
           payment_proof_path: uploadedProofPath || null,
 
           random_pairing:
-            isSportomania && registeredSportomaniaPlayerCount <= 3
+            (isSportomania || isRampage) && registeredPlayerCount <= 3
               ? effectiveRandomPairing
                 ? "YES"
                 : "NO"
@@ -1234,6 +1244,13 @@ const Events = () => {
           "RAMPAGE SUPABASE INSERT ERROR:",
           insertError
         );
+
+        if (
+          insertError.code === "P0001" &&
+          /SCHOLAR ID .* ALREADY REGISTERED FOR GAME/i.test(insertError.message || "")
+        ) {
+          throw new Error(insertError.message);
+        }
 
         throw new Error(
           `Registration save failed: ${insertError.message}${
@@ -1527,10 +1544,10 @@ const Events = () => {
                 }`}
               >
                 {tournamentDetails[selectedEvent].map((tournament, index) => {
-                  // RAMPAGE registration is temporarily locked.
-                  // SPORTOMANIA remains open and fully functional.
+                  // Both SPORTOMANIA and RAMPAGE 2026 registrations are live.
                   const isRegistrationOpen =
-                    selectedEvent === "SPORTOMANIA";
+                    selectedEvent === "SPORTOMANIA" ||
+                    selectedEvent === "RAMPAGE 2026";
 
                   return (
                     <article
@@ -1563,7 +1580,7 @@ const Events = () => {
                         <p className="mt-2 text-[9px] uppercase tracking-[0.14em] text-white/35">
                           {selectedEvent === "SPORTOMANIA"
                             ? "REGISTRATION CLOSES: 6 OCTOBER 2026 • EOD"
-                            : "PROBABLE DATE: TO BE ANNOUNCED"}
+                            : "REGISTRATIONS LIVE • RAMPAGE 2026"}
                         </p>
 
                         <button
@@ -1603,7 +1620,7 @@ const Events = () => {
         </div>
       )}
 
-      {/* RANDOM PAIRING SUBMIT POPUP — SPORTOMANIA 1–3 PLAYERS ONLY */}
+      {/* RANDOM PAIRING SUBMIT POPUP — SPORTOMANIA / RAMPAGE 1–3 PLAYERS */}
       {randomPairingPromptOpen && (
         <div
           className="fixed inset-0 z-[180] flex items-center justify-center bg-black/85 px-5 py-6 backdrop-blur-md"
@@ -1618,12 +1635,12 @@ const Events = () => {
             </div>
 
             <p className="text-[9px] font-bold uppercase tracking-[0.28em] text-white/40">
-              SPORTOMANIA
+              {selectedEvent}
             </p>
 
             <h3 className="mt-3 text-xl font-bold uppercase leading-tight tracking-[-0.02em] text-white">
-              {registeredSportomaniaPlayerCount} PLAYER
-              {registeredSportomaniaPlayerCount === 1 ? "" : "S"} REGISTERED
+              {registeredPlayerCount} PLAYER
+              {registeredPlayerCount === 1 ? "" : "S"} REGISTERED
             </h3>
 
             <p className="mt-4 text-[10px] font-bold uppercase leading-5 tracking-[0.13em] text-white/60">
@@ -1704,7 +1721,7 @@ const Events = () => {
                   ? sportomaniaFee === 0
                     ? "REGISTRATION FEE: FREE FOR CIVIL STUDENTS"
                     : `REGISTRATION FEE: ₹${sportomaniaFee} TOTAL • ₹10 PER OTHER-BRANCH PLAYER (SUBSTITUTE INCLUDED)`
-                  : "REGISTRATION FEE: ₹40 PER TEAM"}
+                  : `REGISTRATION FEE: ₹${rampageFee} PER TEAM`}
               </p>
             </div>
 
@@ -1723,6 +1740,19 @@ const Events = () => {
                     </p>
                     <p className="mt-2 text-[9px] font-semibold uppercase tracking-[0.10em] leading-5 text-white/45">
                       FREE EXCLUSIVELY FOR CIVIL ENGINEERING STUDENTS. STUDENTS FROM OTHER BRANCHES PAY ₹10 PER PERSON. SUBSTITUTE PLAYER ALSO FOLLOWS THE SAME SCHOLAR ID FEE RULE. ONLY THE TEAM LEADER / IGL MUST JOIN THE OFFICIAL WHATSAPP GROUP PROVIDED IN THIS FORM.
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {isRampage && (
+                <div className="space-y-3">
+                  <div className="rounded-xl border border-white/15 bg-white/[0.035] px-4 py-4 text-center">
+                    <p className="text-[9px] font-bold uppercase tracking-[0.14em] leading-5 text-white/70">
+                      RAMPAGE NOTE
+                    </p>
+                    <p className="mt-2 text-[9px] font-semibold uppercase tracking-[0.10em] leading-5 text-white/45">
+                      PLAYER 1 REQUIRED • OTHERS OPTIONAL • NAME + IGN + SCHOLAR ID REQUIRED IF FILLED • SCHOLAR ID: 7 DIGITS OR 9 ALPHANUMERIC CHARACTERS • SAME ID NOT ALLOWED TWICE IN THE SAME GAME.
                     </p>
                   </div>
                 </div>
@@ -1792,11 +1822,11 @@ const Events = () => {
                   ].map(([label, key]) => (
                     <label key={key} className="block">
                       <span className="mb-2 block text-[9px] font-bold uppercase tracking-[0.20em] text-white/45">
-                        {label} {isSportomania ? "" : "*"}
+                        {label} {""}
                       </span>
                       <input
                         name={key}
-                        required={!isSportomania}
+                        required={false}
                         value={rampageForm[key]}
                         onChange={(e) =>
                           setRampageForm({ ...rampageForm, [key]: e.target.value })
@@ -1846,11 +1876,11 @@ const Events = () => {
                   ].map(([label, key]) => (
                     <label key={key} className="block">
                       <span className="mb-2 block text-[9px] font-bold uppercase tracking-[0.20em] text-white/45">
-                        {label} {isSportomania ? "" : "*"}
+                        {label} {""}
                       </span>
                       <input
                         name={key}
-                        required={!isSportomania}
+                        required={false}
                         value={rampageForm[key]}
                         onChange={(e) =>
                           setRampageForm({ ...rampageForm, [key]: e.target.value })
@@ -1933,20 +1963,16 @@ const Events = () => {
                       )}
                       type="text"
                       inputMode="text"
-                      pattern={isSportomania ? "[A-Za-z0-9]{1,9}" : "[0-9]{7}"}
-                      maxLength={isSportomania ? 9 : 7}
+                      pattern="(?:[0-9]{7}|[A-Za-z0-9]{9})"
+                      maxLength={9}
                       value={rampageForm.substituteScholarId}
                       onChange={(e) =>
                         setRampageForm({
                           ...rampageForm,
-                          substituteScholarId: isSportomania
-                            ? e.target.value
-                                .toUpperCase()
-                                .replace(/[^A-Z0-9]/g, "")
-                                .slice(0, 9)
-                            : e.target.value
-                                .replace(/\D/g, "")
-                                .slice(0, 7),
+                          substituteScholarId: e.target.value
+                            .toUpperCase()
+                            .replace(/[^A-Z0-9]/g, "")
+                            .slice(0, 9),
                         })
                       }
                       className="w-full rounded-xl border border-white/15 bg-white/[0.045] px-4 py-3 text-sm text-white outline-none transition placeholder:text-white/20 focus:border-white/50"
@@ -2023,27 +2049,23 @@ const Events = () => {
                         <span className="mb-2 block text-[9px] font-bold uppercase tracking-[0.20em] text-white/45">
                           {isIgl
                             ? "PLAYER 1 — IN-GAME LEADER (IGL) SCHOLAR ID *"
-                            : `PLAYER ${number} SCHOLAR ID *`}
+                            : `PLAYER ${number} SCHOLAR ID`}
                         </span>
                         <input
                           name={key}
-                          required={!isSportomania || number === 1}
+                          required={number === 1}
                           type="text"
                           inputMode="text"
-                          pattern={isSportomania ? "[A-Za-z0-9]{1,9}" : "[0-9]{7}"}
-                          maxLength={isSportomania ? 9 : 7}
+                          pattern="(?:[0-9]{7}|[A-Za-z0-9]{9})"
+                          maxLength={9}
                           value={rampageForm[key]}
                           onChange={(e) =>
                             setRampageForm({
                               ...rampageForm,
-                              [key]: isSportomania
-                                ? e.target.value
-                                    .toUpperCase()
-                                    .replace(/[^A-Z0-9]/g, "")
-                                    .slice(0, 9)
-                                : e.target.value
-                                    .replace(/\D/g, "")
-                                    .slice(0, 7),
+                              [key]: e.target.value
+                                .toUpperCase()
+                                .replace(/[^A-Z0-9]/g, "")
+                                .slice(0, 9),
                             })
                           }
                           className="w-full rounded-xl border border-white/15 bg-white/[0.045] px-4 py-3 text-sm text-white outline-none transition placeholder:text-white/20 focus:border-white/50"
@@ -2068,7 +2090,7 @@ const Events = () => {
                       PAYMENT
                     </p>
                     <h3 className="mt-2 text-lg font-bold uppercase text-white">
-                      PAY ₹{isSportomania ? sportomaniaFee : 40} TOTAL
+                      PAY ₹{isSportomania ? sportomaniaFee : rampageFee} TOTAL
                     </h3>
                     <p className="mt-1 text-[9px] uppercase tracking-[0.14em] text-white/35">
                       {isSportomania
@@ -2077,7 +2099,7 @@ const Events = () => {
                     </p>
                   </div>
                   <span className="rounded-full border border-white/15 bg-white/[0.045] px-3 py-1.5 text-[8px] font-bold uppercase tracking-[0.18em] text-white/55">
-                    {isSportomania ? `₹${sportomaniaFee} TOTAL` : "₹40 / TEAM"}
+                    {isSportomania ? `₹${sportomaniaFee} TOTAL` : `₹${rampageFee} / TEAM`}
                   </span>
                 </div>
 
