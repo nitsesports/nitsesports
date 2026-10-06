@@ -1145,6 +1145,11 @@ const ScrollSection = () => {
           rampageForm.scholarId5.trim()
       );
 
+      /* =======================================================
+         EXACT INSERT LOGIC AS EVENTS.JSX:
+         Rampage sends empty string "" (NOT NULL compliant)
+         Sportomania sends null when player is not present
+         ======================================================= */
       const { error: insertError } = await supabase
         .from(registrationTable)
         .insert({
@@ -1161,97 +1166,73 @@ const ScrollSection = () => {
             ? player2Present
               ? rampageForm.player2Name.trim()
               : null
-            : player2Present
-              ? rampageForm.player2Name.trim()
-              : null,
+            : rampageForm.player2Name.trim(),
 
           player2_ign: isSportomania
             ? player2Present
               ? rampageForm.player2Ign.trim()
               : null
-            : player2Present
-              ? rampageForm.player2Ign.trim()
-              : null,
+            : rampageForm.player2Ign.trim(),
 
           scholar_id_2: isSportomania
             ? player2Present
               ? normalizeScholarId(rampageForm.scholarId2)
               : null
-            : player2Present
-              ? normalizeScholarId(rampageForm.scholarId2)
-              : null,
+            : normalizeScholarId(rampageForm.scholarId2),
 
           player3_name: isSportomania
             ? player3Present
               ? rampageForm.player3Name.trim()
               : null
-            : player3Present
-              ? rampageForm.player3Name.trim()
-              : null,
+            : rampageForm.player3Name.trim(),
 
           player3_ign: isSportomania
             ? player3Present
               ? rampageForm.player3Ign.trim()
               : null
-            : player3Present
-              ? rampageForm.player3Ign.trim()
-              : null,
+            : rampageForm.player3Ign.trim(),
 
           scholar_id_3: isSportomania
             ? player3Present
               ? normalizeScholarId(rampageForm.scholarId3)
               : null
-            : player3Present
-              ? normalizeScholarId(rampageForm.scholarId3)
-              : null,
+            : normalizeScholarId(rampageForm.scholarId3),
 
           player4_name: isSportomania
             ? player4Present
               ? rampageForm.player4Name.trim()
               : null
-            : player4Present
-              ? rampageForm.player4Name.trim()
-              : null,
+            : rampageForm.player4Name.trim(),
 
           player4_ign: isSportomania
             ? player4Present
               ? rampageForm.player4Ign.trim()
               : null
-            : player4Present
-              ? rampageForm.player4Ign.trim()
-              : null,
+            : rampageForm.player4Ign.trim(),
 
           scholar_id_4: isSportomania
             ? player4Present
               ? normalizeScholarId(rampageForm.scholarId4)
               : null
-            : player4Present
-              ? normalizeScholarId(rampageForm.scholarId4)
-              : null,
+            : normalizeScholarId(rampageForm.scholarId4),
 
           player5_name: isSportomania
             ? player5Present
               ? rampageForm.player5Name.trim()
               : null
-            : player5Present
-              ? rampageForm.player5Name.trim()
-              : null,
+            : rampageForm.player5Name.trim(),
 
           player5_ign: isSportomania
             ? player5Present
               ? rampageForm.player5Ign.trim()
               : null
-            : player5Present
-              ? rampageForm.player5Ign.trim()
-              : null,
+            : rampageForm.player5Ign.trim(),
 
           scholar_id_5: isSportomania
             ? player5Present
               ? normalizeScholarId(rampageForm.scholarId5)
               : null
-            : player5Present
-              ? normalizeScholarId(rampageForm.scholarId5)
-              : null,
+            : normalizeScholarId(rampageForm.scholarId5),
 
           substitute_name: hasSubstitute
             ? rampageForm.substituteName.trim()
