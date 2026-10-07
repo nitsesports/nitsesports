@@ -54,7 +54,16 @@ const tournamentDetails = {
 const RAMPAGE_LOGO = "/events/rampage-logo.png";
 const RAMPAGE_QR = rampageQR;
 const SPORTOMANIA_QR = sportomaniaQR;
-const RAMPAGE_WHATSAPP_GROUP = "";
+
+// Official game-wise WhatsApp groups.
+const RAMPAGE_WHATSAPP_GROUPS = {
+  "FREE FIRE": "https://chat.whatsapp.com/Hz3RixQNGQH2MVwWTNKtF6",
+  "MLBB": "https://chat.whatsapp.com/DK65RfeWnKHCy5UnDQKFU1",
+  "BGMI": "https://chat.whatsapp.com/JeG3Ip6dJ0oFaAuGkypmwU",
+};
+
+const getWhatsAppGroupForGame = (game = "") =>
+  RAMPAGE_WHATSAPP_GROUPS[String(game).trim().toUpperCase()] || "";
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 const SUPABASE_PUBLISHABLE_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
@@ -209,17 +218,27 @@ const WhiteCombatMaze = () => {
     camera.up.set(0, 0, -1);
     camera.lookAt(0, 0, 0);
 
+    const isMobile =
+      typeof window !== "undefined" &&
+      (window.innerWidth < 768 ||
+        /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent));
+
+    // Keep the maze GPU-light on phones to prevent mobile browsers from
+    // killing/restarting the page because of WebGL memory pressure.
     const renderer = new THREE.WebGLRenderer({
       canvas,
       alpha: true,
-      antialias: true,
-      powerPreference: "high-performance",
+      antialias: false,
+      powerPreference: "low-power",
+      precision: "mediump",
     });
 
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+    renderer.setPixelRatio(
+      Math.min(window.devicePixelRatio || 1, isMobile ? 1 : 1.25)
+    );
     renderer.setClearColor(0x000000, 0);
 
-    const SIZE = 21;
+    const SIZE = isMobile ? 17 : 21;
     const CELL = 0.56;
     const mazeWidth = SIZE * CELL;
     const mazeGroup = new THREE.Group();
@@ -364,18 +383,21 @@ const WhiteCombatMaze = () => {
     pacmanGroup.add(pacman);
 
     const pellets = [];
-    const pelletGeometry = new THREE.CircleGeometry(0.035, 8);
+    const pelletGeometry = new THREE.CircleGeometry(0.035, 6);
+    const pelletMaterial = new THREE.MeshBasicMaterial({
+      color: 0xffffff,
+      transparent: true,
+      opacity: 0.6,
+      side: THREE.DoubleSide,
+    });
 
     for (let r = 1; r < SIZE - 1; r++) {
       for (let c = 1; c < SIZE - 1; c++) {
-        if (maze[r][c] !== 0 || Math.random() > 0.48) continue;
+        if (
+          maze[r][c] !== 0 ||
+          Math.random() > (isMobile ? 0.32 : 0.48)
+        ) continue;
 
-        const pelletMaterial = new THREE.MeshBasicMaterial({
-          color: 0xffffff,
-          transparent: true,
-          opacity: 0.6,
-          side: THREE.DoubleSide,
-        });
         const pellet = new THREE.Mesh(pelletGeometry, pelletMaterial);
         pellet.rotation.x = -Math.PI / 2;
         pellet.position.set(
@@ -465,6 +487,16 @@ const WhiteCombatMaze = () => {
       camera.left = -(view * aspect) / 2;
       camera.updateProjectionMatrix();
     };
+    const onContextLost = (event) => {
+      // Keep a temporary GPU context loss from becoming a page-level failure.
+      event.preventDefault();
+    };
+
+    const onContextRestored = () => {};
+
+    canvas.addEventListener("webglcontextlost", onContextLost, false);
+    canvas.addEventListener("webglcontextrestored", onContextRestored, false);
+
     window.addEventListener("resize", resize);
     resize();
 
@@ -535,6 +567,8 @@ const WhiteCombatMaze = () => {
       window.removeEventListener("click", onClick);
       window.removeEventListener("scroll", onScroll);
       window.removeEventListener("resize", resize);
+      canvas.removeEventListener("webglcontextlost", onContextLost);
+      canvas.removeEventListener("webglcontextrestored", onContextRestored);
 
       scene.traverse((object) => {
         if (object.geometry) object.geometry.dispose();
@@ -640,7 +674,7 @@ const ScrollSection = () => {
       canvas,
       antialias: false,
       alpha: true,
-      powerPreference: "high-performance",
+      powerPreference: isMobile ? "low-power" : "high-performance",
       precision: isMobile ? "mediump" : "highp",
     });
 
@@ -749,6 +783,23 @@ const ScrollSection = () => {
       renderer.setSize(width, height, false);
     };
 
+    const onStarfieldContextLost = (event) => {
+      event.preventDefault();
+    };
+
+    const onStarfieldContextRestored = () => {};
+
+    canvas.addEventListener(
+      "webglcontextlost",
+      onStarfieldContextLost,
+      false
+    );
+    canvas.addEventListener(
+      "webglcontextrestored",
+      onStarfieldContextRestored,
+      false
+    );
+
     window.addEventListener("scroll", handleScroll, { passive: true });
     window.addEventListener("resize", handleResize);
 
@@ -795,6 +846,15 @@ const ScrollSection = () => {
       window.removeEventListener("mousemove", handleMouseMove);
       window.removeEventListener("scroll", handleScroll);
       window.removeEventListener("resize", handleResize);
+
+      canvas.removeEventListener(
+        "webglcontextlost",
+        onStarfieldContextLost
+      );
+      canvas.removeEventListener(
+        "webglcontextrestored",
+        onStarfieldContextRestored
+      );
 
       particleGeometry.dispose();
       particles.material.dispose();
@@ -1855,11 +1915,11 @@ const ScrollSection = () => {
       {/* REGISTRATION FORM MODAL */}
       {selectedTournament && !registrationComplete && (
         <div
-          className="fixed inset-0 z-[130] flex items-center justify-center bg-black/85 px-4 py-6 backdrop-blur-md sm:px-6"
+          className="fixed inset-0 z-[130] flex items-center justify-center bg-black/90 px-2 py-3 sm:px-6 sm:py-6 sm:backdrop-blur-md"
           onClick={() => setSelectedTournament(null)}
         >
           <div
-            className="relative max-h-[94vh] w-full max-w-5xl overflow-y-auto rounded-3xl border border-white/15 bg-[#050507]/98 p-5 shadow-[0_25px_120px_rgba(0,0,0,.9)] sm:p-8"
+            className="relative max-h-[96vh] w-full max-w-5xl overflow-y-auto overscroll-contain rounded-3xl border border-white/15 bg-[#050507]/98 p-4 shadow-[0_20px_80px_rgba(0,0,0,.85)] sm:max-h-[94vh] sm:p-8"
             onClick={(e) => e.stopPropagation()}
           >
             <button
@@ -2414,21 +2474,25 @@ const ScrollSection = () => {
             </p>
 
             <div className="mt-8 grid gap-3 sm:grid-cols-3">
-              <button
-                type="button"
-                onClick={() => {
-                  if (RAMPAGE_WHATSAPP_GROUP) {
-                    window.open(RAMPAGE_WHATSAPP_GROUP, "_blank", "noopener,noreferrer");
-                  } else {
-                    setFormError(
-                      "Add the official WhatsApp group invite link in RAMPAGE_WHATSAPP_GROUP."
+              {getWhatsAppGroupForGame(selectedTournament?.game) && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    const whatsappGroup = getWhatsAppGroupForGame(
+                      selectedTournament?.game
                     );
-                  }
-                }}
-                className="rounded-xl border border-white/20 bg-white/[0.055] px-4 py-3 text-[8px] font-bold uppercase tracking-[0.16em] text-white/75 transition hover:border-white/60 hover:bg-white/[0.10] hover:text-white"
-              >
-                WHATSAPP GROUP
-              </button>
+
+                    if (whatsappGroup) {
+                      // Current-tab navigation works more reliably on phones
+                      // and lets Android/iOS hand the link to WhatsApp.
+                      window.location.href = whatsappGroup;
+                    }
+                  }}
+                  className="rounded-xl border border-white/20 bg-white/[0.055] px-4 py-3 text-[8px] font-bold uppercase tracking-[0.16em] text-white/75 transition hover:border-white/60 hover:bg-white/[0.10] hover:text-white"
+                >
+                  WHATSAPP GROUP
+                </button>
+              )}
               <button
                 type="button"
                 onClick={() => {

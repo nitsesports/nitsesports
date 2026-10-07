@@ -421,7 +421,14 @@ const EventSection = ({ title, subtitle, events, type, onViewMore }) => (
 const RAMPAGE_LOGO = "/events/rampage-logo.png";
 const RAMPAGE_QR = rampageQR;
 const SPORTOMANIA_QR = sportomaniaQR;
-const RAMPAGE_WHATSAPP_GROUP = "";
+const RAMPAGE_WHATSAPP_GROUPS = Object.freeze({
+  "FREE FIRE": "https://chat.whatsapp.com/Hz3RixQNGQH2MVwWTNKtF6",
+  "MLBB": "https://chat.whatsapp.com/DK65RfeWnKHCy5UnDQKFU1",
+  "BGMI": "https://chat.whatsapp.com/JeG3Ip6dJ0oFaAuGkypmwU",
+});
+
+const getRampageWhatsAppGroup = (game = "") =>
+  RAMPAGE_WHATSAPP_GROUPS[String(game).trim().toUpperCase()] || "";
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 const SUPABASE_PUBLISHABLE_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
@@ -2236,17 +2243,34 @@ const Events = () => {
               <button
                 type="button"
                 onClick={() => {
-                  if (RAMPAGE_WHATSAPP_GROUP) {
-                    window.open(RAMPAGE_WHATSAPP_GROUP, "_blank", "noopener,noreferrer");
-                  } else {
+                  if (selectedEvent !== "RAMPAGE 2026") {
                     setFormError(
-                      "Add the official WhatsApp group invite link in RAMPAGE_WHATSAPP_GROUP."
+                      "Official WhatsApp group is available for RAMPAGE registrations only."
                     );
+                    return;
                   }
+
+                  const whatsappGroup = getRampageWhatsAppGroup(
+                    selectedTournament?.game
+                  );
+
+                  if (!whatsappGroup) {
+                    setFormError(
+                      `WhatsApp group is not configured for ${
+                        selectedTournament?.game || "this game"
+                      }.`
+                    );
+                    return;
+                  }
+
+                  // Direct redirect to the selected game's official WhatsApp group.
+                  window.location.assign(whatsappGroup);
                 }}
                 className="rounded-xl border border-white/20 bg-white/[0.055] px-4 py-3 text-[8px] font-bold uppercase tracking-[0.16em] text-white/75 transition hover:border-white/60 hover:bg-white/[0.10] hover:text-white"
               >
-                WHATSAPP GROUP
+                {selectedEvent === "RAMPAGE 2026"
+                  ? `${selectedTournament?.game || "GAME"} WHATSAPP GROUP`
+                  : "WHATSAPP GROUP"}
               </button>
               <button
                 type="button"
