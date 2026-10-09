@@ -29,14 +29,14 @@ const upcomingEvents = [
   },
   {
     title: "SPORTOMANIA",
-    date: "PROBABLE START: 7 • OCTOBER • 2026",
-    time: "REGISTRATIONS CLOSE: 6 • OCTOBER • EOD",
-    mode: "REGISTRATIONS LIVE",
+    date: "7 • OCTOBER • 2026",
+    time: "REGISTRATIONS CLOSED",
+    mode: "REGISTRATION CLOSED",
     game: "ESPORTS",
     location: "NITS SILCHAR",
-    status: "REGISTRATIONS LIVE",
+    status: "REGISTRATIONS CLOSED",
     description:
-      "SPORTOMANIA — registrations are LIVE. FREE exclusively for Civil Engineering students; students from other branches can participate at ₹10 per person. Probable event start: 7 October 2026. Registrations close on 6 October 2026 at EOD.",
+      "SPORTOMANIA registrations are now CLOSED. Thank you to everyone who registered. Stay tuned for tournament updates.",
     image: sportomaniaPoster,
   },
 ];
@@ -885,6 +885,13 @@ const Events = () => {
     const game = selectedTournament?.game;
     const isSportomania = selectedEvent === "SPORTOMANIA";
     const isRampage = selectedEvent === "RAMPAGE 2026";
+
+    // Defensive guard: reject any Sportomania submission after closure.
+    if (isSportomania) {
+      setFormError("SPORTOMANIA REGISTRATIONS ARE CLOSED.");
+      return;
+    }
+
     const mainPlayerCount = game === "MLBB" ? 5 : 4;
     const currentSportomaniaFee = isSportomania
       ? getSportomaniaFee(rampageForm, mainPlayerCount)
@@ -1602,10 +1609,8 @@ const Events = () => {
                 }`}
               >
                 {tournamentDetails[selectedEvent].map((tournament, index) => {
-                  // Both SPORTOMANIA and RAMPAGE 2026 registrations are live.
-                  const isRegistrationOpen =
-                    selectedEvent === "SPORTOMANIA" ||
-                    selectedEvent === "RAMPAGE 2026";
+                  // SPORTOMANIA registration is closed; RAMPAGE remains open.
+                  const isRegistrationOpen = selectedEvent === "RAMPAGE 2026";
 
                   return (
                     <article
@@ -1637,7 +1642,7 @@ const Events = () => {
                         </h3>
                         <p className="mt-2 text-[9px] uppercase tracking-[0.14em] text-white/35">
                           {selectedEvent === "SPORTOMANIA"
-                            ? "REGISTRATION CLOSES: 6 OCTOBER 2026 • EOD"
+                            ? "REGISTRATIONS CLOSED"
                             : "REGISTRATIONS LIVE • RAMPAGE 2026"}
                         </p>
 
@@ -1660,7 +1665,11 @@ const Events = () => {
                               : "cursor-not-allowed border-white/10 bg-white/[0.02] text-white/30"
                           }`}
                         >
-                          {isRegistrationOpen ? "REGISTER NOW" : "REGISTRATION COMING SOON"}
+                          {isRegistrationOpen
+                            ? "REGISTER NOW"
+                            : selectedEvent === "SPORTOMANIA"
+                              ? "REGISTRATIONS CLOSED"
+                              : "REGISTRATION COMING SOON"}
                         </button>
                       </div>
                     </article>
