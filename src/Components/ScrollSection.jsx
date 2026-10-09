@@ -31,9 +31,9 @@ const events = [
     title: "SPORTOMANIA",
     date: "PROBABLE START: 7 SEPTEMBER 2026",
     location: "NIT SILCHAR",
-    status: "REGISTRATIONS LIVE",
+    status: "REGISTRATIONS CLOSED",
     description:
-      "SPORTOMANIA — REGISTRATIONS ARE LIVE. REGISTRATIONS CLOSE ON 6 SEPTEMBER 2026 AT EOD.",
+      "SPORTOMANIA — REGISTRATIONS ARE CLOSED. Thank you to everyone who registered. Stay tuned for tournament updates.",
     color: "blue",
   },
 ];
@@ -915,6 +915,12 @@ const ScrollSection = () => {
     const isSportomania = selectedEvent === "SPORTOMANIA";
     const isRampage = selectedEvent === "RAMPAGE 2026";
 
+    // Defensive guard: SPORTOMANIA registrations are closed.
+    if (isSportomania) {
+      setFormError("SPORTOMANIA REGISTRATIONS ARE CLOSED.");
+      return;
+    }
+
     const mainPlayerCount = game === "MLBB" ? 5 : 4;
     const currentSportomaniaFee = isSportomania
       ? getSportomaniaFee(form, mainPlayerCount)
@@ -1670,7 +1676,7 @@ const ScrollSection = () => {
                     }}
                     className="mt-4 inline-flex items-center gap-2 rounded-lg border border-white/25 bg-white/[0.06] px-4 py-2 text-[7px] font-bold uppercase tracking-[0.22em] text-white/70 backdrop-blur-md transition-all duration-300 hover:border-white hover:bg-white/[0.12] hover:text-white"
                   >
-                    REGISTER NOW
+                    {event.title === "SPORTOMANIA" ? "VIEW DETAILS" : "REGISTER NOW"}
                     <ArrowRight
                       size={11}
                       className="transition-transform duration-300 group-hover:translate-x-1"
@@ -1728,7 +1734,9 @@ const ScrollSection = () => {
               </h2>
               <p className="mt-2 text-xs uppercase tracking-[0.16em] text-white/40">
                 {tournamentDetails[selectedEvent]
-                  ? "Choose your battle and register now"
+                  ? selectedEvent === "SPORTOMANIA"
+                    ? "REGISTRATIONS CLOSED — VIEW TOURNAMENT DETAILS"
+                    : "Choose your battle and register now"
                   : "Additional event details will be announced soon"}
               </p>
             </div>
@@ -1742,8 +1750,7 @@ const ScrollSection = () => {
                 }`}
               >
                 {tournamentDetails[selectedEvent].map((tournament, index) => {
-                  const isRegistrationOpen =
-                    selectedEvent === "SPORTOMANIA" || selectedEvent === "RAMPAGE 2026";
+                  const isRegistrationOpen = selectedEvent === "RAMPAGE 2026";
 
                   return (
                     <article
@@ -1771,7 +1778,7 @@ const ScrollSection = () => {
                         </h3>
                         <p className="mt-2 text-[9px] uppercase tracking-[0.14em] text-white/35">
                           {selectedEvent === "SPORTOMANIA"
-                            ? "REGISTRATION CLOSES: 6 OCTOBER 2026 • EOD"
+                            ? "REGISTRATIONS CLOSED"
                             : "REGISTRATIONS LIVE • RAMPAGE 2026"}
                         </p>
 
@@ -1795,7 +1802,11 @@ const ScrollSection = () => {
                               : "cursor-not-allowed border-white/10 bg-white/[0.02] text-white/30"
                           }`}
                         >
-                          {isRegistrationOpen ? "REGISTER NOW" : "REGISTRATION COMING SOON"}
+                          {isRegistrationOpen
+                            ? "REGISTER NOW"
+                            : selectedEvent === "SPORTOMANIA"
+                              ? "REGISTRATIONS CLOSED"
+                              : "REGISTRATION COMING SOON"}
                         </button>
                       </div>
                     </article>
