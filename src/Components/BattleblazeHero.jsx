@@ -20,6 +20,8 @@ import island4Url from "../assets/island4.png";
 
 import island5Url from "../assets/island5.png";
 
+import island6Url from "../assets/island6.png";
+
 import logoUrl from "../assets/logoo2.png";
 
 import comingSoonUrl from "../assets/cs.png";
@@ -854,7 +856,53 @@ export default function BattleblazeHero({ onSelectEvent }) {
 
       },
 
+      {
+
+        asset: 5, // Large Island 6 - Sticking to Bottom-Right Corner & Out of Screen at Bottom
+
+        x: 0.31,
+
+        y: -0.28,
+
+        widthFrac: 0.74,
+
+        z: 30,
+
+        renderOrder: 8,
+
+        phase: Math.random() * Math.PI * 2,
+
+        drift: randomBetween(1.8, 2.8),
+
+        speed: randomBetween(0.34, 0.48),
+
+        isStatic: false,
+
+      },
+
     ];
+
+    // Soft ambient shadows add depth while staying subtle against the space background.
+    const createIslandShadowTexture = () => {
+      const canvas = document.createElement("canvas");
+      canvas.width = 256;
+      canvas.height = 96;
+      const ctx = canvas.getContext("2d");
+      if (!ctx) return null;
+      const gradient = ctx.createRadialGradient(128, 48, 4, 128, 48, 118);
+      gradient.addColorStop(0, "rgba(0, 0, 0, 0.42)");
+      gradient.addColorStop(0.38, "rgba(3, 7, 18, 0.24)");
+      gradient.addColorStop(0.72, "rgba(4, 8, 20, 0.08)");
+      gradient.addColorStop(1, "rgba(0, 0, 0, 0)");
+      ctx.fillStyle = gradient;
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      const shadowTexture = new THREE.CanvasTexture(canvas);
+      shadowTexture.colorSpace = THREE.SRGBColorSpace;
+      disposableTextures.push(shadowTexture);
+      return shadowTexture;
+    };
+
+    const islandShadowTexture = createIslandShadowTexture();
 
     const addIslandTexture = (texture, assetIndex) => {
 
@@ -916,37 +964,44 @@ export default function BattleblazeHero({ onSelectEvent }) {
 
           const islandY = config.y * visibleHeight;
 
+          // A soft ellipse beneath the island adds ambient depth, not a hard drop-shadow.
+          const shadow = new THREE.Mesh(
+            new THREE.PlaneGeometry(width * 0.82, Math.max(height * 0.19, 1.2)),
+            new THREE.MeshBasicMaterial({
+              map: islandShadowTexture,
+              transparent: true,
+              opacity: assetIndex === 2 ? 0.18 : 0.28,
+              depthWrite: false,
+              depthTest: true,
+              toneMapped: false,
+            })
+          );
+          shadow.position.set(islandX, islandY - height * 0.28, config.z - 0.35);
+          shadow.renderOrder = config.renderOrder ? config.renderOrder - 1 : 0;
+          scene.add(shadow);
+
           const material = new THREE.SpriteMaterial({
-
             map: displayTexture,
-
             transparent: true,
-
             opacity: 1.0,
-
             depthWrite: true,
-
             depthTest: true,
-
             alphaTest: 0.05,
-
             toneMapped: false,
-
           });
-
           const sprite = new THREE.Sprite(material);
-
           sprite.scale.set(width, height, 1);
-
           sprite.position.set(islandX, islandY, config.z);
-
           if (config.renderOrder) sprite.renderOrder = config.renderOrder;
-
           scene.add(sprite);
 
           floatingIslands.push({
 
             sprite,
+
+            shadow,
+
+            shadowOffsetY: height * 0.28,
 
             xFrac: config.x,
 
@@ -989,6 +1044,8 @@ export default function BattleblazeHero({ onSelectEvent }) {
     textureLoader.load(island4Url, (tex) => addIslandTexture(tex, 3), undefined, (e) => console.error("island4:", e));
 
     textureLoader.load(island5Url, (tex) => addIslandTexture(tex, 4), undefined, (e) => console.error("island5:", e));
+
+    textureLoader.load(island6Url, (tex) => addIslandTexture(tex, 5), undefined, (e) => console.error("island6:", e));
 
     // ─────────────── FLYING ASTRONAUT FIGHTERS ───────────────
 
@@ -1174,7 +1231,7 @@ export default function BattleblazeHero({ onSelectEvent }) {
 
       // Make items proportionately larger on mobile layout
 
-      const scaleMultiplier = aspect < 1 ? 1.6 : 1;
+      const scaleMultiplier = aspect < 1 ? 1.08 : 1;
 
       floatingIslands.forEach((island) => {
 
@@ -1189,6 +1246,13 @@ export default function BattleblazeHero({ onSelectEvent }) {
         island.baseY = island.yFrac * visibleHeight;
 
         island.sprite.scale.set(islandWidth, islandHeight, 1);
+        if (island.shadow) {
+          island.shadowOffsetY = islandHeight * 0.28;
+          island.shadow.geometry.dispose();
+          island.shadow.geometry = new THREE.PlaneGeometry(islandWidth * 0.82, Math.max(islandHeight * 0.19, 1.2));
+          island.shadow.position.x = island.baseX;
+          island.shadow.position.y = island.baseY - island.shadowOffsetY;
+        }
 
       });
 
@@ -1428,13 +1492,19 @@ export default function BattleblazeHero({ onSelectEvent }) {
 
         }
 
+        // A secondary slow sway makes the float feel organic rather than mechanical.
         const vFloat = Math.sin(time * island.speed + island.phase) * island.drift;
-
+        const secondaryFloat = Math.sin(time * island.speed * 0.47 + island.phase * 1.8) * island.drift * 0.16;
         const hDrift = Math.cos(time * (island.speed * 0.7) + island.phase) * (island.drift * 0.75);
-
-        island.sprite.position.y = island.baseY + vFloat;
-
-        island.sprite.position.x = island.baseX + hDrift;
+        const slowDrift = Math.sin(time * 0.23 + island.phase) * island.drift * 0.12;
+        island.sprite.position.y = island.baseY + vFloat + secondaryFloat;
+        island.sprite.position.x = island.baseX + hDrift + slowDrift;
+        if (island.shadow) {
+          island.shadow.position.x = island.sprite.position.x;
+          island.shadow.position.y = island.sprite.position.y - island.shadowOffsetY;
+          const lift = THREE.MathUtils.clamp((vFloat + island.drift) / Math.max(2 * island.drift, 0.01), 0, 1);
+          island.shadow.material.opacity = (island.assetIndex === 2 ? 0.18 : 0.28) * (0.78 + lift * 0.22);
+        }
 
       });
 
@@ -1470,12 +1540,14 @@ export default function BattleblazeHero({ onSelectEvent }) {
 
       });
 
-      floatingIslands.forEach(({ sprite }) => {
-
+      floatingIslands.forEach(({ sprite, shadow }) => {
         scene.remove(sprite);
-
         sprite.material.dispose();
-
+        if (shadow) {
+          scene.remove(shadow);
+          shadow.geometry.dispose();
+          shadow.material.dispose();
+        }
       });
 
       shootingStars.forEach(({ mesh, material }) => {
@@ -1821,6 +1893,7 @@ export default function BattleblazeHero({ onSelectEvent }) {
         </span>
 
         <style>{`
+          @import url('https://fonts.googleapis.com/css2?family=Oxanium:wght@400;500;600;700;800&family=Rajdhani:wght@400;500;600;700&display=swap');
 
           .bb-match {
 
@@ -2016,27 +2089,27 @@ export default function BattleblazeHero({ onSelectEvent }) {
 
                 rgba(0, 225, 255, .04) 24deg,
 
-                rgba(0, 225, 255, .58) 48deg,
+                rgba(0, 225, 255, .09) 48deg,
 
                 transparent 74deg,
 
-                rgba(255, 43, 143, .78) 112deg,
+                rgba(255, 43, 143, .11) 112deg,
 
                 transparent 145deg,
 
-                rgba(255, 187, 75, .48) 183deg,
+                rgba(145, 90, 255, .035) 183deg,
 
                 transparent 220deg,
 
-                rgba(255, 43, 143, .62) 272deg,
+                rgba(255, 43, 143, .09) 272deg,
 
                 transparent 316deg);
 
-            filter: blur(13px);
+            filter: blur(19px);
 
             mix-blend-mode: screen;
 
-            opacity: .64;
+            opacity: .13;
 
             transform-origin: 50% 65%;
 
@@ -2048,9 +2121,9 @@ export default function BattleblazeHero({ onSelectEvent }) {
 
             inset: 12% 0 -8%;
 
-            opacity: .46;
+            opacity: .08;
 
-            filter: blur(20px);
+            filter: blur(24px);
 
             animation-duration: 10s, 1.45s;
 
@@ -2068,9 +2141,9 @@ export default function BattleblazeHero({ onSelectEvent }) {
 
           @keyframes bb-logo-flame-flicker {
 
-            from { opacity: .34; }
+            from { opacity: .08; }
 
-            to { opacity: .82; }
+            to { opacity: .16; }
 
           }
 
@@ -2084,21 +2157,21 @@ export default function BattleblazeHero({ onSelectEvent }) {
 
             background: radial-gradient(ellipse at 48% 48%,
 
-              rgba(255, 45, 155, 0.18) 0%,
+              rgba(255, 45, 155, 0.035) 0%,
 
-              rgba(115, 75, 255, 0.15) 31%,
+              rgba(115, 75, 255, 0.03) 31%,
 
-              rgba(30, 155, 255, 0.12) 52%,
+              rgba(30, 155, 255, 0.025) 52%,
 
-              rgba(255, 190, 90, 0.075) 67%,
+              rgba(145, 90, 255, 0.008) 67%,
 
               transparent 78%);
 
-            filter: blur(30px);
+            filter: blur(20px);
 
             mix-blend-mode: screen;
 
-            opacity: 0.78;
+            opacity: 0.16;
 
             animation: bb-fire-pulse 4.2s ease-in-out infinite alternate;
 
@@ -2114,19 +2187,19 @@ export default function BattleblazeHero({ onSelectEvent }) {
 
             background: radial-gradient(ellipse at 50% 48%,
 
-              rgba(255, 70, 175, 0.12) 0%,
+              rgba(255, 70, 175, 0.025) 0%,
 
-              rgba(60, 145, 255, 0.12) 38%,
+              rgba(60, 145, 255, 0.025) 38%,
 
-              rgba(255, 195, 105, 0.07) 58%,
+              rgba(0, 225, 255, 0.008) 58%,
 
               transparent 74%);
 
-            filter: blur(24px);
+            filter: blur(20px);
 
             mix-blend-mode: screen;
 
-            opacity: 0.72;
+            opacity: 0.13;
 
             animation: bb-flare-flicker 3.6s ease-in-out infinite alternate;
 
@@ -2144,13 +2217,13 @@ export default function BattleblazeHero({ onSelectEvent }) {
 
               transparent 0deg,
 
-              rgba(255, 65, 165, 0.12) 55deg,
+              rgba(255, 65, 165, 0.025) 55deg,
 
-              rgba(55, 150, 255, 0.14) 135deg,
+              rgba(55, 150, 255, 0.025) 135deg,
 
-              rgba(255, 202, 120, 0.09) 205deg,
+              rgba(145, 90, 255, 0.008) 205deg,
 
-              rgba(145, 90, 255, 0.12) 285deg,
+              rgba(145, 90, 255, 0.025) 285deg,
 
               transparent 360deg);
 
@@ -2158,7 +2231,7 @@ export default function BattleblazeHero({ onSelectEvent }) {
 
             mix-blend-mode: screen;
 
-            opacity: 0.72;
+            opacity: 0.12;
 
             animation: bb-fire-spin 18s linear infinite;
 
@@ -2188,7 +2261,7 @@ export default function BattleblazeHero({ onSelectEvent }) {
 
             background: #ff8bc9;
 
-            box-shadow: 0 0 6px rgba(255, 105, 190, 0.8), 0 0 12px rgba(65, 155, 255, 0.65);
+            box-shadow: 0 0 3px rgba(255, 105, 190, 0.35), 0 0 6px rgba(65, 155, 255, 0.25);
 
             opacity: 0;
 
@@ -2228,7 +2301,7 @@ export default function BattleblazeHero({ onSelectEvent }) {
 
             0% { transform: scale(0.98) rotate(-0.5deg); opacity: 0.62; }
 
-            50% { transform: scale(1.02) rotate(0.5deg); opacity: 0.78; }
+            50% { transform: scale(1.02) rotate(0.5deg); opacity: 0.25; }
 
             100% { transform: scale(0.99) rotate(-0.2deg); opacity: 0.66; }
 
@@ -2276,19 +2349,19 @@ export default function BattleblazeHero({ onSelectEvent }) {
 
             display: block;
 
-            width: clamp(420px, 49vw, 760px);
+            width: clamp(450px, 54vw, 830px);
 
-            max-width: 92vw;
+            max-width: 94vw;
 
             height: auto;
 
             object-fit: contain;
 
-            filter: drop-shadow(0 0 14px rgba(255, 59, 69, 0.85))
+            filter: drop-shadow(0 0 14px rgba(255, 59, 69, 0.30))
 
-                    drop-shadow(0 0 35px rgba(255, 42, 133, 0.6))
+                    drop-shadow(0 0 35px rgba(255, 42, 133, 0.16))
 
-                    drop-shadow(0 0 65px rgba(255, 94, 0, 0.45));
+                    drop-shadow(0 0 28px rgba(145, 90, 255, 0.05));
 
             transition: filter 260ms ease;
 
@@ -2296,11 +2369,11 @@ export default function BattleblazeHero({ onSelectEvent }) {
 
           .bb-logo-link:hover .bb-event-logo {
 
-            filter: drop-shadow(0 0 20px rgba(255, 59, 69, 1))
+            filter: drop-shadow(0 0 20px rgba(255, 59, 69, 0.42))
 
-                    drop-shadow(0 0 50px rgba(255, 42, 133, 0.85))
+                    drop-shadow(0 0 50px rgba(255, 42, 133, 0.24))
 
-                    drop-shadow(0 0 85px rgba(255, 214, 10, 0.65));
+                    drop-shadow(0 0 34px rgba(145, 90, 255, 0.12));
 
           }
 
@@ -2486,13 +2559,19 @@ export default function BattleblazeHero({ onSelectEvent }) {
 
             position: absolute;
 
-            right: clamp(24px, 4.2vw, 68px);
+            left: 48%;
 
-            bottom: clamp(88px, 12.5vh, 118px);
+            top: 69.5%;
+
+            right: auto;
+
+            bottom: auto;
+
+            transform: translateX(-50%);
 
             z-index: 7;
 
-            width: clamp(190px, 19vw, 285px);
+            width: clamp(240px, 22vw, 330px);
 
             display: grid;
 
@@ -2502,7 +2581,7 @@ export default function BattleblazeHero({ onSelectEvent }) {
 
             pointer-events: none;
 
-            animation: bb-coming-float 4.8s ease-in-out infinite;
+            animation: bb-coming-float 5.8s ease-in-out infinite;
 
           }
 
@@ -2512,13 +2591,13 @@ export default function BattleblazeHero({ onSelectEvent }) {
 
             background:
 
-              radial-gradient(ellipse at 50% 70%, rgba(255, 38, 143, .34) 0%, rgba(255, 38, 143, .12) 34%, transparent 66%),
+              radial-gradient(ellipse at 50% 70%, rgba(255, 38, 143, .16) 0%, rgba(255, 38, 143, .06) 34%, transparent 66%),
 
-              radial-gradient(ellipse at 28% 55%, rgba(0, 224, 255, .28) 0%, transparent 55%),
+              radial-gradient(ellipse at 28% 55%, rgba(0, 224, 255, .12) 0%, transparent 55%),
 
-              radial-gradient(ellipse at 75% 48%, rgba(255, 184, 74, .20) 0%, transparent 48%);
+              radial-gradient(ellipse at 75% 48%, rgba(255, 184, 74, .08) 0%, transparent 48%);
 
-            filter: blur(17px); opacity: .9;
+            filter: blur(14px); opacity: .52;
 
             scale: var(--bb-heading-zoom, 1); transform-origin: center center; will-change: scale;
 
@@ -2536,15 +2615,15 @@ export default function BattleblazeHero({ onSelectEvent }) {
 
               transparent 0deg, rgba(0, 225, 255, .08) 34deg,
 
-              rgba(0, 225, 255, .7) 58deg, transparent 82deg,
+              rgba(0, 225, 255, .22) 58deg, transparent 82deg,
 
-              rgba(255, 43, 143, .78) 126deg, transparent 151deg,
+              rgba(255, 43, 143, .20) 126deg, transparent 151deg,
 
-              rgba(255, 187, 75, .48) 193deg, transparent 220deg,
+              rgba(255, 187, 75, .08) 193deg, transparent 220deg,
 
-              rgba(255, 43, 143, .55) 274deg, transparent 310deg);
+              rgba(255, 43, 143, .18) 274deg, transparent 310deg);
 
-            filter: blur(9px); mix-blend-mode: screen; transform-origin: 50% 65%;
+            filter: blur(12px); mix-blend-mode: screen; opacity: .45; transform-origin: 50% 65%;
 
             animation: bb-coming-flame-spin 5.8s linear infinite;
 
@@ -2552,7 +2631,7 @@ export default function BattleblazeHero({ onSelectEvent }) {
 
           .bb-coming-soon-aura::after {
 
-            inset: 18% 4% -8%; opacity: .7; filter: blur(14px);
+            inset: 18% 4% -8%; opacity: .32; filter: blur(16px);
 
             animation: bb-coming-flame-spin 4.1s linear infinite reverse, bb-coming-flame-flicker 1.8s ease-in-out infinite alternate;
 
@@ -2566,21 +2645,21 @@ export default function BattleblazeHero({ onSelectEvent }) {
 
             object-fit: contain;
 
-            filter: drop-shadow(0 0 9px rgba(255, 42, 133, .62))
+            filter: drop-shadow(0 0 5px rgba(255, 42, 133, .28))
 
-                    drop-shadow(0 0 19px rgba(0, 220, 255, .4))
+                    drop-shadow(0 0 10px rgba(0, 220, 255, .18))
 
-                    drop-shadow(0 0 28px rgba(255, 174, 65, .18));
+                    drop-shadow(0 0 14px rgba(255, 174, 65, .08));
 
-            opacity: .99; user-select: none;
+            opacity: .94; user-select: none;
 
           }
 
           @keyframes bb-coming-float {
 
-            0%, 100% { transform: translateY(0) scale(1); }
+            0%, 100% { transform: translateX(-50%) translateY(0) scale(1); }
 
-            50% { transform: translateY(-7px) scale(1.015); }
+            50% { transform: translateX(-50%) translateY(-4px) scale(1.008); }
 
           }
 
@@ -2613,227 +2692,1124 @@ export default function BattleblazeHero({ onSelectEvent }) {
           }
 
           /* ─────────────── RESPONSIVE BREAKPOINTS ─────────────── */
+
           @media (hover: none), (pointer: coarse) {
+
             .bb-match { cursor: auto; }
+
             .bb-match-cursor, .bb-match-ring { display: none; }
+
             .bb-hotspot { cursor: pointer; }
+
           }
 
           /* Tablets and smaller laptops */
+
           @media (max-width: 900px) {
+
             .bb-match { min-height: 560px; }
+
             .bb-hero-logo-box { top: 43%; max-width: 96vw; }
+
             .bb-event-logo {
+
               width: clamp(320px, 62vw, 520px);
+
               max-width: 90vw;
+
             }
+
             .bb-coming-soon-wrap {
-              width: clamp(170px, 22vw, 230px);
-              right: 20px;
-              bottom: 85px;
+
+              left: 50%;
+
+              top: 70%;
+
+              right: auto;
+
+              bottom: auto;
+
+              width: clamp(190px, 27vw, 255px);
+
+              max-width: 42vw;
+
+              transform: translateX(-50%);
+
             }
+
           }
 
           /* Mobile portrait: larger logo and a visible Coming Soon artwork */
+
           @media (max-width: 700px) {
+
             .bb-match {
+
               width: 100%;
+
               height: 100vh;
+
               height: 100svh;
+
               min-height: 560px;
+
               overflow: hidden;
+
             }
+
             .bb-match-art {
+
               object-position: center center;
+
               transform: translate3d(var(--bb-parallax-x, 0px), var(--bb-parallax-y, 0px), 0)
+
                 scale(calc(1.08 * var(--bb-scroll-scale, 1)));
+
             }
+
             .bb-hero-logo-box {
-              top: 39%;
+
+              top: 42%;
+
               left: 50%;
+
               width: 100%;
+
               max-width: 100vw;
+
               justify-content: center;
+
             }
+
             .bb-logo-link { max-width: 94vw; }
+
             .bb-event-logo {
+
               display: block;
+
               width: 88vw;
-              max-width: 480px;
-              max-height: 25svh;
+
+              max-width: 410px;
+
+              max-height: 29svh;
+
               height: auto;
+
               object-fit: contain;
+
             }
+
             .bb-fire-backdrop { inset: -24px -15px; }
+
             .bb-fire-glow-base { width: 100%; height: 90%; filter: blur(22px); }
+
             .bb-fire-glow-flare { width: 90%; height: 80%; filter: blur(18px); }
+
             .bb-fire-glow-ring { width: 92%; height: 86%; filter: blur(18px); }
+
             .bb-coming-soon-wrap {
-              top: max(14px, env(safe-area-inset-top));
-              right: 4%;
+
+              left: 50%;
+
+              top: 65%;
+
+              right: auto;
+
               bottom: auto;
-              width: clamp(125px, 34vw, 190px);
-              max-width: 42vw;
+
+              width: clamp(165px, 42vw, 215px);
+
+              max-width: 48vw;
+
+              transform: translateX(-50%);
+
               z-index: 7;
+
             }
+
             .bb-coming-soon-art {
+
               width: 100%;
-              max-height: 19svh;
+
+              max-height: 13svh;
+
               object-fit: contain;
+
             }
-            .bb-coming-soon-aura { inset: -12% -18%; filter: blur(12px); }
+
+            .bb-coming-soon-aura { inset: -8% -12%; filter: blur(8px); opacity: 0.45; }
+
             .bb-hotspot-event {
-              top: 70%;
+
+              top: 65%;
+
               width: 21%;
+
               height: 15%;
+
               min-height: 54px;
+
               border-radius: 8px;
+
             }
+
             .bb-hotspot-sound {
+
               right: max(14px, env(safe-area-inset-right));
+
               bottom: max(14px, env(safe-area-inset-bottom));
+
               width: 46px;
+
               height: 46px;
+
             }
+
             .bb-match-sound-state {
+
               right: 70px;
+
               bottom: max(29px, calc(env(safe-area-inset-bottom) + 15px));
+
               font-size: 8px;
+
               letter-spacing: 1.4px;
+
             }
+
             .bb-match-cursor, .bb-match-ring { display: none; }
+
             .bb-next-section {
+
               min-height: 100vh;
+
               min-height: 100svh;
+
               padding: 10vh 5vw;
+
             }
+
             .bb-next-title { font-size: clamp(3.5rem, 14vw, 7rem); }
+
           }
 
           /* Narrow phones */
+
           @media (max-width: 420px) {
+
             .bb-match { min-height: 540px; }
-            .bb-hero-logo-box { top: 40%; }
-            .bb-logo-link { max-width: 96vw; }
+
+            .bb-hero-logo-box { top: 42%; }
+
+            .bb-logo-link { max-width: 92vw; }
+
             .bb-event-logo {
-              width: 91vw;
-              max-width: 390px;
-              max-height: 24svh;
+
+              width: 86vw;
+
+              max-width: 370px;
+
+              max-height: 28svh;
+
             }
+
             .bb-coming-soon-wrap {
-              top: max(12px, env(safe-area-inset-top));
-              right: 3%;
-              width: 32vw;
-              max-width: 145px;
+
+              left: 50%;
+
+              top: 65%;
+
+              right: auto;
+
+              bottom: auto;
+
+              width: clamp(165px, 42vw, 215px);
+
+              max-width: 48vw;
+
+              transform: translateX(-50%);
+
             }
+
             .bb-hotspot-event {
+
               top: 69%;
+
               width: 21.5%;
+
               height: 14%;
+
               min-height: 50px;
+
             }
+
             .bb-hotspot-sound { width: 42px; height: 42px; }
+
             .bb-match-sound-state { right: 62px; font-size: 7px; letter-spacing: 1px; }
+
           }
 
           @media (max-width: 360px) {
-            .bb-event-logo { width: 93vw; }
-            .bb-coming-soon-wrap { width: 30vw; max-width: 120px; }
+
+            .bb-event-logo { width: 78vw; }
+
+            .bb-coming-soon-wrap { width: 47vw; max-width: 175px; top: 65%; left: 50%; right: auto; bottom: auto; transform: translateX(-50%); }
+
             .bb-hotspot-event { width: 22%; }
+
           }
 
           /* Landscape phones */
+
           @media (max-width: 900px) and (orientation: landscape) {
+
             .bb-match {
+
               height: 100vh;
+
               height: 100svh;
+
               min-height: 400px;
+
             }
+
             .bb-hero-logo-box { top: 43%; }
+
             .bb-event-logo { width: min(56vw, 420px); max-height: 38svh; }
+
             .bb-coming-soon-wrap {
-              top: 4%;
-              right: 3%;
+
+              left: 50%;
+
+              top: 66%;
+
+              right: auto;
+
               bottom: auto;
-              width: clamp(100px, 18vw, 155px);
+
+              width: clamp(150px, 19vw, 210px);
+
+              transform: translateX(-50%);
+
             }
+
             .bb-hotspot-event { top: 69%; height: 20%; }
+
           }
 
           @media (prefers-reduced-motion: reduce) {
+
             .bb-hotspot-event, .bb-match-art { transition: none; }
+
             .bb-hero-logo-box, .bb-coming-soon-wrap { animation: none; }
+
             .bb-coming-soon-aura, .bb-coming-soon-aura::before,
+
             .bb-coming-soon-aura::after, .bb-fire-glow-base,
+
             .bb-fire-glow-flare, .bb-fire-glow-ring { animation: none; }
+
           }
 
-          /* ─────────────── NEXT SECTION ─────────────── */
-
-          .bb-page { width: 100%; background: #000; color: #fff; }
+          /* ─────────────── OVERVIEW SCROLL SECTION ─────────────── */
+          .bb-page { width: 100%; background: #050311; color: #fff; }
 
           .bb-next-section {
-
-            position: relative; min-height: 100vh; width: 100%;
-
-            display: flex; align-items: center; justify-content: center;
-
-            overflow: hidden; isolation: isolate; background: #030305;
-
-            color: #fff; padding: 12vh 6vw;
-
+            position: relative;
+            min-height: 100vh;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            isolation: isolate;
+            padding: clamp(64px, 8vw, 120px) clamp(22px, 7vw, 110px);
+            background: #050311;
+            color: #fff;
           }
 
           .bb-next-section::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            z-index: -2;
+            background:
+              radial-gradient(ellipse at 12% 35%, rgba(255, 35, 145, .25), transparent 42%),
+              radial-gradient(ellipse at 88% 62%, rgba(0, 190, 255, .22), transparent 43%),
+              linear-gradient(125deg, #10051e 0%, #080a25 48%, #10051b 100%);
+          }
 
-            content: ""; position: absolute; inset: 0; pointer-events: none;
-
-            background: radial-gradient(ellipse at 50% 48%, rgba(255, 25, 112, .12), transparent 52%),
-
-                        linear-gradient(180deg, #000 0%, #08020b 100%);
-
+          .bb-next-section::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
             z-index: -1;
+            opacity: .42;
+            background:
+              radial-gradient(1px 1px at 12% 18%, rgba(255,255,255,.8) 50%, transparent 70%),
+              radial-gradient(1.5px 1.5px at 78% 23%, rgba(0,234,255,.8) 50%, transparent 70%),
+              radial-gradient(1px 1px at 64% 76%, rgba(255,255,255,.7) 50%, transparent 70%),
+              radial-gradient(2px 2px at 25% 82%, rgba(255,42,145,.8) 50%, transparent 70%),
+              linear-gradient(115deg, transparent 0 32%, rgba(255,255,255,.035) 32.1%, transparent 32.5% 68%, rgba(0,225,255,.04) 68.1%, transparent 68.5%),
+              radial-gradient(1px 1px at 42% 12%, rgba(255,255,255,.8) 50%, transparent 75%),
+              radial-gradient(1px 1px at 91% 54%, rgba(255,115,198,.8) 50%, transparent 75%),
+              radial-gradient(1.5px 1.5px at 36% 61%, rgba(130,239,255,.75) 50%, transparent 75%),
+              radial-gradient(circle at 50% 50%, transparent 0 45%, rgba(0,0,0,.38) 100%);
+            animation: bb-overview-space-drift 14s ease-in-out infinite alternate;
+          }
+          @keyframes bb-overview-space-drift {
+            from { opacity: .28; transform: translate3d(0, 0, 0); }
+            to { opacity: .62; transform: translate3d(0, -8px, 0); }
+          }
+
+          .bb-next-layout {
+            width: min(1380px, 100%);
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: minmax(0, .92fr) minmax(320px, .78fr);
+            align-items: center;
+            gap: clamp(38px, 7vw, 110px);
+            position: relative;
+            z-index: 1;
+          }
+
+          .bb-overview-copy { max-width: 650px; text-align: left; }
+
+          .bb-overview-kicker {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            margin: 0 0 20px;
+            color: #8deeff;
+            font: 700 11px/1.4 ui-monospace, SFMono-Regular, Menlo, monospace;
+            letter-spacing: .28em;
+            text-transform: uppercase;
+          }
+
+          .bb-overview-kicker::before {
+            content: "";
+            width: 30px;
+            height: 2px;
+            background: linear-gradient(90deg, #ff2a91, #00eaff);
+            box-shadow: 0 0 12px rgba(0,234,255,.55);
+          }
+
+          .bb-overview-title {
+            margin: 0;
+            font-family: Impact, "Arial Black", "Franklin Gothic Heavy", sans-serif;
+            font-size: clamp(3.8rem, 7.2vw, 7.4rem);
+            line-height: .88;
+            letter-spacing: -.035em;
+            text-transform: uppercase;
+            background: linear-gradient(100deg, #fff 8%, #ffd8ed 42%, #ff3b9d 70%, #8beeff 112%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            filter: drop-shadow(0 10px 35px rgba(255, 42, 145, .14));
+          }
+
+          .bb-overview-rule {
+            width: min(340px, 70%);
+            height: 2px;
+            margin: 28px 0;
+            background: linear-gradient(90deg, #ff2a91, #8a5cff 52%, #00eaff, transparent);
+            box-shadow: 0 0 18px rgba(0,234,255,.18);
+          }
+
+          .bb-overview-card {
+            position: relative;
+            max-width: 590px;
+            padding: clamp(22px, 3vw, 34px);
+            border: 1px solid rgba(159, 150, 255, .27);
+            border-radius: 18px;
+            background: linear-gradient(135deg, rgba(255, 35, 145, .12), rgba(13, 19, 53, .82) 48%, rgba(0, 210, 255, .09));
+            box-shadow: 0 24px 70px rgba(0,0,0,.25), inset 0 1px 0 rgba(255,255,255,.08);
+            backdrop-filter: blur(12px);
+            overflow: hidden;
+          }
+
+          .bb-overview-card::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 24px;
+            width: 86px;
+            height: 2px;
+            background: linear-gradient(90deg, #ff2a91, #00eaff);
+            box-shadow: 0 0 18px rgba(255,42,145,.6);
+          }
+
+          .bb-overview-card-label {
+            margin: 0 0 12px;
+            color: #ff8bc7;
+            font: 800 12px/1.4 ui-monospace, SFMono-Regular, Menlo, monospace;
+            letter-spacing: .2em;
+            text-transform: uppercase;
+          }
+
+          .bb-overview-description {
+            margin: 0;
+            color: rgba(244, 245, 255, .83);
+            font: 400 clamp(15px, 1.15vw, 18px)/1.85 Inter, "Segoe UI", sans-serif;
+          }
+
+          .bb-overview-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 9px;
+            margin-top: 24px;
+          }
+
+          .bb-overview-tag {
+            padding: 8px 11px;
+            border: 1px solid rgba(137, 222, 255, .22);
+            border-radius: 999px;
+            color: #dffaff;
+            background: rgba(0, 205, 255, .06);
+            font: 700 10px/1.2 ui-monospace, SFMono-Regular, Menlo, monospace;
+            letter-spacing: .09em;
+            text-transform: uppercase;
+          }
+
+          .bb-module-frame {
+            position: relative;
+            width: min(100%, 470px);
+            aspect-ratio: 4 / 5;
+            justify-self: center;
+            padding: 11px;
+            border-radius: 24px;
+            background: linear-gradient(145deg, rgba(255, 42, 145, .96), rgba(138, 92, 255, .8) 48%, rgba(0, 234, 255, .95));
+            box-shadow: 0 0 0 1px rgba(255,255,255,.12), 0 28px 90px rgba(0,0,0,.48), 0 0 48px rgba(255,42,145,.17), 0 0 50px rgba(0,234,255,.12);
+          }
+
+          .bb-module-frame::before {
+            content: "";
+            position: absolute;
+            inset: -12px;
+            border: 1px solid rgba(126, 215, 255, .22);
+            border-radius: 31px;
+            pointer-events: none;
+          }
+
+          .bb-module-frame-inner {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            height: 100%;
+            min-height: 0;
+            overflow: hidden;
+            border-radius: 16px;
+            background: linear-gradient(160deg, #10091e, #090d27 56%, #150820);
+            border: 1px solid rgba(255,255,255,.22);
+          }
+
+          .bb-module-brand {
+            position: relative;
+            z-index: 2;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 94px;
+            padding: 16px 20px 12px;
+            background: linear-gradient(100deg, rgba(255, 35, 145, .14), rgba(12, 13, 39, .92) 48%, rgba(0, 220, 255, .12));
+            border-bottom: 1px solid rgba(150, 199, 255, .2);
+          }
+
+          .bb-module-logo {
+            display: block;
+            width: min(72%, 230px);
+            max-height: 74px;
+            object-fit: contain;
+            filter: drop-shadow(0 0 16px rgba(255, 42, 145, .2));
+          }
+
+          .bb-module-image-slot {
+            position: relative;
+            flex: 1;
+            min-height: 0;
+            display: grid;
+            place-items: center;
+            padding: 22px;
+            background:
+              radial-gradient(ellipse at 50% 40%, rgba(255, 42, 145, .12), transparent 55%),
+              radial-gradient(ellipse at 70% 75%, rgba(0, 220, 255, .11), transparent 52%),
+              linear-gradient(145deg, rgba(255,255,255,.025), transparent 55%);
+          }
+
+          .bb-module-image-slot::before {
+            content: "";
+            position: absolute;
+            inset: 18px;
+            border: 1px dashed rgba(170, 201, 255, .24);
+            border-radius: 12px;
+            pointer-events: none;
+          }
+
+          .bb-module-placeholder {
+            position: relative;
+            z-index: 1;
+            display: grid;
+            justify-items: center;
+            gap: 12px;
+            padding: 22px;
+            color: rgba(223, 232, 255, .72);
+            text-align: center;
+          }
+
+          .bb-module-placeholder-mark {
+            display: grid;
+            place-items: center;
+            width: 56px;
+            height: 56px;
+            border-radius: 16px;
+            border: 1px solid rgba(0,234,255,.32);
+            color: #a7f5ff;
+            background: linear-gradient(135deg, rgba(255,42,145,.15), rgba(0,234,255,.1));
+            box-shadow: 0 0 28px rgba(0,234,255,.1);
+            font-size: 26px;
+          }
+
+          .bb-module-placeholder strong {
+            color: #fff;
+            font: 800 13px/1.4 ui-monospace, SFMono-Regular, Menlo, monospace;
+            letter-spacing: .16em;
+            text-transform: uppercase;
+          }
+
+          .bb-module-placeholder span {
+            max-width: 230px;
+            color: rgba(224,231,255,.55);
+            font: 500 12px/1.7 Inter, "Segoe UI", sans-serif;
+          }
+
+          @media (max-width: 850px) {
+            .bb-next-section { padding: 80px 6vw; }
+            .bb-next-layout {
+              grid-template-columns: 1fr;
+              gap: 48px;
+              max-width: 650px;
+            }
+            .bb-overview-copy { max-width: 100%; }
+            .bb-overview-title { font-size: clamp(3.5rem, 12vw, 6rem); }
+            .bb-module-frame { width: min(82%, 430px); }
+          }
+
+          @media (max-width: 480px) {
+            .bb-next-section { padding: 68px 22px; }
+            .bb-next-layout { gap: 38px; }
+            .bb-overview-title { font-size: clamp(3.2rem, 15vw, 4.6rem); }
+            .bb-overview-card { padding: 22px 20px; border-radius: 15px; }
+            .bb-module-frame { width: min(100%, 370px); padding: 8px; border-radius: 19px; }
+            .bb-module-frame-inner { border-radius: 12px; }
+            .bb-module-brand { min-height: 78px; }
+            .bb-module-logo { max-height: 60px; }
+            .bb-module-image-slot { padding: 14px; }
+            .bb-module-image-slot::before { inset: 12px; }
 
           }
 
-          .bb-next-content { text-align: center; position: relative; z-index: 1; }
-
-          .bb-next-kicker { font: 600 11px/1.5 monospace; letter-spacing: .45em; color: #ff3b91; margin-bottom: 24px; }
-
-          .bb-next-title {
-
-            margin: 0; font-family: Impact, "Arial Black", sans-serif;
-
-            font-size: clamp(3.5rem, 13vw, 11rem); line-height: .88; letter-spacing: -.045em;
-
-            background: linear-gradient(180deg, #fff 0%, #ffd5e7 38%, #ff2a85 75%, #7a124f 100%);
-
-            -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
-
-            filter: drop-shadow(0 0 34px rgba(255, 42, 133, .15));
-
+          /* ─────────────── MODULES SCROLL PAGE ─────────────── */
+          .bb-modules-section {
+            position: relative;
+            isolation: isolate;
+            overflow: hidden;
+            width: 100%;
+            min-height: 100vh;
+            padding: clamp(70px, 8vw, 118px) clamp(20px, 5vw, 76px);
+            color: #fff;
+            background:
+              radial-gradient(ellipse at 8% 18%, rgba(255, 36, 151, .25), transparent 38%),
+              radial-gradient(ellipse at 92% 35%, rgba(0, 205, 255, .23), transparent 40%),
+              radial-gradient(ellipse at 50% 100%, rgba(105, 57, 255, .19), transparent 48%),
+              linear-gradient(135deg, #090515 0%, #100821 42%, #061225 100%);
+          }
+          .bb-modules-section::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            z-index: -1;
+            pointer-events: none;
+            opacity: .7;
+            background-image:
+              radial-gradient(1px 1px at 7% 15%, #fff 55%, transparent 75%),
+              radial-gradient(1.5px 1.5px at 18% 73%, #8deeff 55%, transparent 75%),
+              radial-gradient(1px 1px at 34% 31%, #fff 55%, transparent 75%),
+              radial-gradient(2px 2px at 55% 14%, #ff8bc7 55%, transparent 75%),
+              radial-gradient(1px 1px at 71% 65%, #fff 55%, transparent 75%),
+              radial-gradient(1.5px 1.5px at 88% 27%, #8deeff 55%, transparent 75%),
+              radial-gradient(1px 1px at 94% 83%, #fff 55%, transparent 75%);
+            background-size: 100% 100%;
+            animation: bb-space-twinkle 5s ease-in-out infinite alternate;
+          }
+          .bb-modules-section::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            z-index: -1;
+            pointer-events: none;
+            background: linear-gradient(180deg, rgba(6,4,18,.06), rgba(4,5,20,.3));
+          }
+          @keyframes bb-space-twinkle {
+            from { opacity: .35; transform: translateY(0); }
+            to { opacity: .8; transform: translateY(-5px); }
+          }
+          .bb-modules-inner {
+            position: relative;
+            z-index: 1;
+            width: min(1500px, 100%);
+            margin: 0 auto;
+          }
+          .bb-modules-heading {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            margin: 0 auto clamp(38px, 5vw, 68px);
+          }
+          .bb-modules-logo-shell {
+            display: grid;
+            place-items: center;
+            width: clamp(100px, 13vw, 158px);
+            aspect-ratio: 1;
+            margin-bottom: 14px;
+            border: 1px solid rgba(255,255,255,.13);
+            border-radius: 28px;
+            background: linear-gradient(145deg, rgba(255,42,145,.12), rgba(8,12,37,.62), rgba(0,234,255,.12));
+            box-shadow: 0 0 40px rgba(255,42,145,.13), 0 0 55px rgba(0,234,255,.1), inset 0 1px 0 rgba(255,255,255,.08);
+            backdrop-filter: blur(10px);
+          }
+          .bb-modules-logo {
+            display: block;
+            width: 82%;
+            max-height: 82%;
+            object-fit: contain;
+            filter: drop-shadow(0 0 16px rgba(255,42,145,.25));
+          }
+          .bb-modules-kicker {
+            margin: 0 0 12px;
+            color: #9cefff;
+            font: 800 11px/1.5 ui-monospace, SFMono-Regular, Menlo, monospace;
+            letter-spacing: .32em;
+            text-transform: uppercase;
+          }
+          .bb-modules-title {
+            margin: 0;
+            font-family: "Oxanium", "Arial Black", sans-serif;
+            font-weight: 800;
+            font-size: clamp(3.4rem, 7.8vw, 7rem);
+            line-height: .9;
+            letter-spacing: -.025em;
+            text-transform: uppercase;
+            background: linear-gradient(100deg, #fff 8%, #ffcce7 38%, #ff3b9d 63%, #82efff 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            filter: drop-shadow(0 8px 26px rgba(255,42,145,.16));
+          }
+          .bb-modules-subtitle {
+            max-width: 620px;
+            margin: 18px auto 0;
+            color: rgba(232,238,255,.72);
+            font: 500 clamp(14px, 1.25vw, 17px)/1.8 "Rajdhani", "Segoe UI", sans-serif;
+          }
+          .bb-modules-grid {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: clamp(18px, 2vw, 28px);
+          }
+          .bb-module-card {
+            min-width: 0;
+            padding: 10px;
+            border: 1px solid rgba(173,183,255,.19);
+            border-radius: 19px;
+            background: linear-gradient(145deg, rgba(255,255,255,.065), rgba(11,12,36,.64) 48%, rgba(0,210,255,.045));
+            box-shadow: 0 20px 55px rgba(0,0,0,.22), inset 0 1px 0 rgba(255,255,255,.07);
+            backdrop-filter: blur(12px);
+            transition: transform .28s ease, border-color .28s ease, box-shadow .28s ease;
+          }
+          .bb-module-card:hover {
+            transform: translateY(-7px);
+            border-color: rgba(126,231,255,.5);
+            box-shadow: 0 25px 65px rgba(0,0,0,.34), 0 0 28px rgba(0,210,255,.1);
+          }
+          .bb-module-poster {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            overflow: hidden;
+            aspect-ratio: 4 / 5;
+            padding: clamp(15px, 1.5vw, 22px);
+            border-radius: 12px;
+            border: 1px solid rgba(255,255,255,.14);
+            background:
+              radial-gradient(ellipse at 15% 10%, rgba(255,42,145,.3), transparent 48%),
+              radial-gradient(ellipse at 90% 85%, rgba(0,234,255,.25), transparent 48%),
+              linear-gradient(150deg, rgba(21,12,48,.98), rgba(5,13,32,.98));
+          }
+          .bb-module-poster::before {
+            content: "";
+            position: absolute;
+            inset: 10px;
+            border: 1px solid rgba(255,255,255,.13);
+            border-radius: 8px;
+            pointer-events: none;
+          }
+          .bb-module-poster::after {
+            content: "";
+            position: absolute;
+            width: 150%;
+            height: 45%;
+            left: -25%;
+            bottom: -16%;
+            border-radius: 50%;
+            background: linear-gradient(90deg, rgba(255,42,145,.23), rgba(105,83,255,.1), rgba(0,234,255,.22));
+            filter: blur(25px);
+            pointer-events: none;
+          }
+          .bb-poster-top, .bb-poster-bottom { position: relative; z-index: 1; }
+          .bb-poster-index {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            color: rgba(223,243,255,.72);
+            font: 800 10px/1.4 ui-monospace, SFMono-Regular, Menlo, monospace;
+            letter-spacing: .16em;
+          }
+          .bb-poster-index::before {
+            content: "";
+            width: 18px;
+            height: 2px;
+            background: linear-gradient(90deg, #ff2a91, #00eaff);
+          }
+          .bb-poster-icon {
+            display: grid;
+            place-items: center;
+            width: 58px;
+            height: 58px;
+            margin: 18px 0 16px;
+            border: 1px solid rgba(145,229,255,.35);
+            border-radius: 17px;
+            color: #dffaff;
+            font-size: 27px;
+            background: linear-gradient(135deg, rgba(255,42,145,.18), rgba(0,234,255,.12));
+            box-shadow: 0 0 25px rgba(0,234,255,.12);
+          }
+          .bb-poster-title {
+            margin: 0;
+            color: #fff;
+            font: 800 clamp(19px, 2vw, 27px)/.98 "Oxanium", "Arial Black", sans-serif;
+            letter-spacing: .015em;
+            text-transform: uppercase;
+            overflow-wrap: anywhere;
+            text-shadow: 0 3px 20px rgba(0,0,0,.4);
+          }
+          .bb-poster-code {
+            margin: 10px 0 0;
+            color: #9defff;
+            font: 800 9px/1.4 ui-monospace, SFMono-Regular, Menlo, monospace;
+            letter-spacing: .2em;
+            text-transform: uppercase;
+          }
+          .bb-module-card-copy { padding: 17px 5px 5px; }
+          .bb-module-description {
+            min-height: 66px;
+            margin: 0 0 16px;
+            color: rgba(232,238,255,.7);
+            font: 600 15px/1.6 "Rajdhani", "Segoe UI", sans-serif;
+          }
+          .bb-register-button {
+            font-family: "Oxanium", "Rajdhani", sans-serif;
+            font-weight: 700;
+            letter-spacing: .045em;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            width: 100%;
+            padding: 12px 13px;
+            border: 1px solid rgba(255,255,255,.19);
+            border-radius: 10px;
+            color: #fff;
+            text-decoration: none;
+            text-transform: uppercase;
+            font: 800 10px/1.2 ui-monospace, SFMono-Regular, Menlo, monospace;
+            letter-spacing: .12em;
+            background: linear-gradient(100deg, rgba(255,42,145,.24), rgba(104,70,255,.16), rgba(0,234,255,.2));
+            transition: border-color .2s ease, filter .2s ease, transform .2s ease;
+          }
+          .bb-register-button:hover {
+            border-color: rgba(140,239,255,.65);
+            filter: brightness(1.2);
+          }
+          .bb-register-button span:last-child { color: #9cefff; font-size: 16px; }
+          @media (max-width: 1100px) {
+            .bb-modules-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+          }
+          @media (max-width: 720px) {
+            .bb-modules-section { padding: 70px 20px; }
+            .bb-modules-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+            .bb-module-card { padding: 7px; border-radius: 15px; }
+            .bb-module-poster { padding: 14px; }
+            .bb-poster-icon { width: 45px; height: 45px; font-size: 22px; margin: 15px 0 12px; }
+            .bb-poster-title { font-size: clamp(17px, 4.7vw, 24px); }
+            .bb-module-card-copy { padding: 13px 4px 4px; }
+            .bb-module-description { min-height: 88px; font-size: 12px; }
+            .bb-register-button { padding: 11px 9px; font-size: 9px; letter-spacing: .07em; }
+          }
+          @media (max-width: 380px) {
+            .bb-modules-grid { grid-template-columns: 1fr; max-width: 330px; margin: 0 auto; }
+            .bb-module-description { min-height: 0; }
           }
 
-          .bb-next-line { width: min(260px, 45vw); height: 2px; margin: 32px auto 0;
-
-            background: linear-gradient(90deg, transparent, #ff2a85, #00eaff, transparent); }
+          /* ─────────────── TEAM SCROLL PAGE ─────────────── */
+          .bb-team-section {
+            position: relative;
+            isolation: isolate;
+            overflow: hidden;
+            width: 100%;
+            min-height: 100vh;
+            padding: clamp(76px, 8vw, 124px) clamp(20px, 5vw, 76px);
+            color: #fff;
+            background:
+              radial-gradient(ellipse at 10% 16%, rgba(255, 36, 151, .24), transparent 38%),
+              radial-gradient(ellipse at 90% 34%, rgba(0, 205, 255, .22), transparent 40%),
+              radial-gradient(ellipse at 50% 100%, rgba(105, 57, 255, .22), transparent 48%),
+              linear-gradient(135deg, #080411 0%, #100821 43%, #061225 100%);
+          }
+          .bb-team-section::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            z-index: -1;
+            pointer-events: none;
+            opacity: .68;
+            background-image:
+              radial-gradient(1px 1px at 6% 18%, #fff 55%, transparent 75%),
+              radial-gradient(1.5px 1.5px at 17% 72%, #8deeff 55%, transparent 75%),
+              radial-gradient(1px 1px at 29% 38%, #fff 55%, transparent 75%),
+              radial-gradient(2px 2px at 48% 13%, #ff8bc7 55%, transparent 75%),
+              radial-gradient(1px 1px at 66% 81%, #fff 55%, transparent 75%),
+              radial-gradient(1.5px 1.5px at 82% 28%, #8deeff 55%, transparent 75%),
+              radial-gradient(1px 1px at 94% 63%, #fff 55%, transparent 75%);
+            background-size: 100% 100%;
+            animation: bb-space-twinkle 6s ease-in-out infinite alternate-reverse;
+          }
+          .bb-team-section::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            z-index: -1;
+            pointer-events: none;
+            background: linear-gradient(180deg, rgba(6,4,18,.05), rgba(4,5,20,.32));
+          }
+          .bb-team-inner { position: relative; z-index: 1; width: min(1380px, 100%); margin: 0 auto; }
+          .bb-team-heading { text-align: center; margin: 0 auto clamp(36px, 5vw, 64px); }
+          .bb-team-kicker {
+            margin: 0 0 12px; color: #9cefff;
+            font: 800 11px/1.5 ui-monospace, SFMono-Regular, Menlo, monospace;
+            letter-spacing: .32em; text-transform: uppercase;
+          }
+          .bb-team-title {
+            margin: 0; font-family: "Oxanium", "Arial Black", sans-serif; font-weight: 800;
+            font-size: clamp(3.2rem, 7.6vw, 6.8rem); line-height: .95; letter-spacing: -.025em;
+            text-transform: uppercase;
+            background: linear-gradient(100deg, #fff 8%, #ffcce7 38%, #ff3b9d 63%, #82efff 100%);
+            -webkit-background-clip: text; background-clip: text; color: transparent;
+            filter: drop-shadow(0 0 26px rgba(255,59,157,.15));
+          }
+          .bb-team-subtitle { max-width: 620px; margin: 18px auto 0; color: rgba(233,241,255,.72); font: 500 clamp(15px, 1.4vw, 18px)/1.65 "Rajdhani", sans-serif; }
+          .bb-team-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: clamp(14px, 2vw, 26px); }
+          .bb-team-card {
+            min-width: 0; padding: 12px; border: 1px solid rgba(174,213,255,.2); border-radius: 20px;
+            background: linear-gradient(145deg, rgba(255,255,255,.075), rgba(8,10,31,.7));
+            box-shadow: 0 18px 55px rgba(0,0,0,.2), inset 0 1px 0 rgba(255,255,255,.07);
+            backdrop-filter: blur(12px); transition: transform .28s ease, border-color .28s ease, box-shadow .28s ease;
+          }
+          .bb-team-card:hover { transform: translateY(-7px); border-color: rgba(130,239,255,.62); box-shadow: 0 20px 60px rgba(0,0,0,.28), 0 0 28px rgba(0,205,255,.1); }
+          .bb-team-photo {
+            position: relative; display: grid; place-items: center; overflow: hidden; aspect-ratio: 4 / 5;
+            border-radius: 13px; border: 1px solid rgba(255,255,255,.13);
+            background:
+              radial-gradient(ellipse at 50% 35%, rgba(255,59,157,.25), transparent 38%),
+              radial-gradient(ellipse at 80% 80%, rgba(0,205,255,.18), transparent 45%),
+              linear-gradient(145deg, rgba(24,15,48,.95), rgba(5,13,32,.98));
+          }
+          .bb-team-photo::before, .bb-team-photo::after { content: ""; position: absolute; pointer-events: none; }
+          .bb-team-photo::before { inset: 12px; border: 1px solid rgba(130,239,255,.18); border-radius: 9px; }
+          .bb-team-photo::after { width: 76%; height: 1px; bottom: 17%; background: linear-gradient(90deg, transparent, rgba(130,239,255,.8), rgba(255,59,157,.8), transparent); box-shadow: 0 0 15px rgba(0,205,255,.45); }
+          .bb-team-avatar-mark { color: rgba(255,255,255,.9); font-size: clamp(44px, 6vw, 76px); line-height: 1; text-shadow: 0 0 25px rgba(130,239,255,.42); }
+          .bb-team-photo-hint { position: absolute; z-index: 1; bottom: 25px; left: 10px; right: 10px; text-align: center; color: rgba(224,241,255,.56); font: 700 9px/1.4 "Rajdhani", sans-serif; letter-spacing: .17em; text-transform: uppercase; }
+          .bb-team-card-meta { padding: 18px 7px 8px; }
+          .bb-team-role { margin: 0 0 7px; color: #91edff; font: 700 10px/1.4 "Rajdhani", sans-serif; letter-spacing: .19em; text-transform: uppercase; }
+          .bb-team-name { margin: 0; color: #fff; font: 800 clamp(17px, 1.8vw, 24px)/1.2 "Oxanium", sans-serif; text-transform: uppercase; }
+          .bb-team-name-hint { margin: 8px 0 0; color: rgba(226,236,255,.48); font: 600 12px/1.5 "Rajdhani", sans-serif; }
+          @media (max-width: 1000px) { .bb-team-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); max-width: 760px; margin: 0 auto; } }
+          @media (max-width: 520px) {
+            .bb-team-section { padding: 72px 17px; }
+            .bb-team-grid { gap: 12px; }
+            .bb-team-card { padding: 8px; border-radius: 15px; }
+            .bb-team-card-meta { padding: 13px 4px 6px; }
+            .bb-team-role { font-size: 9px; letter-spacing: .12em; }
+            .bb-team-name { font-size: clamp(15px, 4vw, 19px); }
+            .bb-team-photo-hint { font-size: 8px; bottom: 20px; }
+          }
+          @media (prefers-reduced-motion: reduce) {
+            .bb-team-card, .bb-team-section::before, .bb-next-section::after, .bb-modules-section::before { animation: none !important; transition: none !important; }
+          }
 
         `}</style>
 
       </main>
 
-      <section className="bb-next-section" aria-label="Battleblaze">
+      <section className="bb-next-section" aria-label="Event overview">
 
-        <div className="bb-next-content">
+        <div className="bb-next-layout">
 
-          <div className="bb-next-kicker">ENTER THE ARENA // 2026</div>
+          <div className="bb-overview-copy">
 
-          <h2 className="bb-next-title">BATTLEBLAZE</h2>
+            <div className="bb-overview-kicker">THE EXPERIENCE // 2026</div>
 
-          <div className="bb-next-line" />
+            <h2 className="bb-overview-title">OVERVIEW</h2>
+
+            <div className="bb-overview-rule" />
+
+            <div className="bb-overview-card">
+
+              <p className="bb-overview-card-label">Enter a new arena</p>
+
+              <p className="bb-overview-description">
+                Step into a high-energy world built for competition, creativity, and unforgettable moments.
+                Explore the event modules, discover what is happening, and get ready to be part of the action.
+                Your next challenge starts here.
+              </p>
+
+              <div className="bb-overview-tags" aria-label="Event highlights">
+
+                <span className="bb-overview-tag">Compete</span>
+
+                <span className="bb-overview-tag">Connect</span>
+
+                <span className="bb-overview-tag">Experience</span>
+
+              </div>
+
+            </div>
+
+          </div>
+
+          <div className="bb-module-frame" aria-label="Module image frame">
+
+            <div className="bb-module-frame-inner">
+
+              <div className="bb-module-brand">
+
+                <img className="bb-module-logo" src={logoUrl} alt="Battleblaze logo" draggable="false" />
+
+              </div>
+
+              <div className="bb-module-image-slot" aria-label="Module image placeholder">
+
+                <div className="bb-module-placeholder">
+
+                  <div className="bb-module-placeholder-mark" aria-hidden="true">✦</div>
+
+                  <strong>Module artwork</strong>
+
+                  <span>Your module image will be placed here later.</span>
+
+                </div>
+
+              </div>
+
+            </div>
+
+          </div>
 
         </div>
 
+      </section>
+
+      <section className="bb-modules-section" aria-label="Battleblaze modules">
+        <div className="bb-modules-inner">
+          <header className="bb-modules-heading">
+            <div className="bb-modules-logo-shell">
+              <img className="bb-modules-logo" src={logoUrl} alt="Battleblaze logo" draggable="false" />
+            </div>
+            <p className="bb-modules-kicker">Choose your arena // 2026</p>
+            <h2 className="bb-modules-title">MODULES</h2>
+            <p className="bb-modules-subtitle">
+              Seven ways to compete. Pick your game, bring your squad, and step into the Battleblaze arena.
+            </p>
+          </header>
+
+          <div className="bb-modules-grid">
+            {[
+              { name: "BGMI", code: "01 // BATTLE ROYALE", icon: "⌖", description: "Drop in with your squad, outplay the competition, and fight your way to the final zone." },
+              { name: "FREE FIRE", code: "02 // SURVIVAL", icon: "✦", description: "Fast rotations, sharp aim, and clutch decisions decide who takes the win." },
+              { name: "VALORANT", code: "03 // TACTICAL FPS", icon: "◈", description: "Coordinate your team, master your utility, and execute every round with precision." },
+              { name: "FIFA", code: "04 // FOOTBALL", icon: "⚽", description: "Build your attack, control the midfield, and prove your skills on the pitch." },
+              { name: "MOBILE LEGENDS", code: "05 // MOBA", icon: "⬡", description: "Choose your hero, work as a team, and push for the decisive victory." },
+              { name: "VR EXPERIENCE", code: "06 // IMMERSIVE", icon: "◎", description: "Step beyond the screen and explore an immersive world in virtual reality." },
+              { name: "PS5 RUSH", code: "07 // CONSOLE", icon: "△", description: "Grab the controller, challenge your rivals, and own the console arena." },
+            ].map((module, index) => (
+              <article className="bb-module-card" key={module.name}>
+                <div className="bb-module-poster">
+                  <div className="bb-poster-top">
+                    <span className="bb-poster-index">BATTLEBLAZE / {String(index + 1).padStart(2, "0")}</span>
+                    <div className="bb-poster-icon" aria-hidden="true">{module.icon}</div>
+                    <h3 className="bb-poster-title">{module.name}</h3>
+                    <p className="bb-poster-code">{module.code}</p>
+                  </div>
+                  <div className="bb-poster-bottom">
+                    <span className="bb-poster-index">NITS ESPORTS · 2026</span>
+                  </div>
+                </div>
+                <div className="bb-module-card-copy">
+                  <p className="bb-module-description">{module.description}</p>
+                  <a className="bb-register-button" href={`/register?module=${encodeURIComponent(module.name.toLowerCase().replaceAll(" ", "-"))}`}>
+                    <span>Register Now</span><span aria-hidden="true">↗</span>
+                  </a>
+                </div>
+              </article>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="bb-team-section" aria-label="Battleblaze team">
+        <div className="bb-team-inner">
+          <header className="bb-team-heading">
+            <p className="bb-team-kicker">The people behind the arena // 2026</p>
+            <h2 className="bb-team-title">MEET THE TEAM</h2>
+            <p className="bb-team-subtitle">
+              The crew bringing Battleblaze to life. Team photos and names can be added to each slot when ready.
+            </p>
+          </header>
+          <div className="bb-team-grid">
+            {[
+              { role: "Coordinator", label: "Coordinator 01", icon: "✦" },
+              { role: "Coordinator", label: "Coordinator 02", icon: "◈" },
+              { role: "Module Head", label: "Module Head", icon: "⌖" },
+              { role: "Module Co-Head", label: "Module Co-Head", icon: "⬡" },
+            ].map((member, index) => (
+              <article className="bb-team-card" key={member.label}>
+                <div className="bb-team-photo" aria-label={`${member.label} image placeholder`}>
+                  <span className="bb-team-avatar-mark" aria-hidden="true">{member.icon}</span>
+                  <span className="bb-team-photo-hint">Add team photo</span>
+                </div>
+                <div className="bb-team-card-meta">
+                  <p className="bb-team-role">{`TEAM MEMBER / 0${index + 1}`}</p>
+                  <h3 className="bb-team-name">{member.label}</h3>
+                  <p className="bb-team-name-hint">{member.role} · NITS Esports</p>
+                </div>
+              </article>
+            ))}
+          </div>
+        </div>
       </section>
 
     </div>
