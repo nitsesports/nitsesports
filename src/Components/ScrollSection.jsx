@@ -17,11 +17,11 @@ const events = [
     image: rampage2Poster,
     category: "ESPORTS",
     title: "RAMPAGE 2026",
-    date: "PROBABLE START: 10 OCTOBER 2026",
+    date: "PROBABLE START: 12 OCTOBER 2026",
     location: "NIT SILCHAR",
     status: "REGISTRATIONS LIVE",
     description:
-      "RAMPAGE 2026 — REGISTRATIONS ARE LIVE. BGMI, FREE FIRE & MLBB. REGISTRATIONS CLOSE ON 9 OCTOBER 2026 AT EOD.",
+      "RAMPAGE 2026 — REGISTRATIONS ARE LIVE. BGMI, FREE FIRE & MLBB. REGISTRATIONS CLOSE ON 11 OCTOBER 2026 AT EOD.",
     color: "magenta",
   },
   {

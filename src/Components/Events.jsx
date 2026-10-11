@@ -17,14 +17,14 @@ import event3 from "../assets/events/event3.png";
 const upcomingEvents = [
   {
     title: "RAMPAGE 2026",
-    date: "PROBABLE START: 10 • OCTOBER • 2026",
-    time: "REGISTRATIONS CLOSE: 9 • OCTOBER • EOD",
+    date: "PROBABLE START: 12 • OCTOBER • 2026",
+    time: "REGISTRATIONS CLOSE: 11 • OCTOBER • EOD",
     mode: "REGISTRATIONS LIVE",
     game: "ESPORTS",
     location: "NITS SILCHAR",
     status: "REGISTRATIONS LIVE",
     description:
-      "RAMPAGE 2026 — registrations are LIVE for BGMI, FREE FIRE and MLBB. Entry fee: ₹40 per team for BGMI/Free Fire and ₹50 per team for MLBB. Probable event start: 10 October 2026. Registrations close on 9 October 2026 at EOD.",
+      "RAMPAGE 2026 — registrations are LIVE for BGMI, FREE FIRE and MLBB. Entry fee: ₹40 per team for BGMI/Free Fire and ₹50 per team for MLBB. Probable event start: 12 October 2026. Registrations close on 11 October 2026 at EOD.",
     image: rampagePoster,
   },
   {
