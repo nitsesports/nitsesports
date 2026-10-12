@@ -623,6 +623,7 @@ const Events = () => {
   const [resultsError, setResultsError] = useState("");
   const [selectedResultDay, setSelectedResultDay] = useState(1);
   const [selectedResultMatch, setSelectedResultMatch] = useState(1);
+  const [selectedResultGroup, setSelectedResultGroup] = useState("A");
 
   useEffect(() => {
     if (!resultsGame) return;
@@ -644,7 +645,7 @@ const Events = () => {
 
       const { data, error } = await supabase
         .from("rampage_match_results")
-        .select("id, game, day_number, match_number, team_name, pp, fp, tp")
+        .select("id, game, day_number, match_number, group_name, team_name, pp, fp, tp")
         .eq("game", resultsGame)
         .order("day_number", { ascending: true })
         .order("match_number", { ascending: true })
@@ -1950,6 +1951,38 @@ const Events = () => {
               </>
             )}
 
+            {resultsGame === "FREE FIRE" && (
+              <>
+                <div className="mb-4 grid grid-cols-2 gap-3">
+                  {[1, 2].map((day) => {
+                    const active = selectedResultDay === day;
+                    return (
+                      <button key={day} type="button" onClick={() => { setSelectedResultDay(day); setSelectedResultMatch(1); }} aria-pressed={active}
+                        className={`rounded-xl border px-3 py-3 text-[9px] font-bold uppercase tracking-[0.14em] transition sm:px-5 sm:text-[10px] ${active ? "border-white/70 bg-white text-black" : "border-white/15 bg-white/[0.035] text-white/55 hover:border-white/40"}`}>
+                        {day === 1 ? "GROUP STAGE" : "GRAND FINALS"}
+                      </button>
+                    );
+                  })}
+                </div>
+                {selectedResultDay === 1 && (
+                  <div className="mb-4 grid grid-cols-3 gap-2 sm:gap-3">
+                    {["A", "B", "C"].map((group) => {
+                      const active = selectedResultGroup === group;
+                      return <button key={group} type="button" onClick={() => { setSelectedResultGroup(group); setSelectedResultMatch(1); }} aria-pressed={active}
+                        className={`rounded-xl border px-3 py-3 text-[9px] font-bold uppercase tracking-[0.16em] transition sm:text-[10px] ${active ? "border-white/70 bg-white text-black" : "border-white/15 bg-white/[0.035] text-white/55 hover:border-white/40"}`}>GROUP {group}</button>;
+                    })}
+                  </div>
+                )}
+                <div className="mb-6 grid grid-cols-3 gap-2 sm:gap-3">
+                  {[1, 2, 3].map((match) => {
+                    const active = selectedResultMatch === match;
+                    return <button key={match} type="button" onClick={() => setSelectedResultMatch(match)} aria-pressed={active}
+                      className={`rounded-xl border px-3 py-3 text-[9px] font-bold uppercase tracking-[0.16em] transition sm:text-[10px] ${active ? "border-white/65 bg-white/[0.14] text-white" : "border-white/10 bg-white/[0.025] text-white/45 hover:border-white/35"}`}>MATCH {match}</button>;
+                  })}
+                </div>
+              </>
+            )}
+
             {resultsLoading ? (
               <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-10 text-center">
                 <p className="text-xs uppercase tracking-[0.2em] text-white/50">
@@ -2047,6 +2080,27 @@ const Events = () => {
                         </tbody>
                       </table>
                     </div>
+                  </section>
+                );
+              })()
+            ) : resultsGame === "FREE FIRE" ? (
+              (() => {
+                const rows = liveResults
+                  .filter((row) => Number(row.day_number) === selectedResultDay && Number(row.match_number) === selectedResultMatch &&
+                    (selectedResultDay === 2 || String(row.group_name || "").toUpperCase() === selectedResultGroup))
+                  .sort((a, b) => Number(b.tp ?? (Number(b.pp || 0) + Number(b.fp || 0))) - Number(a.tp ?? (Number(a.pp || 0) + Number(a.fp || 0))) || Number(b.fp || 0) - Number(a.fp || 0) || String(a.team_name).localeCompare(String(b.team_name)));
+                return (
+                  <section className="overflow-hidden rounded-2xl border border-white/10 bg-white/[0.025]">
+                    <div className="flex flex-wrap items-center justify-between gap-2 border-b border-white/10 bg-white/[0.045] px-4 py-4 sm:px-5">
+                      <div><p className="text-[8px] font-bold uppercase tracking-[0.22em] text-white/35">{selectedResultDay === 1 ? `GROUP STAGE • GROUP ${selectedResultGroup}` : "GRAND FINALS • 12 FINALISTS"}</p>
+                      <h3 className="mt-1 text-sm font-bold uppercase tracking-[0.18em] text-white">MATCH {selectedResultMatch}</h3></div>
+                      <span className="rounded-full border border-white/15 bg-black/30 px-3 py-1.5 text-[8px] font-bold uppercase tracking-[0.16em] text-white/45">{rows.length} TEAMS</span>
+                    </div>
+                    <div className="overflow-x-auto"><table className="w-full min-w-[480px] border-collapse text-left"><thead><tr className="border-b border-white/10 text-[8px] uppercase tracking-[0.13em] text-white/40 sm:text-[9px]">
+                      <th className="px-3 py-3 sm:px-4">S.No</th><th className="px-3 py-3 sm:px-4">Team Name</th><th className="px-3 py-3 text-center">FP</th><th className="px-3 py-3 text-center">PP</th><th className="px-3 py-3 text-center">TOTAL (FP + PP)</th><th className="px-3 py-3 text-center sm:px-4">RANK</th>
+                    </tr></thead><tbody>{rows.length ? rows.map((row, index) => { const fp = Number(row.fp || 0); const pp = Number(row.pp || 0); return <tr key={row.id} className={`border-b border-white/[0.06] last:border-0 ${index === 0 ? "bg-white/[0.055]" : ""}`}>
+                      <td className="px-3 py-3 text-xs text-white/40 sm:px-4">{index + 1}</td><td className="max-w-[220px] px-3 py-3 text-xs font-semibold text-white/85 sm:px-4">{row.team_name}</td><td className="px-3 py-3 text-center text-xs text-white/65">{fp}</td><td className="px-3 py-3 text-center text-xs text-white/65">{pp}</td><td className="px-3 py-3 text-center text-xs font-bold text-white">{row.tp ?? fp + pp}</td><td className="px-3 py-3 text-center text-xs font-bold text-white/75 sm:px-4">{index + 1}</td>
+                    </tr>; }) : <tr><td colSpan={6} className="px-4 py-12 text-center text-[9px] uppercase tracking-[0.14em] text-white/35">Results not published for this match yet.</td></tr>}</tbody></table></div>
                   </section>
                 );
               })()

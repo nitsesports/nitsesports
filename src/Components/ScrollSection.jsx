@@ -1661,27 +1661,52 @@ const ScrollSection = () => {
                     {event.description}
                   </p>
 
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setFormError("");
-                      setPaymentProof(null);
-                      setQrLoadFailed(false);
-                      setRampageForm(initialRampageForm);
-                      rampageFormRef.current = { ...initialRampageForm };
-                      setRandomPairing(false);
-                      setSelectedTournament(null);
-                      setRegistrationComplete(false);
-                      setSelectedEvent(event.title);
-                    }}
-                    className="mt-4 inline-flex items-center gap-2 rounded-lg border border-white/25 bg-white/[0.06] px-4 py-2 text-[7px] font-bold uppercase tracking-[0.22em] text-white/70 backdrop-blur-md transition-all duration-300 hover:border-white hover:bg-white/[0.12] hover:text-white"
-                  >
-                    {event.title === "SPORTOMANIA" ? "VIEW DETAILS" : "REGISTER NOW"}
-                    <ArrowRight
-                      size={11}
-                      className="transition-transform duration-300 group-hover:translate-x-1"
-                    />
-                  </button>
+                  {event.title === "RAMPAGE 2026" ? (
+                    <div className="mt-4 grid grid-cols-2 gap-2">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          window.location.href = "/events?event=RAMPAGE%202026&view=details";
+                        }}
+                        className="inline-flex items-center justify-center gap-2 rounded-lg border border-white/25 bg-white/[0.06] px-3 py-2.5 text-[7px] font-bold uppercase tracking-[0.16em] text-white/75 backdrop-blur-md transition-all duration-300 hover:border-white hover:bg-white/[0.12] hover:text-white"
+                      >
+                        VIEW DETAILS
+                        <ArrowRight size={11} />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          window.location.href = "/events?event=RAMPAGE%202026&view=results";
+                        }}
+                        className="inline-flex items-center justify-center gap-2 rounded-lg border border-white/25 bg-white/[0.06] px-3 py-2.5 text-[7px] font-bold uppercase tracking-[0.16em] text-white/75 backdrop-blur-md transition-all duration-300 hover:border-white hover:bg-white/[0.12] hover:text-white"
+                      >
+                        RESULTS
+                        <Trophy size={11} />
+                      </button>
+                    </div>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setFormError("");
+                        setPaymentProof(null);
+                        setQrLoadFailed(false);
+                        setRampageForm(initialRampageForm);
+                        rampageFormRef.current = { ...initialRampageForm };
+                        setRandomPairing(false);
+                        setSelectedTournament(null);
+                        setRegistrationComplete(false);
+                        setSelectedEvent(event.title);
+                      }}
+                      className="mt-4 inline-flex items-center gap-2 rounded-lg border border-white/25 bg-white/[0.06] px-4 py-2 text-[7px] font-bold uppercase tracking-[0.22em] text-white/70 backdrop-blur-md transition-all duration-300 hover:border-white hover:bg-white/[0.12] hover:text-white"
+                    >
+                      VIEW DETAILS
+                      <ArrowRight
+                        size={11}
+                        className="transition-transform duration-300 group-hover:translate-x-1"
+                      />
+                    </button>
+                  )}
                 </div>
 
                 <div
