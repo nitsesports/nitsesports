@@ -18,13 +18,13 @@ const upcomingEvents = [
   {
     title: "RAMPAGE 2026",
     date: "PROBABLE START: 12 • OCTOBER • 2026",
-    time: "REGISTRATIONS CLOSE: 11 • OCTOBER • EOD",
-    mode: "REGISTRATIONS LIVE",
+    time: "REGISTRATIONS CLOSED",
+    mode: "REGISTRATIONS CLOSED",
     game: "ESPORTS",
     location: "NITS SILCHAR",
-    status: "REGISTRATIONS LIVE",
+    status: "REGISTRATIONS CLOSED",
     description:
-      "RAMPAGE 2026 — registrations are LIVE for BGMI, FREE FIRE and MLBB. Entry fee: ₹40 per team for BGMI/Free Fire and ₹50 per team for MLBB. Probable event start: 12 October 2026. Registrations close on 11 October 2026 at EOD.",
+      "RAMPAGE 2026 registrations are now CLOSED for BGMI, FREE FIRE and MLBB. Stay tuned for match schedules, tournament updates and results.",
     image: rampagePoster,
   },
   {
@@ -616,6 +616,60 @@ const Events = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [randomPairing, setRandomPairing] = useState(false);
   const [randomPairingPromptOpen, setRandomPairingPromptOpen] = useState(false);
+  const [selectedOtherDetails, setSelectedOtherDetails] = useState(null);
+  const [resultsGame, setResultsGame] = useState(null);
+  const [liveResults, setLiveResults] = useState([]);
+  const [resultsLoading, setResultsLoading] = useState(false);
+  const [resultsError, setResultsError] = useState("");
+  const [selectedResultDay, setSelectedResultDay] = useState(1);
+  const [selectedResultMatch, setSelectedResultMatch] = useState(1);
+
+  useEffect(() => {
+    if (!resultsGame) return;
+
+    if (!supabase) {
+      setResultsError(
+        "Results are temporarily unavailable because Supabase is not configured."
+      );
+      setLiveResults([]);
+      setResultsLoading(false);
+      return;
+    }
+
+    let cancelled = false;
+
+    const loadResults = async () => {
+      setResultsLoading(true);
+      setResultsError("");
+
+      const { data, error } = await supabase
+        .from("rampage_match_results")
+        .select("id, game, day_number, match_number, team_name, pp, fp, tp")
+        .eq("game", resultsGame)
+        .order("day_number", { ascending: true })
+        .order("match_number", { ascending: true })
+        .order("tp", { ascending: false })
+        .order("fp", { ascending: false });
+
+      if (cancelled) return;
+
+      if (error) {
+        console.error("RAMPAGE RESULTS LOAD ERROR:", error);
+        setResultsError("Unable to load results. Please try again later.");
+        setLiveResults([]);
+      } else {
+        setLiveResults(data || []);
+      }
+
+      setResultsLoading(false);
+    };
+
+    loadResults();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [resultsGame]);
 
   useEffect(() => {
     const canvas = document.createElement("canvas");
@@ -881,6 +935,11 @@ const Events = () => {
   const handleFormSubmit = async (e, forcedRandomPairing = null) => {
     e.preventDefault();
     if (isSubmitting) return;
+
+    if (selectedEvent === "RAMPAGE 2026") {
+      setFormError("RAMPAGE 2026 REGISTRATIONS ARE CLOSED.");
+      return;
+    }
 
     const game = selectedTournament?.game;
     const isSportomania = selectedEvent === "SPORTOMANIA";
@@ -1609,9 +1668,6 @@ const Events = () => {
                 }`}
               >
                 {tournamentDetails[selectedEvent].map((tournament, index) => {
-                  // SPORTOMANIA registration is closed; RAMPAGE remains open.
-                  const isRegistrationOpen = selectedEvent === "RAMPAGE 2026";
-
                   return (
                     <article
                       key={tournament.title}
@@ -1641,36 +1697,36 @@ const Events = () => {
                           {tournament.title}
                         </h3>
                         <p className="mt-2 text-[9px] uppercase tracking-[0.14em] text-white/35">
-                          {selectedEvent === "SPORTOMANIA"
-                            ? "REGISTRATIONS CLOSED"
-                            : "REGISTRATIONS LIVE • RAMPAGE 2026"}
+                          REGISTRATIONS CLOSED • {selectedEvent}
                         </p>
 
-                        <button
-                          type="button"
-                          disabled={!isRegistrationOpen}
-                          onClick={() => {
-                            if (isRegistrationOpen) {
-                              setFormError("");
-                              setPaymentProof(null);
-                              setQrLoadFailed(false);
-                              setRampageForm(initialRampageForm);
-                              setRandomPairing(false);
-                              setSelectedTournament(tournament);
-                            }
-                          }}
-                          className={`mt-5 flex w-full items-center justify-center rounded-xl border px-4 py-3 text-[9px] font-bold uppercase tracking-[0.22em] transition-all duration-300 ${
-                            isRegistrationOpen
-                              ? "border-white/20 bg-white/[0.055] text-white/75 hover:border-white/60 hover:bg-white/[0.10] hover:text-white"
-                              : "cursor-not-allowed border-white/10 bg-white/[0.02] text-white/30"
-                          }`}
-                        >
-                          {isRegistrationOpen
-                            ? "REGISTER NOW"
-                            : selectedEvent === "SPORTOMANIA"
-                              ? "REGISTRATIONS CLOSED"
-                              : "REGISTRATION COMING SOON"}
-                        </button>
+                        {selectedEvent === "RAMPAGE 2026" ? (
+                          <div className="mt-5 grid grid-cols-2 gap-3">
+                            <button
+                              type="button"
+                              onClick={() => setSelectedOtherDetails(tournament)}
+                              className="rounded-xl border border-white/20 bg-white/[0.055] px-3 py-3 text-[9px] font-bold uppercase tracking-[0.12em] text-white/80 transition hover:border-white/60 hover:bg-white/[0.12]"
+                            >
+                              OTHER DETAILS
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setSelectedResultDay(1);
+                                setSelectedResultMatch(1);
+                                setResultsGame(tournament.game);
+                                setResultsError("");
+                              }}
+                              className="rounded-xl border border-white/25 bg-white/[0.09] px-3 py-3 text-[9px] font-bold uppercase tracking-[0.12em] text-white transition hover:border-white/70 hover:bg-white/[0.16]"
+                            >
+                              RESULTS
+                            </button>
+                          </div>
+                        ) : (
+                          <div className="mt-5 rounded-xl border border-white/10 bg-white/[0.025] px-4 py-3 text-center text-[9px] font-bold uppercase tracking-[0.18em] text-white/35">
+                            REGISTRATIONS CLOSED
+                          </div>
+                        )}
                       </div>
                     </article>
                   );
@@ -1745,6 +1801,266 @@ const Events = () => {
                 NO
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* OTHER DETAILS MODAL */}
+      {selectedOtherDetails && (
+        <div
+          className="fixed inset-0 z-[170] flex items-center justify-center bg-black/85 px-5 py-8 backdrop-blur-md"
+          onClick={() => setSelectedOtherDetails(null)}
+        >
+          <div
+            className="relative max-h-[88vh] w-full max-w-xl overflow-y-auto rounded-3xl border border-white/15 bg-[#050507]/98 p-6 shadow-[0_25px_120px_rgba(0,0,0,.9)] sm:p-8"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              type="button"
+              onClick={() => setSelectedOtherDetails(null)}
+              aria-label="Close other details"
+              className="absolute right-5 top-5 flex h-9 w-9 items-center justify-center rounded-full border border-white/15 text-xl text-white/60 transition hover:border-white/50 hover:text-white"
+            >
+              ×
+            </button>
+
+            <p className="mb-2 text-[9px] font-bold uppercase tracking-[0.28em] text-white/35">
+              TOURNAMENT INFORMATION
+            </p>
+            <h2 className="pr-10 text-2xl font-bold uppercase text-white sm:text-3xl">
+              {selectedOtherDetails.title}
+            </h2>
+            <p className="mt-2 text-[10px] font-bold uppercase tracking-[0.18em] text-white/45">
+              {selectedOtherDetails.game} • RAMPAGE 2026
+            </p>
+
+            <div className="mt-7 space-y-3">
+              <div className="rounded-xl border border-white/10 bg-white/[0.035] p-4">
+                <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-white/40">
+                  VENUE
+                </p>
+                <p className="mt-2 text-sm text-white/80">NIT Silchar</p>
+              </div>
+              <div className="rounded-xl border border-white/10 bg-white/[0.035] p-4">
+                <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-white/40">
+                  REGISTRATION STATUS
+                </p>
+                <p className="mt-2 text-sm text-white/80">Registrations are closed.</p>
+              </div>
+              <div className="rounded-xl border border-white/10 bg-white/[0.035] p-4">
+                <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-white/40">
+                  UPDATES
+                </p>
+                <p className="mt-2 text-sm leading-6 text-white/60">
+                  Match schedules, rules and other tournament announcements will be shared by NITS Esports. Check the Results section for published match scores.
+                </p>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => setSelectedOtherDetails(null)}
+              className="mt-7 w-full rounded-xl border border-white/20 bg-white/[0.07] px-5 py-3 text-[9px] font-bold uppercase tracking-[0.2em] text-white/80 transition hover:border-white/50 hover:bg-white/[0.12]"
+            >
+              CLOSE
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* RESULTS MODAL */}
+      {resultsGame && (
+        <div
+          className="fixed inset-0 z-[175] flex items-center justify-center bg-black/90 px-3 py-5 backdrop-blur-md sm:px-6"
+          onClick={() => setResultsGame(null)}
+        >
+          <div
+            className="relative max-h-[92vh] w-full max-w-5xl overflow-y-auto rounded-3xl border border-white/15 bg-[#050507]/98 p-4 shadow-[0_25px_120px_rgba(0,0,0,.95)] sm:p-7"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              type="button"
+              onClick={() => setResultsGame(null)}
+              aria-label="Close results"
+              className="absolute right-4 top-4 z-10 flex h-9 w-9 items-center justify-center rounded-full border border-white/15 text-xl text-white/60 transition hover:border-white/50 hover:text-white sm:right-6 sm:top-6"
+            >
+              ×
+            </button>
+
+            <div className="mb-6 pr-12">
+              <p className="mb-2 text-[9px] font-bold uppercase tracking-[0.28em] text-white/35">
+                OFFICIAL MATCH SCOREBOARD
+              </p>
+              <h2 className="text-2xl font-bold uppercase text-white sm:text-3xl">
+                {resultsGame} RESULTS
+              </h2>
+              <p className="mt-2 text-[10px] uppercase tracking-[0.16em] text-white/40">
+                RAMPAGE 2026 • POSITION POINTS + FINISH POINTS = TOTAL POINTS
+              </p>
+            </div>
+
+            {resultsGame === "BGMI" && (
+              <>
+                {/* DAY SELECTOR */}
+                <div className="mb-4 grid grid-cols-2 gap-3">
+                  {[1, 2].map((day) => {
+                    const active = selectedResultDay === day;
+                    return (
+                      <button
+                        key={day}
+                        type="button"
+                        onClick={() => {
+                          setSelectedResultDay(day);
+                          setSelectedResultMatch(1);
+                        }}
+                        aria-pressed={active}
+                        className={`rounded-xl border px-3 py-3 text-[9px] font-bold uppercase tracking-[0.14em] transition sm:px-5 sm:text-[10px] ${
+                          active
+                            ? "border-white/70 bg-white text-black shadow-[0_0_24px_rgba(255,255,255,.10)]"
+                            : "border-white/15 bg-white/[0.035] text-white/55 hover:border-white/40 hover:bg-white/[0.08] hover:text-white"
+                        }`}
+                      >
+                        GROUP STAGE DAY {day}
+                      </button>
+                    );
+                  })}
+                </div>
+
+                {/* MATCH SELECTOR */}
+                <div className="mb-6 grid grid-cols-3 gap-2 sm:gap-3">
+                  {[1, 2, 3].map((match) => {
+                    const active = selectedResultMatch === match;
+                    return (
+                      <button
+                        key={match}
+                        type="button"
+                        onClick={() => setSelectedResultMatch(match)}
+                        aria-pressed={active}
+                        className={`rounded-lg border px-3 py-3 text-[9px] font-bold uppercase tracking-[0.16em] transition sm:rounded-xl sm:text-[10px] ${
+                          active
+                            ? "border-white/65 bg-white/[0.14] text-white shadow-[inset_0_0_0_1px_rgba(255,255,255,.06)]"
+                            : "border-white/10 bg-white/[0.025] text-white/45 hover:border-white/35 hover:bg-white/[0.07] hover:text-white/85"
+                        }`}
+                      >
+                        MATCH {match}
+                      </button>
+                    );
+                  })}
+                </div>
+              </>
+            )}
+
+            {resultsLoading ? (
+              <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-10 text-center">
+                <p className="text-xs uppercase tracking-[0.2em] text-white/50">
+                  Loading results…
+                </p>
+              </div>
+            ) : resultsError ? (
+              <div className="rounded-2xl border border-red-300/20 bg-red-300/[0.04] p-6 text-center">
+                <p className="text-xs uppercase tracking-[0.12em] text-red-100/80">
+                  {resultsError}
+                </p>
+              </div>
+            ) : resultsGame === "BGMI" ? (
+              (() => {
+                const rows = liveResults
+                  .filter(
+                    (row) =>
+                      Number(row.day_number) === selectedResultDay &&
+                      Number(row.match_number) === selectedResultMatch
+                  )
+                  .sort(
+                    (a, b) =>
+                      Number(b.tp) - Number(a.tp) ||
+                      Number(b.fp) - Number(a.fp) ||
+                      String(a.team_name).localeCompare(String(b.team_name))
+                  );
+
+                return (
+                  <section className="overflow-hidden rounded-2xl border border-white/10 bg-white/[0.025]">
+                    <div className="flex flex-wrap items-center justify-between gap-2 border-b border-white/10 bg-white/[0.045] px-4 py-4 sm:px-5">
+                      <div>
+                        <p className="text-[8px] font-bold uppercase tracking-[0.22em] text-white/35">
+                          GROUP STAGE • DAY {selectedResultDay}
+                        </p>
+                        <h3 className="mt-1 text-sm font-bold uppercase tracking-[0.18em] text-white">
+                          MATCH {selectedResultMatch}
+                        </h3>
+                      </div>
+                      <span className="rounded-full border border-white/15 bg-black/30 px-3 py-1.5 text-[8px] font-bold uppercase tracking-[0.16em] text-white/45">
+                        {rows.length} TEAMS
+                      </span>
+                    </div>
+
+                    <div className="overflow-x-auto">
+                      <table className="w-full min-w-[440px] border-collapse text-left">
+                        <thead>
+                          <tr className="border-b border-white/10 text-[8px] uppercase tracking-[0.13em] text-white/40 sm:text-[9px]">
+                            <th className="px-3 py-3 sm:px-4">S.No</th>
+                            <th className="px-3 py-3 sm:px-4">Team Name</th>
+                            <th className="px-3 py-3 text-center">PP</th>
+                            <th className="px-3 py-3 text-center">FP</th>
+                            <th className="px-3 py-3 text-center">TP</th>
+                            <th className="px-3 py-3 text-center sm:px-4">Rank</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {rows.length ? (
+                            rows.map((row, index) => (
+                              <tr
+                                key={row.id}
+                                className={`border-b border-white/[0.06] last:border-0 ${
+                                  index === 0 ? "bg-white/[0.055]" : ""
+                                }`}
+                              >
+                                <td className="px-3 py-3 text-xs text-white/40 sm:px-4">
+                                  {index + 1}
+                                </td>
+                                <td className="max-w-[220px] px-3 py-3 text-xs font-semibold text-white/85 sm:px-4">
+                                  {row.team_name}
+                                </td>
+                                <td className="px-3 py-3 text-center text-xs text-white/65">
+                                  {row.pp ?? 0}
+                                </td>
+                                <td className="px-3 py-3 text-center text-xs text-white/65">
+                                  {row.fp ?? 0}
+                                </td>
+                                <td className="px-3 py-3 text-center text-xs font-bold text-white">
+                                  {row.tp ?? (Number(row.pp || 0) + Number(row.fp || 0))}
+                                </td>
+                                <td className="px-3 py-3 text-center text-xs font-bold text-white/75 sm:px-4">
+                                  {index + 1}
+                                </td>
+                              </tr>
+                            ))
+                          ) : (
+                            <tr>
+                              <td
+                                colSpan={6}
+                                className="px-4 py-12 text-center text-[9px] uppercase tracking-[0.14em] text-white/35"
+                              >
+                                Results not published for this match yet.
+                              </td>
+                            </tr>
+                          )}
+                        </tbody>
+                      </table>
+                    </div>
+                  </section>
+                );
+              })()
+            ) : (
+              <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-8 text-center">
+                <p className="text-xs uppercase tracking-[0.16em] text-white/50">
+                  Results for {resultsGame} will appear here once published.
+                </p>
+              </div>
+            )}
+
+            <p className="mt-5 text-[9px] leading-5 text-white/35">
+              PP = Position Points • FP = Finish Points • TP = Total Points (PP + FP). Teams are ranked by TP in descending order, with FP used as the tie-breaker.
+            </p>
           </div>
         </div>
       )}
