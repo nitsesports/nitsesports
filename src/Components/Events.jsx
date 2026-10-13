@@ -1927,8 +1927,8 @@ const Events = () => {
                   })}
                 </div>
 
-                {/* MATCH SELECTOR */}
-                <div className="mb-6 grid grid-cols-3 gap-2 sm:gap-3">
+                {/* MATCH SELECTOR + OVERALL RESULTS */}
+                <div className="mb-6 grid grid-cols-2 gap-2 sm:grid-cols-4 sm:gap-3">
                   {[1, 2, 3].map((match) => {
                     const active = selectedResultMatch === match;
                     return (
@@ -1947,6 +1947,18 @@ const Events = () => {
                       </button>
                     );
                   })}
+                  <button
+                    type="button"
+                    onClick={() => setSelectedResultMatch(0)}
+                    aria-pressed={selectedResultMatch === 0}
+                    className={`rounded-lg border px-3 py-3 text-[9px] font-bold uppercase tracking-[0.12em] transition sm:rounded-xl sm:text-[10px] ${
+                      selectedResultMatch === 0
+                        ? "border-white/80 bg-white text-black shadow-[0_0_24px_rgba(255,255,255,.10)]"
+                        : "border-white/20 bg-white/[0.07] text-white/75 hover:border-white/60 hover:bg-white/[0.12]"
+                    }`}
+                  >
+                    OVERALL RESULTS
+                  </button>
                 </div>
               </>
             )}
@@ -1997,28 +2009,86 @@ const Events = () => {
               </div>
             ) : resultsGame === "BGMI" ? (
               (() => {
-                const rows = liveResults
-                  .filter(
-                    (row) =>
-                      Number(row.day_number) === selectedResultDay &&
-                      Number(row.match_number) === selectedResultMatch
-                  )
-                  .sort(
-                    (a, b) =>
-                      Number(b.tp) - Number(a.tp) ||
-                      Number(b.fp) - Number(a.fp) ||
-                      String(a.team_name).localeCompare(String(b.team_name))
-                  );
+                const isOverallResults = selectedResultMatch === 0 && selectedResultDay === 1;
+                const rows = isOverallResults
+                  ? Object.values(
+                      liveResults
+                        .filter(
+                          (row) =>
+                            Number(row.day_number) === 1 &&
+                            [1, 2, 3].includes(Number(row.match_number))
+                        )
+                        .reduce((teams, row) => {
+                          const rawName = String(row.team_name || "").trim();
+                          if (!rawName) return teams;
+
+                          // Normalize spelling/capitalization so the same team
+                          // is combined across all three matches.
+                          const normalizedName = rawName.toUpperCase().replace(/\\s+/g, " ");
+                          const aliases = {
+                            "JOBMASTER": "JOBMASTERS",
+                            "JOBMASTERS": "JOBMASTERS",
+                            "SKY PIERCERS": "SKY PIERCERS",
+                            "DEATH HUNTERS": "DEATH HUNTERS",
+                            "POTATO ESPORTS": "POTATO eSPORTS",
+                            "TEAM W": "TEAM W",
+                            "VIKINGS🥶": "VIKINGS🥶",
+                            "TEAM INSIDIOUS": "TEAM INSIDIOUS",
+                            "SYNERGY OFFICIALS": "SYNERGY OFFICIALS",
+                            "POWER HOUSE": "POWER HOUSE",
+                            "THE BOYS": "THE BOYS",
+                            "RIVALS": "RIVALS",
+                            "BILLA GANG": "BILLA GANG",
+                            "BADMOSH GANG": "BADMOSH GANG",
+                          };
+                          const displayName = aliases[normalizedName] || rawName;
+                          const key = displayName.toUpperCase();
+                          if (!teams[key]) {
+                            teams[key] = {
+                              team_name: displayName,
+                              pp: 0,
+                              fp: 0,
+                              tp: 0,
+                              matchesCounted: 0,
+                              id: key,
+                            };
+                          }
+                          teams[key].pp += Number(row.pp || 0);
+                          teams[key].fp += Number(row.fp || 0);
+                          teams[key].tp += Number(row.tp ?? (Number(row.pp || 0) + Number(row.fp || 0)));
+                          teams[key].matchesCounted += 1;
+                          return teams;
+                        }, {})
+                    ).sort(
+                      (a, b) =>
+                        b.tp - a.tp ||
+                        b.fp - a.fp ||
+                        b.pp - a.pp ||
+                        a.team_name.localeCompare(b.team_name)
+                    )
+                  : liveResults
+                      .filter(
+                        (row) =>
+                          Number(row.day_number) === selectedResultDay &&
+                          Number(row.match_number) === selectedResultMatch
+                      )
+                      .sort(
+                        (a, b) =>
+                          Number(b.tp ?? (Number(b.pp || 0) + Number(b.fp || 0))) -
+                            Number(a.tp ?? (Number(a.pp || 0) + Number(a.fp || 0))) ||
+                          Number(b.fp || 0) - Number(a.fp || 0) ||
+                          String(a.team_name).localeCompare(String(b.team_name))
+                      );
 
                 return (
                   <section className="overflow-hidden rounded-2xl border border-white/10 bg-white/[0.025]">
                     <div className="flex flex-wrap items-center justify-between gap-2 border-b border-white/10 bg-white/[0.045] px-4 py-4 sm:px-5">
                       <div>
                         <p className="text-[8px] font-bold uppercase tracking-[0.22em] text-white/35">
-                          GROUP STAGE • DAY {selectedResultDay}
+                          {isOverallResults ? "OVERALL STANDINGS • DAY 1 • MATCHES 1–3" : `GROUP STAGE • DAY ${selectedResultDay}`}
                         </p>
                         <h3 className="mt-1 text-sm font-bold uppercase tracking-[0.18em] text-white">
-                          MATCH {selectedResultMatch}
+                          {isOverallResults ? "OVERALL RESULTS" : `MATCH ${selectedResultMatch}`}
                         </h3>
                       </div>
                       <span className="rounded-full border border-white/15 bg-black/30 px-3 py-1.5 text-[8px] font-bold uppercase tracking-[0.16em] text-white/45">
@@ -2032,9 +2102,9 @@ const Events = () => {
                           <tr className="border-b border-white/10 text-[8px] uppercase tracking-[0.13em] text-white/40 sm:text-[9px]">
                             <th className="px-3 py-3 sm:px-4">S.No</th>
                             <th className="px-3 py-3 sm:px-4">Team Name</th>
-                            <th className="px-3 py-3 text-center">PP</th>
-                            <th className="px-3 py-3 text-center">FP</th>
-                            <th className="px-3 py-3 text-center">TP</th>
+                            <th className="px-3 py-3 text-center">{isOverallResults ? "TOTAL PP" : "PP"}</th>
+                            <th className="px-3 py-3 text-center">{isOverallResults ? "TOTAL FP" : "FP"}</th>
+                            <th className="px-3 py-3 text-center">{isOverallResults ? "TOTAL TP" : "TP"}</th>
                             <th className="px-3 py-3 text-center sm:px-4">Rank</th>
                           </tr>
                         </thead>
@@ -2060,7 +2130,7 @@ const Events = () => {
                                   {row.fp ?? 0}
                                 </td>
                                 <td className="px-3 py-3 text-center text-xs font-bold text-white">
-                                  {row.tp ?? (Number(row.pp || 0) + Number(row.fp || 0))}
+                                  {Number(row.tp ?? (Number(row.pp || 0) + Number(row.fp || 0)))}
                                 </td>
                                 <td className="px-3 py-3 text-center text-xs font-bold text-white/75 sm:px-4">
                                   {index + 1}
