@@ -2088,6 +2088,7 @@ const Events = () => {
               </>
             )}
 
+
             {resultsLoading ? (
               <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-10 text-center">
                 <p className="text-xs uppercase tracking-[0.2em] text-white/50">
@@ -2463,6 +2464,56 @@ const Events = () => {
                 );
               })()
 
+            ) : resultsGame === "MLBB" ? (
+              (() => {
+                // All six MLBB matches were played on the same day.
+                // Winners and matchups are taken from the supplied result ledger.
+                const matches = [
+                  { id: "M1", left: "Failed Flicker", right: "Gowhri Lovers", winner: "Failed Flicker" },
+                  { id: "M2", left: "Sike", right: "Velo D’Ora", winner: "Sike" },
+                  { id: "M3", left: "Eternal Requiem X", right: "Auroma", winner: "Eternal Requiem X" },
+                  { id: "M4", left: "Team SS", right: "Alchemist", winner: "Team SS" },
+                  { id: "M5", left: "Failed Flicker", right: "Sike", winner: "Failed Flicker" },
+                  { id: "M6", left: "Team SS", right: "Eternal Requiem X", winner: "Team SS" },
+                ];
+                const MatchCard = ({ match }) => (
+                  <div className="relative overflow-hidden rounded-xl border border-white/10 bg-black/50 p-3 sm:p-4">
+                    <div className="mb-3 flex items-center justify-between gap-2">
+                      <span className="text-[10px] font-black tracking-[0.2em] text-white/55">{match.id}</span>
+                      <span className="rounded-full border border-amber-300/25 bg-amber-300/10 px-2 py-1 text-[8px] font-bold uppercase tracking-wider text-amber-100">Complete</span>
+                    </div>
+                    {[match.left, match.right].map((team) => (
+                      <div key={team} className={`mb-2 flex items-center justify-between gap-2 rounded-lg border px-3 py-2.5 text-xs ${team === match.winner ? "border-emerald-300/40 bg-emerald-300/[0.10] font-bold text-white" : "border-white/[0.07] bg-white/[0.025] text-white/45"}`}>
+                        <span>{team}</span>
+                        {team === match.winner ? <span className="shrink-0 text-[8px] font-black uppercase tracking-wider text-emerald-200">WINNER ✓</span> : <span className="shrink-0 text-[8px] uppercase tracking-wider text-white/30">DEFEATED</span>}
+                      </div>
+                    ))}
+                  </div>
+                );
+                const winnerNames = [...new Set(matches.map((match) => match.winner))];
+                return (
+                  <section className="overflow-hidden rounded-2xl border border-white/10 bg-white/[0.025]">
+                    <div className="border-b border-white/10 bg-white/[0.045] px-4 py-4 sm:px-5">
+                      <p className="text-[8px] font-bold uppercase tracking-[0.22em] text-white/35">RAMPAGE 2026 • MOBILE LEGENDS: BANG BANG</p>
+                      <h3 className="mt-1 text-sm font-bold uppercase tracking-[0.18em] text-white">MATCHDAY TREE • ALL 6 MATCHES</h3>
+                      <p className="mt-2 text-[10px] leading-5 text-white/45">All six matches were played on the same day. Green highlights show each match winner; follow the connecting lines to see repeat matchups.</p>
+                    </div>
+                    <div className="p-4 sm:p-5">
+                      <div className="mb-4 flex items-center gap-3"><span className="h-px flex-1 bg-white/10" /><span className="text-[9px] font-black uppercase tracking-[0.2em] text-white/40">Opening matches • M1–M4</span><span className="h-px flex-1 bg-white/10" /></div>
+                      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">{matches.slice(0, 4).map((match) => <MatchCard key={match.id} match={match} />)}</div>
+                      <div className="my-5 flex flex-col items-center text-center">
+                        <div className="h-5 w-px bg-white/25" /><span className="rounded-full border border-white/10 bg-black/60 px-4 py-2 text-[8px] font-bold uppercase tracking-[0.2em] text-white/45">Winning teams meet again</span><div className="h-5 w-px bg-white/25" />
+                      </div>
+                      <div className="mb-4 flex items-center gap-3"><span className="h-px flex-1 bg-white/10" /><span className="text-[9px] font-black uppercase tracking-[0.2em] text-white/40">Follow-up matches • M5–M6</span><span className="h-px flex-1 bg-white/10" /></div>
+                      <div className="mx-auto grid max-w-3xl gap-4 md:grid-cols-2">{matches.slice(4).map((match) => <MatchCard key={match.id} match={match} />)}</div>
+                      <div className="mt-5 rounded-xl border border-emerald-300/20 bg-emerald-300/[0.045] p-4">
+                        <p className="text-center text-[9px] font-black uppercase tracking-[0.2em] text-emerald-100/70">Match winners at a glance</p>
+                        <div className="mt-3 flex flex-wrap justify-center gap-2">{winnerNames.map((team) => <span key={team} className="rounded-full border border-emerald-300/25 bg-emerald-300/[0.08] px-3 py-2 text-[10px] font-bold text-emerald-100">{team}</span>)}</div>
+                      </div>
+                    </div>
+                  </section>
+                );
+              })()
             ) : (
               <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-8 text-center">
                 <p className="text-xs uppercase tracking-[0.16em] text-white/50">
