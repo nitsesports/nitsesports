@@ -619,6 +619,9 @@ const Events = () => {
   const [selectedOtherDetails, setSelectedOtherDetails] = useState(null);
   const [resultsGame, setResultsGame] = useState(null);
   const [liveResults, setLiveResults] = useState([]);
+  const [qualifiedFreeFireTeams, setQualifiedFreeFireTeams] = useState([]);
+  const [freeFireGrandFinalsResults, setFreeFireGrandFinalsResults] = useState([]);
+  const [freeFireGrandFinalsOverall, setFreeFireGrandFinalsOverall] = useState([]);
   const [resultsLoading, setResultsLoading] = useState(false);
   const [resultsError, setResultsError] = useState("");
   const [selectedResultDay, setSelectedResultDay] = useState(1);
@@ -633,6 +636,8 @@ const Events = () => {
         "Results are temporarily unavailable because Supabase is not configured."
       );
       setLiveResults([]);
+      setFreeFireGrandFinalsResults([]);
+      setFreeFireGrandFinalsOverall([]);
       setResultsLoading(false);
       return;
     }
@@ -643,7 +648,8 @@ const Events = () => {
       setResultsLoading(true);
       setResultsError("");
 
-      const { data, error } = await supabase
+      // Group-stage results remain in rampage_match_results.
+      const resultsPromise = supabase
         .from("rampage_match_results")
         .select("id, game, day_number, match_number, group_name, team_name, pp, fp, tp")
         .eq("game", resultsGame)
@@ -652,14 +658,95 @@ const Events = () => {
         .order("tp", { ascending: false })
         .order("fp", { ascending: false });
 
+      // The qualified-team table supplies the 12 finalist names.
+      const qualifiersPromise = resultsGame === "FREE FIRE"
+        ? supabase
+            .from("rampage_free_fire_qualified_teams")
+            .select("group_name, team_name, pp, fp, tp, rank")
+            .order("group_name", { ascending: true })
+            .order("rank", { ascending: true })
+        : Promise.resolve({ data: [], error: null });
+
+      // All three Grand Finals matches use the requested scoreboard table.
+      // Each team must have one row per match_number (1, 2, 3).
+      const finalsPromise = resultsGame === "FREE FIRE"
+        ? supabase
+            .from("rampage_free_fire_finals_scoreboard")
+            .select("id, team_name, match_number, pp, fp, tp")
+            .order("match_number", { ascending: true })
+            .order("tp", { ascending: false })
+            .order("fp", { ascending: false })
+        : Promise.resolve({ data: [], error: null });
+
+      const [resultsResponse, qualifiersResponse, finalsResponse] =
+        await Promise.all([
+          resultsPromise,
+          qualifiersPromise,
+          finalsPromise,
+        ]);
+
       if (cancelled) return;
 
-      if (error) {
-        console.error("RAMPAGE RESULTS LOAD ERROR:", error);
+      if (resultsResponse.error) {
+        console.error("RAMPAGE RESULTS LOAD ERROR:", resultsResponse.error);
         setResultsError("Unable to load results. Please try again later.");
         setLiveResults([]);
       } else {
-        setLiveResults(data || []);
+        setLiveResults(resultsResponse.data || []);
+      }
+
+      if (resultsGame === "FREE FIRE") {
+        if (qualifiersResponse.error) {
+          console.error("FREE FIRE QUALIFIERS LOAD ERROR:", qualifiersResponse.error);
+          setQualifiedFreeFireTeams([]);
+        } else {
+          setQualifiedFreeFireTeams(qualifiersResponse.data || []);
+        }
+
+        if (finalsResponse.error) {
+          console.error("FREE FIRE GRAND FINALS SCOREBOARD LOAD ERROR:", finalsResponse.error);
+          setFreeFireGrandFinalsResults([]);
+          setFreeFireGrandFinalsOverall([]);
+          setResultsError("Unable to load Free Fire Grand Finals. Check rampage_free_fire_finals_scoreboard columns and its SELECT policy.");
+        } else {
+          const finalsRows = finalsResponse.data || [];
+          setFreeFireGrandFinalsResults(finalsRows);
+
+          // Build overall totals by adding Match 1 + Match 2 + Match 3.
+          const totalsByTeam = new Map();
+          finalsRows.forEach((row) => {
+            const key = String(row.team_name || "").trim().toLowerCase();
+            if (!key) return;
+            if (!totalsByTeam.has(key)) {
+              totalsByTeam.set(key, {
+                team_name: String(row.team_name || "").trim(),
+                fp: 0,
+                pp: 0,
+                tp: 0,
+              });
+            }
+            const total = totalsByTeam.get(key);
+            total.fp += Number(row.fp || 0);
+            total.pp += Number(row.pp || 0);
+            total.tp = total.fp + total.pp;
+          });
+          const overallRows = Array.from(totalsByTeam.values()).sort(
+            (a, b) => b.tp - a.tp || b.fp - a.fp || b.pp - a.pp ||
+              a.team_name.localeCompare(b.team_name)
+          );
+          let currentRank = 0;
+          let previousPoints = null;
+          overallRows.forEach((row, index) => {
+            if (row.tp !== previousPoints) currentRank = index + 1;
+            row.rank = currentRank;
+            previousPoints = row.tp;
+          });
+          setFreeFireGrandFinalsOverall(overallRows);
+        }
+      } else {
+        setQualifiedFreeFireTeams([]);
+        setFreeFireGrandFinalsResults([]);
+        setFreeFireGrandFinalsOverall([]);
       }
 
       setResultsLoading(false);
@@ -1985,12 +2072,18 @@ const Events = () => {
                     })}
                   </div>
                 )}
-                <div className="mb-6 grid grid-cols-3 gap-2 sm:gap-3">
+                <div className="mb-6 grid grid-cols-2 gap-2 sm:grid-cols-4 sm:gap-3">
                   {[1, 2, 3].map((match) => {
                     const active = selectedResultMatch === match;
                     return <button key={match} type="button" onClick={() => setSelectedResultMatch(match)} aria-pressed={active}
                       className={`rounded-xl border px-3 py-3 text-[9px] font-bold uppercase tracking-[0.16em] transition sm:text-[10px] ${active ? "border-white/65 bg-white/[0.14] text-white" : "border-white/10 bg-white/[0.025] text-white/45 hover:border-white/35"}`}>MATCH {match}</button>;
                   })}
+                  {(
+                    <button type="button" onClick={() => setSelectedResultMatch(0)} aria-pressed={selectedResultMatch === 0}
+                      className={`rounded-xl border px-3 py-3 text-[9px] font-bold uppercase tracking-[0.12em] transition sm:text-[10px] ${selectedResultMatch === 0 ? "border-white/80 bg-white text-black" : "border-white/20 bg-white/[0.07] text-white/75 hover:border-white/60 hover:bg-white/[0.12]"}`}>
+                      OVERALL RESULTS
+                    </button>
+                  )}
                 </div>
               </>
             )}
@@ -2102,7 +2195,7 @@ const Events = () => {
                           <tr className="border-b border-white/10 text-[8px] uppercase tracking-[0.13em] text-white/40 sm:text-[9px]">
                             <th className="px-3 py-3 sm:px-4">S.No</th>
                             <th className="px-3 py-3 sm:px-4">Team Name</th>
-                            <th className="px-3 py-3 text-center">{isOverallResults ? "TOTAL PP" : "PP"}</th>
+                            <th className="px-3 py-3 text-center">{isOverallResults ? "TOTAL KP" : "KP"}</th>
                             <th className="px-3 py-3 text-center">{isOverallResults ? "TOTAL FP" : "FP"}</th>
                             <th className="px-3 py-3 text-center">{isOverallResults ? "TOTAL TP" : "TP"}</th>
                             <th className="px-3 py-3 text-center sm:px-4">Rank</th>
@@ -2155,25 +2248,221 @@ const Events = () => {
               })()
             ) : resultsGame === "FREE FIRE" ? (
               (() => {
-                const rows = liveResults
-                  .filter((row) => Number(row.day_number) === selectedResultDay && Number(row.match_number) === selectedResultMatch &&
-                    (selectedResultDay === 2 || String(row.group_name || "").toUpperCase() === selectedResultGroup))
-                  .sort((a, b) => Number(b.tp ?? (Number(b.pp || 0) + Number(b.fp || 0))) - Number(a.tp ?? (Number(a.pp || 0) + Number(a.fp || 0))) || Number(b.fp || 0) - Number(a.fp || 0) || String(a.team_name).localeCompare(String(b.team_name)));
+                const isOverallResults = selectedResultMatch === 0;
+
+                const normalizeTeamKey = (value = "") =>
+                  String(value)
+                    .normalize("NFKC")
+                    .trim()
+                    .toUpperCase()
+                    .replace(/[^A-Z0-9]/g, "");
+
+                let rows = [];
+
+                if (selectedResultDay === 1) {
+                  const groupRows = liveResults.filter(
+                    (row) =>
+                      Number(row.day_number) === 1 &&
+                      String(row.group_name || "").trim().toUpperCase() === selectedResultGroup
+                  );
+
+                  // Match 1 is the canonical roster, ensuring the same teams appear
+                  // in all three group matches and the group overall table.
+                  const roster = new Map();
+                  groupRows
+                    .filter((row) => Number(row.match_number) === 1)
+                    .forEach((row) => {
+                      const teamName = String(row.team_name || "").trim();
+                      const key = normalizeTeamKey(teamName);
+                      if (!key || roster.has(key)) return;
+                      roster.set(key, {
+                        id: `${selectedResultGroup}-${key}`,
+                        team_name: teamName,
+                        fp: 0,
+                        pp: 0,
+                        tp: 0,
+                      });
+                    });
+
+                  const relevantRows = isOverallResults
+                    ? groupRows.filter((row) => [1, 2, 3].includes(Number(row.match_number)))
+                    : groupRows.filter((row) => Number(row.match_number) === selectedResultMatch);
+
+                  relevantRows.forEach((row) => {
+                    const team = roster.get(normalizeTeamKey(row.team_name));
+                    if (!team) return;
+                    team.fp += Number(row.fp || 0);
+                    team.pp += Number(row.pp || 0);
+                  });
+
+                  rows = Array.from(roster.values()).map((team) => ({
+                    ...team,
+                    tp: team.fp + team.pp,
+                  }));
+
+                  // Rank every team by total points (TP) in descending order.
+                  // Highest TP gets Rank 1. Apply Q only to the top four in
+                  // the group's OVERALL results, not to the roster's original order.
+                  rows.sort(
+                    (a, b) =>
+                      b.tp - a.tp ||
+                      b.fp - a.fp ||
+                      b.pp - a.pp ||
+                      String(a.team_name).localeCompare(String(b.team_name))
+                  );
+
+                  let currentRank = 0;
+                  let previousScore = null;
+                  rows.forEach((row, index) => {
+                    const scoreKey = `${row.tp}|${row.fp}|${row.pp}`;
+                    if (scoreKey !== previousScore) currentRank = index + 1;
+                    row.rank = currentRank;
+                    previousScore = scoreKey;
+                  });
+                } else if (isOverallResults) {
+                  // Overall Grand Finals data is calculated by the SQL view from
+                  // Match 1 + Match 2 + Match 3 and ordered by combined TP.
+                  rows = freeFireGrandFinalsOverall.map((row) => ({
+                    ...row,
+                    fp: Number(row.fp || 0),
+                    pp: Number(row.pp || 0),
+                    tp: Number(row.tp || 0),
+                    rank: Number(row.rank || 0),
+                  }));
+
+                  // Fallback ordering in the client, should the view return rows
+                  // without a rank value.
+                  rows.sort((a, b) =>
+                    b.tp - a.tp || b.fp - a.fp || b.pp - a.pp ||
+                    String(a.team_name).localeCompare(String(b.team_name))
+                  );
+                } else {
+                  // STRICT MATCH ISOLATION:
+                  // Match 1 displays ONLY rows whose match_number is 1;
+                  // Match 2 only rows whose match_number is 2; same for Match 3.
+                  // Do not merge the qualifier roster here and do not sum scores.
+                  // This prevents scores from other Grand Finals matches leaking
+                  // into the selected match table.
+                  const selectedMatchRows = freeFireGrandFinalsResults.filter(
+                    (row) => Number(row.match_number) === Number(selectedResultMatch)
+                  );
+
+                  // Keep one row per team for this exact match only.
+                  const selectedMatchByTeam = new Map();
+                  selectedMatchRows.forEach((score) => {
+                    const key = normalizeTeamKey(score.team_name);
+                    if (!key) return;
+
+                    const pp = Number(score.pp || 0);
+                    const fp = Number(score.fp || 0);
+                    const row = {
+                      id: score.id || `final-${key}-${selectedResultMatch}`,
+                      team_name: String(score.team_name || "").trim(),
+                      group_name: score.group_name || "",
+                      pp,
+                      fp,
+                      // Always derive TP from the visible PP + FP values.
+                      tp: pp + fp,
+                    };
+
+                    // In case the table accidentally contains duplicate rows for
+                    // a team/match, retain the first row instead of mixing matches.
+                    if (!selectedMatchByTeam.has(key)) {
+                      selectedMatchByTeam.set(key, row);
+                    }
+                  });
+
+                  rows = Array.from(selectedMatchByTeam.values()).sort(
+                    (a, b) =>
+                      b.tp - a.tp ||
+                      b.fp - a.fp ||
+                      b.pp - a.pp ||
+                      String(a.team_name).localeCompare(String(b.team_name))
+                  );
+
+                  // Rank by descending TP; equal TP/FP/PP shares the same rank.
+                  let currentRank = 0;
+                  let previousScore = null;
+                  rows.forEach((row, index) => {
+                    const scoreKey = `${row.tp}|${row.fp}|${row.pp}`;
+                    if (scoreKey !== previousScore) currentRank = index + 1;
+                    row.rank = currentRank;
+                    previousScore = scoreKey;
+                  });
+                }
+
                 return (
                   <section className="overflow-hidden rounded-2xl border border-white/10 bg-white/[0.025]">
                     <div className="flex flex-wrap items-center justify-between gap-2 border-b border-white/10 bg-white/[0.045] px-4 py-4 sm:px-5">
-                      <div><p className="text-[8px] font-bold uppercase tracking-[0.22em] text-white/35">{selectedResultDay === 1 ? `GROUP STAGE • GROUP ${selectedResultGroup}` : "GRAND FINALS • 12 FINALISTS"}</p>
-                      <h3 className="mt-1 text-sm font-bold uppercase tracking-[0.18em] text-white">MATCH {selectedResultMatch}</h3></div>
-                      <span className="rounded-full border border-white/15 bg-black/30 px-3 py-1.5 text-[8px] font-bold uppercase tracking-[0.16em] text-white/45">{rows.length} TEAMS</span>
+                      <div>
+                        <p className="text-[8px] font-bold uppercase tracking-[0.22em] text-white/35">
+                          {selectedResultDay === 1
+                            ? `GROUP STAGE • GROUP ${selectedResultGroup}${isOverallResults ? " • MATCHES 1–3 TOTAL" : ""}`
+                            : `GRAND FINALS • ${isOverallResults ? "OVERALL • MATCHES 1–3 TOTAL" : `MATCH ${selectedResultMatch}`}`}
+                        </p>
+                        <h3 className="mt-1 text-sm font-bold uppercase tracking-[0.18em] text-white">
+                          {isOverallResults
+                            ? selectedResultDay === 1
+                              ? `GROUP ${selectedResultGroup} • OVERALL RESULTS`
+                              : "GRAND FINALS • OVERALL RESULTS"
+                            : `MATCH ${selectedResultMatch}`}
+                        </h3>
+                      </div>
+                      <span className="rounded-full border border-white/15 bg-black/30 px-3 py-1.5 text-[8px] font-bold uppercase tracking-[0.16em] text-white/45">
+                        {rows.length} TEAMS
+                      </span>
                     </div>
-                    <div className="overflow-x-auto"><table className="w-full min-w-[480px] border-collapse text-left"><thead><tr className="border-b border-white/10 text-[8px] uppercase tracking-[0.13em] text-white/40 sm:text-[9px]">
-                      <th className="px-3 py-3 sm:px-4">S.No</th><th className="px-3 py-3 sm:px-4">Team Name</th><th className="px-3 py-3 text-center">FP</th><th className="px-3 py-3 text-center">PP</th><th className="px-3 py-3 text-center">TOTAL (FP + PP)</th><th className="px-3 py-3 text-center sm:px-4">RANK</th>
-                    </tr></thead><tbody>{rows.length ? rows.map((row, index) => { const fp = Number(row.fp || 0); const pp = Number(row.pp || 0); return <tr key={row.id} className={`border-b border-white/[0.06] last:border-0 ${index === 0 ? "bg-white/[0.055]" : ""}`}>
-                      <td className="px-3 py-3 text-xs text-white/40 sm:px-4">{index + 1}</td><td className="max-w-[220px] px-3 py-3 text-xs font-semibold text-white/85 sm:px-4">{row.team_name}</td><td className="px-3 py-3 text-center text-xs text-white/65">{fp}</td><td className="px-3 py-3 text-center text-xs text-white/65">{pp}</td><td className="px-3 py-3 text-center text-xs font-bold text-white">{row.tp ?? fp + pp}</td><td className="px-3 py-3 text-center text-xs font-bold text-white/75 sm:px-4">{index + 1}</td>
-                    </tr>; }) : <tr><td colSpan={6} className="px-4 py-12 text-center text-[9px] uppercase tracking-[0.14em] text-white/35">Results not published for this match yet.</td></tr>}</tbody></table></div>
+
+                    <div className="overflow-x-auto">
+                      <table className="w-full min-w-[480px] border-collapse text-left">
+                        <thead>
+                          <tr className="border-b border-white/10 text-[8px] uppercase tracking-[0.13em] text-white/40 sm:text-[9px]">
+                            <th className="px-3 py-3 sm:px-4">S.No</th>
+                            <th className="px-3 py-3 sm:px-4">Team Name</th>
+                            <th className="px-3 py-3 text-center">{isOverallResults ? "TOTAL FP" : "FP"}</th>
+                            <th className="px-3 py-3 text-center">{isOverallResults ? "TOTAL PP" : "PP"}</th>
+                            <th className="px-3 py-3 text-center">TOTAL POINTS (TP)</th>
+                            <th className="px-3 py-3 text-center sm:px-4">RANK</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {rows.length ? (
+                            rows.map((row, index) => (
+                              <tr
+                                key={row.id || `${selectedResultDay}-${selectedResultGroup}-${normalizeTeamKey(row.team_name)}-${index}`}
+                                className={`border-b border-white/[0.06] last:border-0 ${index === 0 ? "bg-white/[0.055]" : ""}`}
+                              >
+                                <td className="px-3 py-3 text-xs text-white/40 sm:px-4">{index + 1}</td>
+                                <td className="max-w-[220px] px-3 py-3 text-xs font-semibold text-white/85 sm:px-4">
+                                  <span>{row.team_name}</span>
+                                  {selectedResultDay === 1 && isOverallResults && Number(row.rank) <= 4 && (
+                                    <span className="ml-2 inline-flex rounded-md border border-emerald-300/30 bg-emerald-300/10 px-1.5 py-0.5 text-[9px] font-extrabold tracking-wider text-emerald-200">Q</span>
+                                  )}
+                                </td>
+                                <td className="px-3 py-3 text-center text-xs text-white/65">{row.fp}</td>
+                                <td className="px-3 py-3 text-center text-xs text-white/65">{row.pp}</td>
+                                <td className="px-3 py-3 text-center text-xs font-bold text-white">{row.tp}</td>
+                                <td className="px-3 py-3 text-center text-xs font-bold text-white/75 sm:px-4">{row.rank ?? index + 1}</td>
+                              </tr>
+                            ))
+                          ) : (
+                            <tr>
+                              <td colSpan={6} className="px-4 py-12 text-center text-[9px] uppercase tracking-[0.14em] text-white/35">
+                                {selectedResultDay === 2 && qualifiedFreeFireTeams.length === 0
+                                  ? "Qualified teams not available. Check rampage_free_fire_qualified_teams and its SELECT policy."
+                                  : selectedResultDay === 2 && isOverallResults && freeFireGrandFinalsOverall.length === 0
+                                  ? "Overall results view not available. Create rampage_free_fire_grand_finals_overall and check its SELECT policy."
+                                  : "Results not published for this match yet."}
+                              </td>
+                            </tr>
+                          )}
+                        </tbody>
+                      </table>
+                    </div>
                   </section>
                 );
               })()
+
             ) : (
               <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-8 text-center">
                 <p className="text-xs uppercase tracking-[0.16em] text-white/50">
@@ -2183,7 +2472,7 @@ const Events = () => {
             )}
 
             <p className="mt-5 text-[9px] leading-5 text-white/35">
-              PP = Position Points • FP = Finish Points • TP = Total Points (PP + FP). Teams are ranked by TP in descending order, with FP used as the tie-breaker.
+              KP = Kill/Position Points as configured in the match data • FP = Finish Points • TP = Total Points (KP + FP). Grand Finals Match 1, Match 2 and Match 3 scores are controlled by rampage_free_fire_finals_scoreboard; overall results combine all three matches. Q marks the top four teams in each group’s overall results.
             </p>
           </div>
         </div>
