@@ -25,17 +25,16 @@ import island6Url from "../assets/island6.png";
 import logoUrl from "../assets/logoo2.png";
 
 import comingSoonUrl from "../assets/cs.png";
+import overviewPosterUrl from "../assets/bgp.png";
 
 const EVENTS = [
-
-  { id: "ROBOWAR", color: "#ff3b45", x: 15.5 },
-
-  { id: "ROBOSOCCER", color: "#ffd60a", x: 32.5 },
-
-  { id: "ROBOSUMO", color: "#00aaff", x: 49.5 },
-
-  { id: "ROBODRIFT", color: "#bf5af2", x: 67.5 },
-
+  { id: "FIFA", color: "#45ffb0", x: 9.5 },
+  { id: "VALORANT", color: "#ff4655", x: 22.5 },
+  { id: "BGMI", color: "#ffb347", x: 35.5 },
+  { id: "FF", color: "#ff6b35", x: 48.5 },
+  { id: "PS5 RUSH", color: "#5c8dff", x: 61.5 },
+  { id: "VRXPERIENCE", color: "#bf7bff", x: 74.5 },
+  { id: "RC", color: "#00eaff", x: 87.5 },
 ];
 
 const randomBetween = (min, max) => min + Math.random() * (max - min);
@@ -56,7 +55,7 @@ export default function BattleblazeHero({ onSelectEvent }) {
 
   const current = useRef({ x: 0, y: 0 });
 
-  const [activeEvent, setActiveEvent] = useState("ROBOWAR");
+  const [activeEvent, setActiveEvent] = useState("FIFA");
 
   const [hoverColor, setHoverColor] = useState("#ff3f9f");
 
@@ -1284,20 +1283,23 @@ export default function BattleblazeHero({ onSelectEvent }) {
 
       const rect = hero.getBoundingClientRect();
 
-      const travel = Math.max(window.innerHeight * 1.65, 1);
-
+      // Brightness progressively fades as the first page scrolls away.
+      // At the end of the scroll range, the hero becomes almost completely dark.
+      const travel = Math.max(window.innerHeight * 1.15, 1);
       const progress = THREE.MathUtils.clamp(-rect.top / travel, 0, 1);
+      const easedProgress = progress * progress * (3 - 2 * progress);
+      const darkness = easedProgress * 0.97;
+
+      hero.style.setProperty("--bb-scroll-darkness", String(darkness));
 
       const zoomWave = Math.sin(progress * Math.PI);
 
       camera.position.z = 100 + zoomWave * 24;
-
       camera.updateProjectionMatrix();
 
       hero.style.setProperty("--bb-scroll-scale", String(1 + zoomWave * 0.035));
 
       const headingZoom = 1 + zoomWave * 0.16;
-
       hero.style.setProperty("--bb-heading-zoom", String(headingZoom));
 
     };
@@ -1644,7 +1646,7 @@ export default function BattleblazeHero({ onSelectEvent }) {
 
   return (
 
-    <div className="bb-page">
+    <div className="bb-page" style={{ "--bb-artwork-background": `url(${artworkUrl})` }}>
 
       <audio
 
@@ -1683,26 +1685,22 @@ export default function BattleblazeHero({ onSelectEvent }) {
           "--bb-parallax-y": "0px",
 
           "--bb-scroll-scale": "1",
+          "--bb-scroll-darkness": "0",
 
         }}
 
       >
 
-        <img
-
+        <div
           className="bb-match-art"
-
-          src={artworkUrl}
-
-          alt=""
-
-          draggable="false"
-
+          aria-hidden="true"
+          style={{ backgroundImage: `url(${artworkUrl})` }}
         />
 
         <div className="bb-match-stars" ref={sceneMount} aria-hidden="true" />
 
         <div className="bb-match-vignette" aria-hidden="true" />
+        <div className="bb-scroll-darken" aria-hidden="true" />
 
         <a className="bb-hotspot bb-hotspot-brand" href="#home" aria-label="Battleblaze home" />
 
@@ -1893,7 +1891,16 @@ export default function BattleblazeHero({ onSelectEvent }) {
         </span>
 
         <style>{`
-          @import url('https://fonts.googleapis.com/css2?family=Oxanium:wght@400;500;600;700;800&family=Rajdhani:wght@400;500;600;700&display=swap');
+          @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800&family=Rajdhani:wght@400;500;600;700&display=swap');
+
+          /* Consistent Orbitron typography throughout the page */
+          .bb-page,
+          .bb-page *,
+          .bb-page *::before,
+          .bb-page *::after {
+            font-family: 'Orbitron', sans-serif !important;
+          }
+
 
           .bb-match {
 
@@ -2007,6 +2014,17 @@ export default function BattleblazeHero({ onSelectEvent }) {
 
             opacity: 0.95;
 
+          }
+
+          /* Scroll-driven black overlay: darkens the entire first-page scene smoothly. */
+          .bb-scroll-darken {
+            position: absolute;
+            inset: 0;
+            z-index: 8;
+            pointer-events: none;
+            background: #000;
+            opacity: var(--bb-scroll-darkness, 0);
+            will-change: opacity;
           }
 
           /* ─────────────── CENTER LOGO & FIRE EFFECT ─────────────── */
@@ -2759,7 +2777,7 @@ export default function BattleblazeHero({ onSelectEvent }) {
 
             .bb-match-art {
 
-              object-position: center center;
+              background-position: center center;
 
               transform: translate3d(var(--bb-parallax-x, 0px), var(--bb-parallax-y, 0px), 0)
 
@@ -2889,7 +2907,7 @@ export default function BattleblazeHero({ onSelectEvent }) {
 
             }
 
-            .bb-next-title { font-size: clamp(3.5rem, 14vw, 7rem); }
+            .bb-next-title { font-size: clamp(2.2rem, 8vw, 3.8rem); }
 
           }
 
@@ -3031,13 +3049,18 @@ export default function BattleblazeHero({ onSelectEvent }) {
           .bb-next-section::before {
             content: "";
             position: absolute;
-            inset: 0;
+            inset: -8%;
             pointer-events: none;
             z-index: -2;
             background:
-              radial-gradient(ellipse at 12% 35%, rgba(255, 35, 145, .25), transparent 42%),
-              radial-gradient(ellipse at 88% 62%, rgba(0, 190, 255, .22), transparent 43%),
-              linear-gradient(125deg, #10051e 0%, #080a25 48%, #10051b 100%);
+              radial-gradient(ellipse at 14% 22%, rgba(92, 57, 255, .34) 0%, transparent 34%),
+              radial-gradient(ellipse at 78% 28%, rgba(0, 190, 255, .23) 0%, transparent 31%),
+              radial-gradient(ellipse at 68% 82%, rgba(255, 35, 145, .20) 0%, transparent 34%),
+              radial-gradient(ellipse at 35% 72%, rgba(71, 38, 174, .24) 0%, transparent 37%),
+              radial-gradient(ellipse at 50% 50%, rgba(13, 21, 62, .45) 0%, transparent 62%),
+              linear-gradient(135deg, #030511 0%, #080b26 42%, #10071f 72%, #030511 100%);
+            background-size: 130% 130%;
+            animation: bb-overview-nebula-drift 24s ease-in-out infinite alternate;
           }
 
           .bb-next-section::after {
@@ -3046,42 +3069,79 @@ export default function BattleblazeHero({ onSelectEvent }) {
             inset: 0;
             pointer-events: none;
             z-index: -1;
-            opacity: .42;
+            opacity: .72;
             background:
-              radial-gradient(1px 1px at 12% 18%, rgba(255,255,255,.8) 50%, transparent 70%),
-              radial-gradient(1.5px 1.5px at 78% 23%, rgba(0,234,255,.8) 50%, transparent 70%),
-              radial-gradient(1px 1px at 64% 76%, rgba(255,255,255,.7) 50%, transparent 70%),
-              radial-gradient(2px 2px at 25% 82%, rgba(255,42,145,.8) 50%, transparent 70%),
-              linear-gradient(115deg, transparent 0 32%, rgba(255,255,255,.035) 32.1%, transparent 32.5% 68%, rgba(0,225,255,.04) 68.1%, transparent 68.5%),
-              radial-gradient(1px 1px at 42% 12%, rgba(255,255,255,.8) 50%, transparent 75%),
-              radial-gradient(1px 1px at 91% 54%, rgba(255,115,198,.8) 50%, transparent 75%),
-              radial-gradient(1.5px 1.5px at 36% 61%, rgba(130,239,255,.75) 50%, transparent 75%),
-              radial-gradient(circle at 50% 50%, transparent 0 45%, rgba(0,0,0,.38) 100%);
-            animation: bb-overview-space-drift 14s ease-in-out infinite alternate;
+              radial-gradient(2px 2px at 7% 22%, rgba(255,255,255,.95) 45%, transparent 75%),
+              radial-gradient(1px 1px at 15% 78%, rgba(174,229,255,.9) 45%, transparent 75%),
+              radial-gradient(1.5px 1.5px at 23% 16%, rgba(255,255,255,.85) 45%, transparent 75%),
+              radial-gradient(2px 2px at 31% 64%, rgba(0,234,255,.9) 45%, transparent 75%),
+              radial-gradient(1px 1px at 38% 34%, rgba(255,255,255,.85) 45%, transparent 75%),
+              radial-gradient(1.5px 1.5px at 47% 87%, rgba(255,255,255,.8) 45%, transparent 75%),
+              radial-gradient(2px 2px at 57% 19%, rgba(174,229,255,.9) 45%, transparent 75%),
+              radial-gradient(1px 1px at 64% 52%, rgba(255,255,255,.85) 45%, transparent 75%),
+              radial-gradient(1.5px 1.5px at 73% 72%, rgba(255,42,145,.9) 45%, transparent 75%),
+              radial-gradient(2px 2px at 82% 13%, rgba(255,255,255,.9) 45%, transparent 75%),
+              radial-gradient(1px 1px at 91% 43%, rgba(0,234,255,.9) 45%, transparent 75%),
+              radial-gradient(1.5px 1.5px at 96% 83%, rgba(255,255,255,.8) 45%, transparent 75%),
+              radial-gradient(ellipse at 50% 50%, transparent 34%, rgba(0,0,0,.30) 100%);
+            background-size: 100% 100%;
+            animation: bb-overview-space-drift 9s ease-in-out infinite alternate;
           }
+
+          .bb-next-section {
+            background-image:
+              linear-gradient(rgba(110, 155, 255, .025) 1px, transparent 1px),
+              linear-gradient(90deg, rgba(110, 155, 255, .025) 1px, transparent 1px);
+            background-size: 64px 64px;
+          }
+
           @keyframes bb-overview-space-drift {
-            from { opacity: .28; transform: translate3d(0, 0, 0); }
-            to { opacity: .62; transform: translate3d(0, -8px, 0); }
+            from { opacity: .48; transform: translate3d(0, 0, 0) scale(1); }
+            to { opacity: .88; transform: translate3d(-8px, -12px, 0) scale(1.025); }
+          }
+
+          @keyframes bb-overview-nebula-drift {
+            from { transform: translate3d(-1.5%, 0, 0) scale(1); filter: hue-rotate(0deg); }
+            to { transform: translate3d(1.5%, -1%, 0) scale(1.06); filter: hue-rotate(12deg); }
+          }
+
+          .bb-overview-poster {
+            position: absolute;
+            z-index: 0;
+            top: 0;
+            right: 0;
+            height: 100%;
+            width: auto;
+            max-width: 48vw;
+            object-fit: contain;
+            object-position: right center;
+            pointer-events: none;
+            user-select: none;
+            opacity: 1;
+            filter: drop-shadow(-10px 0 28px rgba(0, 0, 0, .3));
+          }
+
+          .bb-next-section {
+            align-items: flex-start;
+            justify-content: flex-start;
+            padding: clamp(34px, 4vw, 62px) clamp(22px, 4vw, 64px) 64px;
           }
 
           .bb-next-layout {
-            width: min(1380px, 100%);
-            margin: 0 auto;
-            display: grid;
-            grid-template-columns: minmax(0, .92fr) minmax(320px, .78fr);
-            align-items: center;
-            gap: clamp(38px, 7vw, 110px);
             position: relative;
-            z-index: 1;
+            z-index: 2;
+            width: min(100%, 1060px);
+            margin: 0 0 0 clamp(168px, 18vw, 250px);
+            display: block;
           }
 
-          .bb-overview-copy { max-width: 650px; text-align: left; }
+          .bb-overview-copy { width: 100%; max-width: 900px; text-align: left; }
 
           .bb-overview-kicker {
             display: inline-flex;
             align-items: center;
             gap: 10px;
-            margin: 0 0 20px;
+            margin: 0 0 12px;
             color: #8deeff;
             font: 700 11px/1.4 ui-monospace, SFMono-Regular, Menlo, monospace;
             letter-spacing: .28em;
@@ -3098,34 +3158,36 @@ export default function BattleblazeHero({ onSelectEvent }) {
 
           .bb-overview-title {
             margin: 0;
-            font-family: Impact, "Arial Black", "Franklin Gothic Heavy", sans-serif;
-            font-size: clamp(3.8rem, 7.2vw, 7.4rem);
-            line-height: .88;
-            letter-spacing: -.035em;
+            font-family: "Orbitron", "Arial Black", sans-serif;
+            font-weight: 800;
+            font-size: clamp(2rem, 4.2vw, 3.7rem);
+            line-height: 1.08;
+            letter-spacing: .025em;
             text-transform: uppercase;
-            background: linear-gradient(100deg, #fff 8%, #ffd8ed 42%, #ff3b9d 70%, #8beeff 112%);
+            background: linear-gradient(100deg, #fff 8%, #ffcce7 38%, #ff3b9d 63%, #82efff 100%);
             -webkit-background-clip: text;
             background-clip: text;
             -webkit-text-fill-color: transparent;
-            filter: drop-shadow(0 10px 35px rgba(255, 42, 145, .14));
+            filter: drop-shadow(0 8px 26px rgba(255,42,145,.16));
+            overflow-wrap: anywhere;
           }
 
           .bb-overview-rule {
             width: min(340px, 70%);
             height: 2px;
-            margin: 28px 0;
+            margin: 18px 0;
             background: linear-gradient(90deg, #ff2a91, #8a5cff 52%, #00eaff, transparent);
             box-shadow: 0 0 18px rgba(0,234,255,.18);
           }
 
           .bb-overview-card {
             position: relative;
-            max-width: 590px;
-            padding: clamp(22px, 3vw, 34px);
+            max-width: 780px;
+            padding: 20px 24px;
             border: 1px solid rgba(159, 150, 255, .27);
-            border-radius: 18px;
-            background: linear-gradient(135deg, rgba(255, 35, 145, .12), rgba(13, 19, 53, .82) 48%, rgba(0, 210, 255, .09));
-            box-shadow: 0 24px 70px rgba(0,0,0,.25), inset 0 1px 0 rgba(255,255,255,.08);
+            border-radius: 16px;
+            background: linear-gradient(115deg, rgba(255, 35, 145, .14), rgba(13, 19, 53, .9) 48%, rgba(0, 210, 255, .10));
+            box-shadow: 0 20px 55px rgba(0,0,0,.25), inset 0 1px 0 rgba(255,255,255,.08);
             backdrop-filter: blur(12px);
             overflow: hidden;
           }
@@ -3142,173 +3204,167 @@ export default function BattleblazeHero({ onSelectEvent }) {
           }
 
           .bb-overview-card-label {
-            margin: 0 0 12px;
+            margin: 0 0 8px;
             color: #ff8bc7;
-            font: 800 12px/1.4 ui-monospace, SFMono-Regular, Menlo, monospace;
+            font: 800 11px/1.4 ui-monospace, SFMono-Regular, Menlo, monospace;
             letter-spacing: .2em;
             text-transform: uppercase;
           }
 
           .bb-overview-description {
             margin: 0;
-            color: rgba(244, 245, 255, .83);
-            font: 400 clamp(15px, 1.15vw, 18px)/1.85 Inter, "Segoe UI", sans-serif;
+            color: rgba(244, 245, 255, .86);
+            font: 400 clamp(12px, .95vw, 15px)/1.65 'Orbitron', sans-serif;
           }
 
-          .bb-overview-tags {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 9px;
-            margin-top: 24px;
-          }
+          .bb-overview-tags { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
 
           .bb-overview-tag {
-            padding: 8px 11px;
+            padding: 7px 10px;
             border: 1px solid rgba(137, 222, 255, .22);
             border-radius: 999px;
             color: #dffaff;
             background: rgba(0, 205, 255, .06);
-            font: 700 10px/1.2 ui-monospace, SFMono-Regular, Menlo, monospace;
+            font: 700 9px/1.2 ui-monospace, SFMono-Regular, Menlo, monospace;
             letter-spacing: .09em;
             text-transform: uppercase;
           }
 
-          .bb-module-frame {
-            position: relative;
-            width: min(100%, 470px);
-            aspect-ratio: 4 / 5;
-            justify-self: center;
-            padding: 11px;
-            border-radius: 24px;
-            background: linear-gradient(145deg, rgba(255, 42, 145, .96), rgba(138, 92, 255, .8) 48%, rgba(0, 234, 255, .95));
-            box-shadow: 0 0 0 1px rgba(255,255,255,.12), 0 28px 90px rgba(0,0,0,.48), 0 0 48px rgba(255,42,145,.17), 0 0 50px rgba(0,234,255,.12);
+          .bb-overview-events {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 12px;
+            margin-top: 18px;
+            max-width: 780px;
           }
 
-          .bb-module-frame::before {
+          .bb-overview-event-card {
+            position: relative;
+            min-width: 0;
+            padding: 14px 16px 13px;
+            overflow: hidden;
+            border: 1px solid color-mix(in srgb, var(--event-accent) 48%, transparent);
+            border-radius: 13px;
+            background:
+              linear-gradient(135deg, color-mix(in srgb, var(--event-accent) 13%, transparent), rgba(9, 12, 35, .92) 54%),
+              rgba(8, 9, 28, .88);
+            box-shadow: inset 0 1px 0 rgba(255,255,255,.07), 0 10px 28px rgba(0,0,0,.22);
+            backdrop-filter: blur(10px);
+            transition: transform .22s ease, border-color .22s ease, box-shadow .22s ease;
+          }
+
+          .bb-overview-event-card::after {
             content: "";
             position: absolute;
-            inset: -12px;
-            border: 1px solid rgba(126, 215, 255, .22);
-            border-radius: 31px;
-            pointer-events: none;
+            top: 0;
+            left: 16px;
+            width: 54px;
+            height: 2px;
+            background: var(--event-accent);
+            box-shadow: 0 0 14px var(--event-accent);
           }
 
-          .bb-module-frame-inner {
-            position: relative;
+          .bb-overview-event-card:hover {
+            transform: translateY(-3px);
+            border-color: var(--event-accent);
+            box-shadow: 0 12px 32px rgba(0,0,0,.32), 0 0 18px color-mix(in srgb, var(--event-accent) 15%, transparent);
+          }
+
+          .bb-overview-event-top { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+          .bb-overview-event-icon { color: var(--event-accent); font-size: 20px; text-shadow: 0 0 14px var(--event-accent); }
+          .bb-overview-event-code { color: rgba(210,225,255,.62); font: 700 9px/1.2 ui-monospace, monospace; letter-spacing: .16em; }
+          .bb-overview-event-card h3 {
+            margin: 7px 0 12px;
+            color: #fff;
+            font: 800 clamp(13px, 1.2vw, 17px)/1.25 'Orbitron', sans-serif;
+            letter-spacing: .045em;
+            overflow-wrap: anywhere;
+            text-shadow: 0 0 18px color-mix(in srgb, var(--event-accent) 22%, transparent);
+          }
+          .bb-overview-event-prize {
             display: flex;
-            flex-direction: column;
-            width: 100%;
-            height: 100%;
-            min-height: 0;
-            overflow: hidden;
-            border-radius: 16px;
-            background: linear-gradient(160deg, #10091e, #090d27 56%, #150820);
-            border: 1px solid rgba(255,255,255,.22);
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 6px 10px;
+            padding-top: 9px;
+            border-top: 1px solid rgba(255,255,255,.10);
+          }
+          .bb-overview-event-prize span { color: rgba(215,225,255,.62); font: 700 9px/1.3 ui-monospace, monospace; letter-spacing: .13em; }
+          .bb-overview-event-prize strong { color: var(--event-accent); font: 800 9px/1.3 'Orbitron', sans-serif; letter-spacing: .06em; }
+
+          /* Overview event grid — keep all content clear of the right-side poster */
+          .bb-next-section {
+            align-items: flex-start;
+            justify-content: flex-start;
+            padding: clamp(38px, 5vw, 70px) clamp(22px, 4vw, 64px) 64px;
           }
 
-          .bb-module-brand {
+          .bb-overview-poster {
+            position: absolute;
+            z-index: 0;
+            top: 0;
+            right: 0;
+            height: 100%;
+            width: auto;
+            max-width: 48vw;
+            object-fit: contain;
+            object-position: right center;
+            pointer-events: none;
+            user-select: none;
+            opacity: 1;
+            filter: drop-shadow(-10px 0 28px rgba(0, 0, 0, .3));
+          }
+
+          .bb-next-layout {
             position: relative;
             z-index: 2;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            min-height: 94px;
-            padding: 16px 20px 12px;
-            background: linear-gradient(100deg, rgba(255, 35, 145, .14), rgba(12, 13, 39, .92) 48%, rgba(0, 220, 255, .12));
-            border-bottom: 1px solid rgba(150, 199, 255, .2);
+            width: min(100%, 980px);
+            margin: 0;
           }
 
-          .bb-module-logo {
-            display: block;
-            width: min(72%, 230px);
-            max-height: 74px;
-            object-fit: contain;
-            filter: drop-shadow(0 0 16px rgba(255, 42, 145, .2));
-          }
+          .bb-overview-copy { width: min(100%, 900px); text-align: left; }
 
-          .bb-module-image-slot {
-            position: relative;
-            flex: 1;
-            min-height: 0;
+          .bb-overview-events {
             display: grid;
-            place-items: center;
-            padding: 22px;
-            background:
-              radial-gradient(ellipse at 50% 40%, rgba(255, 42, 145, .12), transparent 55%),
-              radial-gradient(ellipse at 70% 75%, rgba(0, 220, 255, .11), transparent 52%),
-              linear-gradient(145deg, rgba(255,255,255,.025), transparent 55%);
-          }
-
-          .bb-module-image-slot::before {
-            content: "";
-            position: absolute;
-            inset: 18px;
-            border: 1px dashed rgba(170, 201, 255, .24);
-            border-radius: 12px;
-            pointer-events: none;
-          }
-
-          .bb-module-placeholder {
-            position: relative;
-            z-index: 1;
-            display: grid;
-            justify-items: center;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
             gap: 12px;
-            padding: 22px;
-            color: rgba(223, 232, 255, .72);
-            text-align: center;
+            margin-top: 18px;
+            max-width: 760px;
           }
 
-          .bb-module-placeholder-mark {
-            display: grid;
-            place-items: center;
-            width: 56px;
-            height: 56px;
-            border-radius: 16px;
-            border: 1px solid rgba(0,234,255,.32);
-            color: #a7f5ff;
-            background: linear-gradient(135deg, rgba(255,42,145,.15), rgba(0,234,255,.1));
-            box-shadow: 0 0 28px rgba(0,234,255,.1);
-            font-size: 26px;
-          }
+          .bb-overview-event-card { min-height: 132px; padding: 14px 16px 13px; }
 
-          .bb-module-placeholder strong {
-            color: #fff;
-            font: 800 13px/1.4 ui-monospace, SFMono-Regular, Menlo, monospace;
-            letter-spacing: .16em;
-            text-transform: uppercase;
-          }
+          .bb-overview-event-card h3 { margin: 7px 0 12px; font-size: clamp(13px, 1.15vw, 17px); }
 
-          .bb-module-placeholder span {
-            max-width: 230px;
-            color: rgba(224,231,255,.55);
-            font: 500 12px/1.7 Inter, "Segoe UI", sans-serif;
+          .bb-overview-event-prize strong { color: var(--event-accent); font-size: 10px; }
+
+          @media (min-width: 1200px) {
+            .bb-overview-poster { max-width: 48vw; }
+            .bb-next-layout { width: min(58%, 860px); }
           }
 
           @media (max-width: 850px) {
-            .bb-next-section { padding: 80px 6vw; }
-            .bb-next-layout {
-              grid-template-columns: 1fr;
-              gap: 48px;
-              max-width: 650px;
-            }
+            .bb-next-section { padding: 28px 22px 50px; }
+            .bb-overview-poster { right: 0; height: 100%; max-width: 58vw; opacity: 1; object-position: right center; }
+            .bb-next-layout { width: min(100%, 720px); margin: 0; }
             .bb-overview-copy { max-width: 100%; }
-            .bb-overview-title { font-size: clamp(3.5rem, 12vw, 6rem); }
-            .bb-module-frame { width: min(82%, 430px); }
+            .bb-overview-title { font-size: clamp(1.8rem, 5.5vw, 3rem); }
+            .bb-overview-events { gap: 9px; max-width: 100%; }
+            .bb-overview-event-card { padding: 12px; }
           }
 
-          @media (max-width: 480px) {
-            .bb-next-section { padding: 68px 22px; }
-            .bb-next-layout { gap: 38px; }
-            .bb-overview-title { font-size: clamp(3.2rem, 15vw, 4.6rem); }
-            .bb-overview-card { padding: 22px 20px; border-radius: 15px; }
-            .bb-module-frame { width: min(100%, 370px); padding: 8px; border-radius: 19px; }
-            .bb-module-frame-inner { border-radius: 12px; }
-            .bb-module-brand { min-height: 78px; }
-            .bb-module-logo { max-height: 60px; }
-            .bb-module-image-slot { padding: 14px; }
-            .bb-module-image-slot::before { inset: 12px; }
-
+          @media (max-width: 600px) {
+            .bb-next-section { min-height: 100svh; padding: 24px 16px 42px; }
+            .bb-overview-poster { height: 88%; max-width: 96vw; width: auto; right: 0; top: 0; opacity: 1; object-fit: contain; object-position: right top; }
+            .bb-next-layout { width: 100%; margin: 0; }
+            .bb-overview-copy { position: relative; z-index: 2; }
+            .bb-overview-title { font-size: clamp(1.7rem, 8vw, 2.5rem); }
+            .bb-overview-rule { margin: 14px 0; }
+            .bb-overview-card { padding: 16px; border-radius: 14px; }
+            .bb-overview-tags { gap: 7px; margin-top: 12px; }
+            .bb-overview-events { grid-template-columns: 1fr; gap: 9px; margin-top: 14px; }
+            .bb-overview-event-card { min-height: 118px; padding: 12px 14px; }
           }
 
           /* ─────────────── MODULES SCROLL PAGE ─────────────── */
@@ -3397,9 +3453,9 @@ export default function BattleblazeHero({ onSelectEvent }) {
           }
           .bb-modules-title {
             margin: 0;
-            font-family: "Oxanium", "Arial Black", sans-serif;
+            font-family: "Orbitron", "Arial Black", sans-serif;
             font-weight: 800;
-            font-size: clamp(3.4rem, 7.8vw, 7rem);
+            font-size: clamp(2.4rem, 5.6vw, 4.5rem);
             line-height: .9;
             letter-spacing: -.025em;
             text-transform: uppercase;
@@ -3413,7 +3469,7 @@ export default function BattleblazeHero({ onSelectEvent }) {
             max-width: 620px;
             margin: 18px auto 0;
             color: rgba(232,238,255,.72);
-            font: 500 clamp(14px, 1.25vw, 17px)/1.8 "Rajdhani", "Segoe UI", sans-serif;
+            font: 500 clamp(12px, 1vw, 14px)/1.6 "Rajdhani", "Segoe UI", sans-serif;
           }
           .bb-modules-grid {
             display: grid;
@@ -3501,7 +3557,7 @@ export default function BattleblazeHero({ onSelectEvent }) {
           .bb-poster-title {
             margin: 0;
             color: #fff;
-            font: 800 clamp(19px, 2vw, 27px)/.98 "Oxanium", "Arial Black", sans-serif;
+            font: 800 clamp(19px, 2vw, 27px)/.98 "Orbitron", "Arial Black", sans-serif;
             letter-spacing: .015em;
             text-transform: uppercase;
             overflow-wrap: anywhere;
@@ -3519,10 +3575,10 @@ export default function BattleblazeHero({ onSelectEvent }) {
             min-height: 66px;
             margin: 0 0 16px;
             color: rgba(232,238,255,.7);
-            font: 600 15px/1.6 "Rajdhani", "Segoe UI", sans-serif;
+            font: 600 13px/1.45 "Rajdhani", "Segoe UI", sans-serif;
           }
           .bb-register-button {
-            font-family: "Oxanium", "Rajdhani", sans-serif;
+            font-family: "Orbitron", "Rajdhani", sans-serif;
             font-weight: 700;
             letter-spacing: .045em;
             display: flex;
@@ -3555,9 +3611,9 @@ export default function BattleblazeHero({ onSelectEvent }) {
             .bb-module-card { padding: 7px; border-radius: 15px; }
             .bb-module-poster { padding: 14px; }
             .bb-poster-icon { width: 45px; height: 45px; font-size: 22px; margin: 15px 0 12px; }
-            .bb-poster-title { font-size: clamp(17px, 4.7vw, 24px); }
+            .bb-poster-title { font-size: clamp(14px, 2.5vw, 19px); }
             .bb-module-card-copy { padding: 13px 4px 4px; }
-            .bb-module-description { min-height: 88px; font-size: 12px; }
+            .bb-module-description { min-height: 88px; font-size: 11px; }
             .bb-register-button { padding: 11px 9px; font-size: 9px; letter-spacing: .07em; }
           }
           @media (max-width: 380px) {
@@ -3614,14 +3670,14 @@ export default function BattleblazeHero({ onSelectEvent }) {
             letter-spacing: .32em; text-transform: uppercase;
           }
           .bb-team-title {
-            margin: 0; font-family: "Oxanium", "Arial Black", sans-serif; font-weight: 800;
-            font-size: clamp(3.2rem, 7.6vw, 6.8rem); line-height: .95; letter-spacing: -.025em;
+            margin: 0; font-family: "Orbitron", "Arial Black", sans-serif; font-weight: 800;
+            font-size: clamp(2.3rem, 5.4vw, 4.4rem); line-height: .95; letter-spacing: -.025em;
             text-transform: uppercase;
             background: linear-gradient(100deg, #fff 8%, #ffcce7 38%, #ff3b9d 63%, #82efff 100%);
             -webkit-background-clip: text; background-clip: text; color: transparent;
             filter: drop-shadow(0 0 26px rgba(255,59,157,.15));
           }
-          .bb-team-subtitle { max-width: 620px; margin: 18px auto 0; color: rgba(233,241,255,.72); font: 500 clamp(15px, 1.4vw, 18px)/1.65 "Rajdhani", sans-serif; }
+          .bb-team-subtitle { max-width: 620px; margin: 18px auto 0; color: rgba(233,241,255,.72); font: 500 clamp(12px, 1.1vw, 15px)/1.55 "Rajdhani", sans-serif; }
           .bb-team-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: clamp(14px, 2vw, 26px); }
           .bb-team-card {
             min-width: 0; padding: 12px; border: 1px solid rgba(174,213,255,.2); border-radius: 20px;
@@ -3645,7 +3701,7 @@ export default function BattleblazeHero({ onSelectEvent }) {
           .bb-team-photo-hint { position: absolute; z-index: 1; bottom: 25px; left: 10px; right: 10px; text-align: center; color: rgba(224,241,255,.56); font: 700 9px/1.4 "Rajdhani", sans-serif; letter-spacing: .17em; text-transform: uppercase; }
           .bb-team-card-meta { padding: 18px 7px 8px; }
           .bb-team-role { margin: 0 0 7px; color: #91edff; font: 700 10px/1.4 "Rajdhani", sans-serif; letter-spacing: .19em; text-transform: uppercase; }
-          .bb-team-name { margin: 0; color: #fff; font: 800 clamp(17px, 1.8vw, 24px)/1.2 "Oxanium", sans-serif; text-transform: uppercase; }
+          .bb-team-name { margin: 0; color: #fff; font: 800 clamp(17px, 1.8vw, 24px)/1.2 "Orbitron", sans-serif; text-transform: uppercase; }
           .bb-team-name-hint { margin: 8px 0 0; color: rgba(226,236,255,.48); font: 600 12px/1.5 "Rajdhani", sans-serif; }
           @media (max-width: 1000px) { .bb-team-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); max-width: 760px; margin: 0 auto; } }
           @media (max-width: 520px) {
@@ -3654,83 +3710,809 @@ export default function BattleblazeHero({ onSelectEvent }) {
             .bb-team-card { padding: 8px; border-radius: 15px; }
             .bb-team-card-meta { padding: 13px 4px 6px; }
             .bb-team-role { font-size: 9px; letter-spacing: .12em; }
-            .bb-team-name { font-size: clamp(15px, 4vw, 19px); }
+            .bb-team-name { font-size: clamp(13px, 3vw, 16px); }
             .bb-team-photo-hint { font-size: 8px; bottom: 20px; }
           }
           @media (prefers-reduced-motion: reduce) {
             .bb-team-card, .bb-team-section::before, .bb-next-section::after, .bb-modules-section::before { animation: none !important; transition: none !important; }
           }
 
-        `}</style>
+          /* ─────────────── DEEP BLUE NEBULA SPACE — SCROLL PAGES ─────────────── */
+          .bb-next-section,
+          .bb-modules-section,
+          .bb-team-section {
+            background:
+              radial-gradient(ellipse at 50% 115%, rgba(34, 75, 255, .48), transparent 48%),
+              radial-gradient(ellipse at 12% 22%, rgba(0, 174, 255, .30), transparent 34%),
+              radial-gradient(ellipse at 88% 30%, rgba(89, 62, 255, .38), transparent 38%),
+              radial-gradient(ellipse at 52% 48%, rgba(20, 70, 180, .22), transparent 56%),
+              linear-gradient(135deg, #020513 0%, #061333 32%, #10165d 62%, #030817 100%) !important;
+            isolation: isolate;
+          }
+
+          .bb-next-section::before,
+          .bb-modules-section::before,
+          .bb-team-section::before {
+            z-index: -1;
+            opacity: 1;
+            background:
+              radial-gradient(ellipse at 18% 28%, rgba(0, 183, 255, .28), transparent 29%),
+              radial-gradient(ellipse at 76% 72%, rgba(60, 80, 255, .30), transparent 36%),
+              radial-gradient(ellipse at 54% 14%, rgba(139, 92, 246, .24), transparent 32%),
+              radial-gradient(ellipse at 82% 8%, rgba(83, 185, 255, .12), transparent 24%),
+              repeating-linear-gradient(115deg, transparent 0 110px, rgba(115, 174, 255, .035) 111px, transparent 113px 220px),
+              radial-gradient(circle at 50% 50%, transparent 20%, rgba(1, 4, 18, .42) 100%);
+            animation: bb-blue-nebula-drift 18s ease-in-out infinite alternate;
+          }
+
+          .bb-next-section::after,
+          .bb-modules-section::after,
+          .bb-team-section::after {
+            z-index: -1;
+            opacity: .82;
+            background:
+              radial-gradient(1px 1px at 5% 12%, rgba(255,255,255,.95) 50%, transparent 75%),
+              radial-gradient(2px 2px at 14% 66%, rgba(126,218,255,.95) 50%, transparent 75%),
+              radial-gradient(1px 1px at 22% 36%, rgba(255,255,255,.85) 50%, transparent 75%),
+              radial-gradient(1.5px 1.5px at 31% 82%, rgba(100,178,255,.9) 50%, transparent 75%),
+              radial-gradient(2px 2px at 43% 19%, rgba(197,190,255,.95) 50%, transparent 75%),
+              radial-gradient(1px 1px at 56% 59%, rgba(255,255,255,.9) 50%, transparent 75%),
+              radial-gradient(1.5px 1.5px at 67% 29%, rgba(104,222,255,.9) 50%, transparent 75%),
+              radial-gradient(1px 1px at 73% 88%, rgba(255,255,255,.8) 50%, transparent 75%),
+              radial-gradient(2px 2px at 84% 48%, rgba(155,143,255,.95) 50%, transparent 75%),
+              radial-gradient(1px 1px at 95% 17%, rgba(255,255,255,.9) 50%, transparent 75%),
+              radial-gradient(ellipse at 50% 50%, transparent 30%, rgba(0, 3, 18, .34) 100%);
+            background-size: 100% 100%;
+            animation: bb-blue-stars-twinkle 8s ease-in-out infinite alternate;
+          }
+
+          @keyframes bb-blue-nebula-drift {
+            0% { filter: hue-rotate(0deg); transform: translate3d(-.4%, 0, 0) scale(1.02); }
+            100% { filter: hue-rotate(13deg); transform: translate3d(.4%, -1%, 0) scale(1.06); }
+          }
+
+          @keyframes bb-blue-stars-twinkle {
+            0% { opacity: .48; }
+            100% { opacity: .95; }
+          }
+
+          @media (prefers-reduced-motion: reduce) {
+            .bb-next-section::before,
+            .bb-modules-section::before,
+            .bb-team-section::before,
+            .bb-next-section::after,
+            .bb-modules-section::after,
+            .bb-team-section::after {
+              animation: none;
+            }
+          }
+
+          /* Compact typography: prevent oversized headings and clipped copy */
+          .bb-overview-title,
+          .bb-modules-title,
+          .bb-team-title,
+          .bb-next-title {
+            max-width: 100%;
+            font-size: clamp(2rem, 4.8vw, 4.2rem) !important;
+            line-height: 1.08 !important;
+            letter-spacing: 0 !important;
+            overflow-wrap: anywhere;
+            word-break: normal;
+          }
+          .bb-poster-title {
+            font-size: clamp(13px, 1.6vw, 18px) !important;
+            line-height: 1.15 !important;
+            overflow-wrap: anywhere;
+          }
+          .bb-team-name { font-size: clamp(12px, 1.2vw, 15px) !important; }
+          .bb-overview-description,
+          .bb-modules-subtitle,
+          .bb-team-subtitle,
+          .bb-module-description {
+            font-size: clamp(11px, .95vw, 13px) !important;
+            line-height: 1.5 !important;
+          }
+          .bb-overview-card-label { font-size: 10px !important; }
+          @media (max-width: 600px) {
+            .bb-overview-title,
+            .bb-modules-title,
+            .bb-team-title,
+            .bb-next-title {
+              font-size: clamp(1.75rem, 7.5vw, 2.7rem) !important;
+              line-height: 1.12 !important;
+            }
+            .bb-poster-title { font-size: 13px !important; }
+            .bb-overview-description,
+            .bb-modules-subtitle,
+            .bb-team-subtitle,
+            .bb-module-description { font-size: 11px !important; }
+          }
+
+
+          /* FINAL OVERVIEW LAYOUT: distinct content and framed poster columns */
+          .bb-next-section {
+            position: relative;
+            isolation: isolate;
+            min-height: 100vh;
+            padding: clamp(42px, 4.2vw, 68px) clamp(22px, 3.2vw, 54px) 72px;
+            overflow: hidden;
+          }
+
+          /* Keep the poster in its own right-side column so it never sits behind text/cards. */
+          .bb-overview-poster {
+            position: absolute;
+            top: 50%;
+            right: clamp(20px, 2.4vw, 42px);
+            transform: translateY(-50%);
+            width: min(31vw, 520px);
+            height: auto;
+            max-width: 31vw;
+            max-height: 78%;
+            object-fit: contain;
+            object-position: center;
+            opacity: 1;
+            z-index: 1;
+            padding: 8px;
+            border: 2px solid rgba(255,255,255,.92);
+            border-radius: 18px;
+            background: linear-gradient(145deg, rgba(255,255,255,.10), rgba(5,10,30,.88));
+            box-shadow: 0 0 0 1px rgba(255,255,255,.12), 0 0 18px rgba(255,255,255,.22), 0 18px 48px rgba(0,0,0,.5), inset 0 0 18px rgba(255,255,255,.07);
+          }
+
+          .bb-next-layout {
+            width: min(55%, 900px);
+            max-width: 900px;
+            margin: 0;
+            position: relative;
+            z-index: 2;
+          }
+
+          .bb-overview-copy { width: 100%; max-width: 900px; }
+
+          .bb-overview-title {
+            color: #fff !important;
+            background: none !important;
+            -webkit-background-clip: initial !important;
+            background-clip: initial !important;
+            -webkit-text-fill-color: #fff !important;
+            text-shadow: 0 0 8px rgba(255,255,255,.72), 0 0 24px rgba(255,255,255,.28);
+            filter: none;
+          }
+
+          .bb-overview-kicker,
+          .bb-overview-card-label,
+          .bb-overview-description,
+          .bb-overview-tag,
+          .bb-overview-event-code,
+          .bb-overview-event-card h3,
+          .bb-overview-event-prize span,
+          .bb-overview-event-prize strong {
+            color: #fff !important;
+            -webkit-text-fill-color: #fff !important;
+          }
+
+          .bb-overview-kicker::before,
+          .bb-overview-rule {
+            background: linear-gradient(90deg, #fff, rgba(255,255,255,.45), transparent) !important;
+            box-shadow: 0 0 16px rgba(255,255,255,.72), 0 0 30px rgba(255,255,255,.22) !important;
+          }
+
+          /* Overview intro uses a clean angular HUD panel rather than the previous rounded glass box. */
+          .bb-overview-card {
+            border: 1px solid rgba(255,255,255,.7) !important;
+            border-radius: 4px 18px 4px 18px !important;
+            background: linear-gradient(115deg, rgba(15,28,52,.96), rgba(5,9,24,.96) 72%) !important;
+            box-shadow: 7px 7px 0 rgba(255,255,255,.045), 0 14px 34px rgba(0,0,0,.36), 0 0 18px rgba(255,255,255,.09), inset 4px 0 0 rgba(255,255,255,.16) !important;
+            backdrop-filter: blur(12px);
+          }
+
+          .bb-overview-card::before {
+            background: #fff !important;
+            box-shadow: 0 0 12px rgba(255,255,255,.9), 0 0 24px rgba(255,255,255,.35) !important;
+          }
+
+          .bb-overview-tag {
+            border-color: rgba(255,255,255,.65) !important;
+            border-radius: 3px 10px 3px 10px !important;
+            background: rgba(255,255,255,.075) !important;
+            box-shadow: 0 0 10px rgba(255,255,255,.06) !important;
+          }
+
+          .bb-overview-events {
+            width: 100%;
+            max-width: 900px;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 14px;
+            margin-top: 22px;
+          }
+
+          /* Event cards: squared esports HUD panels with a white top rail. */
+          .bb-overview-event-card {
+            border: 1px solid rgba(255,255,255,.64) !important;
+            border-radius: 4px 14px 4px 14px !important;
+            background: linear-gradient(135deg, rgba(20,34,58,.98), rgba(4,8,22,.98) 72%) !important;
+            box-shadow: 5px 5px 0 rgba(255,255,255,.035), 0 12px 26px rgba(0,0,0,.38), inset 3px 0 0 rgba(255,255,255,.10) !important;
+            backdrop-filter: blur(10px);
+            min-width: 0;
+          }
+
+          .bb-overview-event-card::after {
+            background: #fff !important;
+            box-shadow: 0 0 10px rgba(255,255,255,.95), 0 0 20px rgba(255,255,255,.32) !important;
+          }
+
+          .bb-overview-event-card:hover {
+            transform: translateY(-3px);
+            border-color: #fff !important;
+            box-shadow: 5px 5px 0 rgba(255,255,255,.07), 0 16px 30px rgba(0,0,0,.4), 0 0 18px rgba(255,255,255,.16) !important;
+          }
+
+          .bb-overview-event-icon,
+          .bb-overview-event-card h3,
+          .bb-overview-event-prize strong {
+            color: #fff !important;
+            text-shadow: 0 0 10px rgba(255,255,255,.42);
+          }
+
+          .bb-overview-event-prize { border-top-color: rgba(255,255,255,.32) !important; }
+
+          @media (min-width: 1200px) {
+            .bb-next-layout { width: min(55%, 900px); }
+            .bb-overview-poster { width: min(31vw, 520px); max-width: 31vw; max-height: 78%; }
+          }
+
+          @media (max-width: 1000px) {
+            .bb-next-section { min-height: auto; padding: 36px 22px 54px; }
+            .bb-overview-poster {
+              position: relative;
+              display: block;
+              transform: none;
+              top: auto; right: auto;
+              width: min(68%, 440px);
+              max-width: 100%; max-height: none;
+              margin: 0 auto 28px;
+              opacity: 1;
+            }
+            .bb-next-layout { width: 100%; max-width: 820px; margin: 0 auto; }
+            .bb-overview-copy, .bb-overview-events { max-width: 100%; }
+          }
+
+          @media (max-width: 600px) {
+            .bb-next-section { min-height: auto; padding: 28px 16px 44px; }
+            .bb-overview-poster { width: min(88%, 380px); margin-bottom: 24px; padding: 6px; border-radius: 12px; }
+            .bb-next-layout { width: 100%; }
+            .bb-overview-events { grid-template-columns: 1fr; gap: 11px; }
+            .bb-overview-event-card { min-height: 112px; }
+          }
+
+          /* ─────────────── GLOBAL BATTLEBLAZE THEME BRIDGE ───────────────
+             Unifies the scroll sections with the first page's pink / violet / cyan
+             artwork while keeping every section readable and visually connected. */
+          .bb-page {
+            --bb-pink: #ff2a91;
+            --bb-cyan: #00eaff;
+            --bb-violet: #795cff;
+            background: #07091b !important;
+            color: #fff;
+          }
+
+          .bb-next-section,
+          .bb-modules-section,
+          .bb-team-section {
+            color: #fff !important;
+            background-color: #080a20 !important;
+            background-image:
+              radial-gradient(ellipse at 8% 12%, rgba(255,42,145,.19) 0%, transparent 34%),
+              radial-gradient(ellipse at 88% 20%, rgba(0,234,255,.15) 0%, transparent 32%),
+              radial-gradient(ellipse at 52% 100%, rgba(111,76,255,.18) 0%, transparent 43%),
+              linear-gradient(135deg, #071126 0%, #101034 48%, #09091f 100%) !important;
+            border-top: 1px solid rgba(255,255,255,.10);
+            box-shadow: inset 0 1px 0 rgba(255,255,255,.035);
+          }
+
+          .bb-next-section::before,
+          .bb-modules-section::before,
+          .bb-team-section::before {
+            background:
+              radial-gradient(ellipse at 12% 18%, rgba(255,42,145,.19), transparent 35%),
+              radial-gradient(ellipse at 84% 22%, rgba(0,234,255,.14), transparent 34%),
+              radial-gradient(ellipse at 54% 88%, rgba(121,92,255,.16), transparent 40%),
+              linear-gradient(115deg, rgba(3,7,24,.16), rgba(8,10,31,.02), rgba(3,7,24,.2)) !important;
+            opacity: .92;
+          }
+
+          .bb-next-section::after {
+            opacity: .48 !important;
+            background:
+              radial-gradient(1.5px 1.5px at 8% 24%, rgba(255,255,255,.9) 45%, transparent 75%),
+              radial-gradient(1px 1px at 24% 72%, rgba(0,234,255,.8) 45%, transparent 75%),
+              radial-gradient(1.5px 1.5px at 44% 17%, rgba(255,255,255,.8) 45%, transparent 75%),
+              radial-gradient(1px 1px at 69% 64%, rgba(255,42,145,.85) 45%, transparent 75%),
+              radial-gradient(1.5px 1.5px at 91% 31%, rgba(255,255,255,.8) 45%, transparent 75%),
+              linear-gradient(180deg, rgba(4,7,22,.05), rgba(4,7,22,.2)) !important;
+          }
+
+          .bb-modules-section::after,
+          .bb-team-section::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            z-index: -1;
+            pointer-events: none;
+            background-image:
+              linear-gradient(rgba(135,174,255,.025) 1px, transparent 1px),
+              linear-gradient(90deg, rgba(135,174,255,.025) 1px, transparent 1px);
+            background-size: 58px 58px;
+            mask-image: linear-gradient(to bottom, transparent, #000 12%, #000 88%, transparent);
+          }
+
+          .bb-overview-title,
+          .bb-modules-title,
+          .bb-team-title {
+            color: #fff !important;
+            background: none !important;
+            -webkit-background-clip: initial !important;
+            background-clip: initial !important;
+            -webkit-text-fill-color: #fff !important;
+            text-shadow: 0 0 10px rgba(255,255,255,.48), 0 0 28px rgba(255,42,145,.22), 0 0 42px rgba(0,234,255,.12);
+            filter: none !important;
+          }
+
+          .bb-overview-kicker,
+          .bb-modules-kicker,
+          .bb-team-kicker {
+            color: #fff !important;
+            text-shadow: 0 0 12px rgba(0,234,255,.35);
+          }
+
+          .bb-overview-kicker::before,
+          .bb-overview-rule,
+          .bb-poster-index::before {
+            background: linear-gradient(90deg, #ff2a91, #a58bff 52%, #00eaff) !important;
+            box-shadow: 0 0 14px rgba(255,42,145,.36), 0 0 20px rgba(0,234,255,.25) !important;
+          }
+
+          .bb-overview-card,
+          .bb-overview-event-card,
+          .bb-module-card,
+          .bb-team-card {
+            border: 1px solid rgba(173,208,255,.32) !important;
+            background:
+              linear-gradient(135deg, rgba(17,29,59,.88), rgba(8,10,30,.94) 62%, rgba(30,13,48,.82)) !important;
+            box-shadow:
+              0 14px 36px rgba(0,0,0,.28),
+              0 0 18px rgba(0,234,255,.055),
+              inset 0 1px 0 rgba(255,255,255,.09) !important;
+            backdrop-filter: blur(14px);
+            transition: transform .24s ease, border-color .24s ease, box-shadow .24s ease;
+          }
+
+          .bb-overview-card:hover,
+          .bb-overview-event-card:hover,
+          .bb-module-card:hover,
+          .bb-team-card:hover {
+            border-color: rgba(0,234,255,.68) !important;
+            box-shadow:
+              0 18px 42px rgba(0,0,0,.36),
+              0 0 22px rgba(0,234,255,.12),
+              0 0 28px rgba(255,42,145,.08),
+              inset 0 1px 0 rgba(255,255,255,.12) !important;
+          }
+
+          .bb-overview-card::before,
+          .bb-overview-event-card::after {
+            background: linear-gradient(90deg, #ff2a91, #fff 50%, #00eaff) !important;
+            box-shadow: 0 0 12px rgba(255,255,255,.46), 0 0 18px rgba(0,234,255,.25) !important;
+          }
+
+          .bb-overview-event-card h3,
+          .bb-overview-event-code,
+          .bb-overview-event-prize span,
+          .bb-overview-event-prize strong,
+          .bb-module-description,
+          .bb-poster-index,
+          .bb-poster-code,
+          .bb-team-role,
+          .bb-team-name-hint {
+            color: #fff !important;
+          }
+
+          .bb-overview-tag,
+          .bb-modules-logo-shell,
+          .bb-poster-icon,
+          .bb-register-button {
+            border-color: rgba(255,255,255,.32) !important;
+            background: linear-gradient(110deg, rgba(255,42,145,.12), rgba(120,92,255,.12), rgba(0,234,255,.12)) !important;
+            box-shadow: 0 0 16px rgba(0,234,255,.06), inset 0 1px 0 rgba(255,255,255,.08);
+          }
+
+          .bb-overview-poster {
+            border: 1px solid rgba(255,255,255,.78);
+            padding: 7px;
+            background: rgba(5,8,25,.72);
+            box-shadow: 0 0 0 1px rgba(0,234,255,.14), 0 0 26px rgba(0,234,255,.12), 0 18px 48px rgba(0,0,0,.32);
+          }
+
+          .bb-modules-logo {
+            filter: drop-shadow(0 0 12px rgba(255,42,145,.18)) drop-shadow(0 0 14px rgba(0,234,255,.14));
+          }
+
+          .bb-register-button:hover {
+            border-color: rgba(255,255,255,.78) !important;
+            box-shadow: 0 0 18px rgba(0,234,255,.14), 0 0 22px rgba(255,42,145,.10);
+          }
+
+          @media (prefers-reduced-motion: reduce) {
+            .bb-next-section::before,
+            .bb-next-section::after,
+            .bb-team-section::before,
+            .bb-modules-section::before {
+              animation: none !important;
+            }
+          }
+
+          /* FINAL COLOR + POSTER OVERRIDES: stronger pink with a pink/blue neon glow */
+          .bb-page {
+            --bb-pink: #ff2a91;
+            --bb-cyan: #4d7dff;
+            --bb-violet: #9a55ff;
+          }
+
+          .bb-next-section,
+          .bb-modules-section,
+          .bb-team-section {
+            background-image:
+              radial-gradient(ellipse at 8% 12%, rgba(255,42,145,.34) 0%, transparent 38%),
+              radial-gradient(ellipse at 88% 20%, rgba(65,112,255,.27) 0%, transparent 36%),
+              radial-gradient(ellipse at 52% 100%, rgba(154,85,255,.25) 0%, transparent 45%),
+              linear-gradient(135deg, #10091f 0%, #111438 48%, #09091f 100%) !important;
+          }
+
+          .bb-next-section::before,
+          .bb-modules-section::before,
+          .bb-team-section::before {
+            background:
+              radial-gradient(ellipse at 12% 18%, rgba(255,42,145,.32), transparent 38%),
+              radial-gradient(ellipse at 84% 22%, rgba(65,112,255,.26), transparent 36%),
+              radial-gradient(ellipse at 54% 88%, rgba(154,85,255,.22), transparent 42%),
+              linear-gradient(115deg, rgba(3,7,24,.08), rgba(8,10,31,.01), rgba(3,7,24,.16)) !important;
+            opacity: 1 !important;
+          }
+
+          .bb-overview-title,
+          .bb-modules-title,
+          .bb-team-title {
+            text-shadow:
+              0 0 10px rgba(255,255,255,.5),
+              0 0 24px rgba(255,42,145,.42),
+              0 0 42px rgba(91,111,255,.34) !important;
+          }
+
+          .bb-overview-kicker::before,
+          .bb-overview-rule,
+          .bb-poster-index::before {
+            background: linear-gradient(90deg, #ff2a91 0%, #a855f7 48%, #4d7dff 100%) !important;
+            box-shadow: 0 0 16px rgba(255,42,145,.58), 0 0 30px rgba(77,125,255,.42) !important;
+          }
+
+          .bb-overview-card,
+          .bb-overview-event-card,
+          .bb-module-card,
+          .bb-team-card {
+            border-color: rgba(255,126,198,.46) !important;
+            box-shadow:
+              0 14px 36px rgba(0,0,0,.3),
+              0 0 20px rgba(255,42,145,.13),
+              0 0 24px rgba(77,125,255,.10),
+              inset 0 1px 0 rgba(255,255,255,.10) !important;
+          }
+
+          .bb-overview-card:hover,
+          .bb-overview-event-card:hover,
+          .bb-module-card:hover,
+          .bb-team-card:hover {
+            border-color: rgba(255,126,198,.82) !important;
+            box-shadow:
+              0 18px 42px rgba(0,0,0,.36),
+              0 0 26px rgba(255,42,145,.24),
+              0 0 32px rgba(77,125,255,.18),
+              inset 0 1px 0 rgba(255,255,255,.14) !important;
+          }
+
+          .bb-overview-card::before,
+          .bb-overview-event-card::after {
+            background: linear-gradient(90deg, #ff2a91, #f6d7ff 48%, #4d7dff) !important;
+            box-shadow: 0 0 14px rgba(255,42,145,.72), 0 0 24px rgba(77,125,255,.52) !important;
+          }
+
+          /* PINK-ONLY THEME OVERRIDE — larger framed overview poster */
+          .bb-next-section,
+          .bb-modules-section,
+          .bb-team-section {
+            --bb-pink: #ff2a91 !important;
+            --bb-cyan: #ff63bd !important;
+            --bb-violet: #ff4fa8 !important;
+            background:
+              radial-gradient(ellipse at 18% 22%, rgba(255,42,145,.30), transparent 42%),
+              radial-gradient(ellipse at 78% 76%, rgba(255,80,175,.20), transparent 46%),
+              linear-gradient(135deg, #16071b 0%, #21091f 52%, #100719 100%) !important;
+            color: #fff !important;
+          }
+          .bb-next-section::before,
+          .bb-modules-section::before,
+          .bb-team-section::before {
+            background:
+              radial-gradient(ellipse at 12% 18%, rgba(255,42,145,.34), transparent 38%),
+              radial-gradient(ellipse at 84% 22%, rgba(255,90,190,.22), transparent 40%),
+              linear-gradient(115deg, rgba(20,4,18,.08), rgba(38,6,30,.02), rgba(18,4,20,.18)) !important;
+          }
+          .bb-overview-title,
+          .bb-modules-title,
+          .bb-team-title {
+            color: #fff !important;
+            background: none !important;
+            -webkit-background-clip: initial !important;
+            background-clip: initial !important;
+            -webkit-text-fill-color: #fff !important;
+            text-shadow: 0 0 10px rgba(255,75,170,.65), 0 0 28px rgba(255,42,145,.42) !important;
+          }
+          .bb-overview-kicker::before,
+          .bb-overview-rule,
+          .bb-poster-index::before {
+            background: #ff4fa8 !important;
+            box-shadow: 0 0 12px rgba(255,42,145,.8), 0 0 26px rgba(255,42,145,.45) !important;
+          }
+          .bb-overview-card,
+          .bb-overview-event-card,
+          .bb-team-card {
+            border-color: rgba(255,130,200,.58) !important;
+            background: linear-gradient(145deg, rgba(55,12,43,.94), rgba(18,7,24,.97) 72%) !important;
+            box-shadow: 0 12px 32px rgba(0,0,0,.32), 0 0 18px rgba(255,42,145,.12), inset 0 1px 0 rgba(255,210,235,.12) !important;
+          }
+          .bb-overview-card::before,
+          .bb-overview-event-card::after {
+            background: #ff63bd !important;
+            box-shadow: 0 0 12px rgba(255,99,189,.95), 0 0 24px rgba(255,42,145,.48) !important;
+          }
+          .bb-overview-tag,
+          .bb-register-button {
+            border-color: rgba(255,130,200,.72) !important;
+            background: rgba(255,42,145,.12) !important;
+            box-shadow: 0 0 14px rgba(255,42,145,.16), inset 0 1px 0 rgba(255,220,240,.12) !important;
+          }
+          .bb-next-section {
+            position: relative;
+            min-height: max(112vh, 1080px) !important;
+            overflow: hidden;
+          }
+          .bb-next-layout {
+            position: relative;
+            z-index: 3 !important;
+            width: min(43%, 700px) !important;
+            max-width: 700px !important;
+          }
+          .bb-overview-copy,
+          .bb-overview-events {
+            max-width: 100% !important;
+          }
+          .bb-overview-poster {
+            position: absolute !important;
+            z-index: 2 !important;
+            top: 50% !important;
+            right: clamp(8px, 1vw, 20px) !important;
+            transform: translateY(-50%) !important;
+            display: block !important;
+            width: min(55vw, 1000px) !important;
+            max-width: 55vw !important;
+            height: auto !important;
+            max-height: none !important;
+            padding: 10px !important;
+            border: 2px solid rgba(255,125,200,.98) !important;
+            border-radius: 18px !important;
+            background: rgba(30,5,25,.92) !important;
+            box-shadow:
+              0 0 0 1px rgba(255,42,145,.45),
+              0 0 26px rgba(255,42,145,.72),
+              0 0 62px rgba(255,42,145,.42),
+              0 28px 72px rgba(0,0,0,.56),
+              inset 0 0 18px rgba(255,210,235,.10) !important;
+            object-fit: contain !important;
+            opacity: 1 !important;
+          }
+          @media (min-width: 1500px) {
+            .bb-next-layout { width: min(41%, 700px) !important; }
+            .bb-overview-poster { width: min(58vw, 1120px) !important; max-width: 58vw !important; }
+          }
+          @media (max-width: 1000px) {
+            .bb-next-section {
+              min-height: auto !important;
+              padding-top: 42px !important;
+              overflow: visible !important;
+            }
+            .bb-overview-poster {
+              position: relative !important;
+              top: auto !important;
+              right: auto !important;
+              transform: none !important;
+              width: min(88%, 760px) !important;
+              max-width: 100% !important;
+              height: auto !important;
+              margin: 0 auto 32px !important;
+              display: block !important;
+            }
+            .bb-next-layout { width: 100% !important; max-width: 820px !important; }
+          }
+          @media (max-width: 600px) {
+            .bb-overview-poster {
+              width: min(96%, 520px) !important;
+              padding: 6px !important;
+              border-radius: 12px !important;
+            }
+          }
+
+
+          /* Final poster sizing: keep the artwork smaller and reserve a separate text column. */
+          .bb-next-section {
+            position: relative;
+            display: block;
+            overflow: hidden;
+          }
+          .bb-overview-poster {
+            position: absolute !important;
+            top: 50% !important;
+            right: 2.5% !important;
+            left: auto !important;
+            transform: translateY(-50%) !important;
+            width: auto !important;
+            height: auto !important;
+            max-width: min(34vw, 500px) !important;
+            max-height: 82% !important;
+            object-fit: contain !important;
+            object-position: center !important;
+            opacity: .92 !important;
+          }
+          .bb-next-layout {
+            position: relative !important;
+            z-index: 2 !important;
+            width: calc(100% - min(37vw, 530px)) !important;
+            max-width: 900px !important;
+            margin: 0 !important;
+          }
+          .bb-overview-copy { width: 100% !important; max-width: 100% !important; }
+          .bb-overview-events { max-width: 100% !important; }
+          @media (max-width: 850px) {
+            .bb-overview-poster {
+              max-width: 30vw !important;
+              max-height: 65% !important;
+              right: 1.5% !important;
+              opacity: .78 !important;
+            }
+            .bb-next-layout {
+              width: calc(100% - 32vw) !important;
+              max-width: none !important;
+            }
+          }
+          @media (max-width: 600px) {
+            .bb-next-section {
+              display: flex !important;
+              flex-direction: column !important;
+              align-items: stretch !important;
+              gap: 18px !important;
+            }
+            .bb-overview-poster {
+              position: relative !important;
+              top: auto !important;
+              right: auto !important;
+              left: auto !important;
+              transform: none !important;
+              display: block !important;
+              width: min(78%, 340px) !important;
+              max-width: 340px !important;
+              max-height: none !important;
+              height: auto !important;
+              margin: 0 auto !important;
+              opacity: 1 !important;
+            }
+            .bb-next-layout {
+              width: 100% !important;
+              max-width: 100% !important;
+              margin: 0 !important;
+            }
+          }
+
+
+
+          /* MATCH PAGE 1 ARTWORK ALIGNMENT, ZOOM AND TONE ON SCROLL PAGES 2/3 */
+          .bb-page {
+            background: #07091b !important;
+            background-image: var(--bb-artwork-background) !important;
+            background-size: 105% 105% !important;
+            background-position: center center !important;
+            background-repeat: no-repeat !important;
+            background-attachment: fixed !important;
+          }
+
+          .bb-next-section,
+          .bb-modules-section,
+          .bb-team-section {
+            background-color: transparent !important;
+            background-image: var(--bb-artwork-background) !important;
+            background-size: 105% 105% !important;
+            background-position: center center !important;
+            background-repeat: no-repeat !important;
+            background-attachment: fixed !important;
+            background-blend-mode: normal !important;
+          }
+
+          /* Remove the extra dark/pink overlays so artwork opacity matches page 1 */
+          .bb-next-section::before,
+          .bb-modules-section::before,
+          .bb-team-section::before {
+            background: transparent !important;
+            opacity: 0 !important;
+          }
+
+          @media (max-width: 768px) {
+            .bb-page { background-attachment: scroll !important; }
+            .bb-next-section,
+            .bb-modules-section,
+            .bb-team-section {
+              background-attachment: scroll !important;
+              background-size: cover !important;
+              background-position: center center !important;
+            }
+          }
+        `}
+</style>
 
       </main>
 
       <section className="bb-next-section" aria-label="Event overview">
+        <img className="bb-overview-poster" src={overviewPosterUrl} alt="Battleblaze event poster" draggable="false" />
 
         <div className="bb-next-layout">
-
           <div className="bb-overview-copy">
-
-            <div className="bb-overview-kicker">THE EXPERIENCE // 2026</div>
-
-            <h2 className="bb-overview-title">OVERVIEW</h2>
-
+            <div className="bb-overview-kicker">BATTLEBLAZE // 2026</div>
+            <h2 className="bb-overview-title">EVENT OVERVIEW</h2>
             <div className="bb-overview-rule" />
-
             <div className="bb-overview-card">
-
-              <p className="bb-overview-card-label">Enter a new arena</p>
-
+              <p className="bb-overview-card-label">ENTER THE ARENA</p>
               <p className="bb-overview-description">
-                Step into a high-energy world built for competition, creativity, and unforgettable moments.
-                Explore the event modules, discover what is happening, and get ready to be part of the action.
-                Your next challenge starts here.
+                Seven arenas. Seven ways to compete. Pick your game, bring your squad,
+                and make your mark at Battleblaze 2026.
               </p>
-
               <div className="bb-overview-tags" aria-label="Event highlights">
-
-                <span className="bb-overview-tag">Compete</span>
-
-                <span className="bb-overview-tag">Connect</span>
-
-                <span className="bb-overview-tag">Experience</span>
-
+                <span className="bb-overview-tag">COMPETE</span>
+                <span className="bb-overview-tag">CONNECT</span>
+                <span className="bb-overview-tag">CONQUER</span>
               </div>
-
             </div>
 
-          </div>
-
-          <div className="bb-module-frame" aria-label="Module image frame">
-
-            <div className="bb-module-frame-inner">
-
-              <div className="bb-module-brand">
-
-                <img className="bb-module-logo" src={logoUrl} alt="Battleblaze logo" draggable="false" />
-
-              </div>
-
-              <div className="bb-module-image-slot" aria-label="Module image placeholder">
-
-                <div className="bb-module-placeholder">
-
-                  <div className="bb-module-placeholder-mark" aria-hidden="true">✦</div>
-
-                  <strong>Module artwork</strong>
-
-                  <span>Your module image will be placed here later.</span>
-
-                </div>
-
-              </div>
-
+            <div className="bb-overview-events" aria-label="Battleblaze events">
+              {[
+                { name: "FIFA", code: "ARENA 01 // FOOTBALL", color: "#45ffb0", icon: "⚽", prize: "₹5,000" },
+                { name: "VALORANT", code: "ARENA 02 // TACTICAL FPS", color: "#ff4655", icon: "◈", prize: "₹8,000" },
+                { name: "BGMI", code: "ARENA 03 // BATTLE ROYALE", color: "#ffb347", icon: "⌖", prize: "₹10,000" },
+                { name: "FF", code: "ARENA 04 // SURVIVAL", color: "#ff6b35", icon: "✦", prize: "₹6,000" },
+                { name: "PS5 RUSH", code: "ARENA 05 // CONSOLE", color: "#5c8dff", icon: "△", prize: "₹3,000" },
+                { name: "VRXPERIENCE", code: "ARENA 06 // IMMERSIVE", color: "#bf7bff", icon: "◎", prize: "₹2,500" },
+                { name: "RC", code: "ARENA 07 // RC RACING", color: "#00eaff", icon: "↗", prize: "₹2,000" },
+              ].map((event) => (
+                <article className="bb-overview-event-card" key={event.name} style={{ "--event-accent": event.color }}>
+                  <div className="bb-overview-event-top">
+                    <span className="bb-overview-event-icon" aria-hidden="true">{event.icon}</span>
+                    <span className="bb-overview-event-code">{event.code}</span>
+                  </div>
+                  <h3>{event.name}</h3>
+                  <div className="bb-overview-event-prize">
+                    <span>PRIZE POOL</span>
+                    <strong>{event.prize}</strong>
+                  </div>
+                </article>
+              ))}
             </div>
-
           </div>
-
         </div>
-
       </section>
 
       <section className="bb-modules-section" aria-label="Battleblaze modules">
@@ -3742,19 +4524,19 @@ export default function BattleblazeHero({ onSelectEvent }) {
             <p className="bb-modules-kicker">Choose your arena // 2026</p>
             <h2 className="bb-modules-title">MODULES</h2>
             <p className="bb-modules-subtitle">
-              Seven ways to compete. Pick your game, bring your squad, and step into the Battleblaze arena.
+              Choose your game. Build your squad. Own the arena.
             </p>
           </header>
 
           <div className="bb-modules-grid">
             {[
-              { name: "BGMI", code: "01 // BATTLE ROYALE", icon: "⌖", description: "Drop in with your squad, outplay the competition, and fight your way to the final zone." },
-              { name: "FREE FIRE", code: "02 // SURVIVAL", icon: "✦", description: "Fast rotations, sharp aim, and clutch decisions decide who takes the win." },
-              { name: "VALORANT", code: "03 // TACTICAL FPS", icon: "◈", description: "Coordinate your team, master your utility, and execute every round with precision." },
-              { name: "FIFA", code: "04 // FOOTBALL", icon: "⚽", description: "Build your attack, control the midfield, and prove your skills on the pitch." },
-              { name: "MOBILE LEGENDS", code: "05 // MOBA", icon: "⬡", description: "Choose your hero, work as a team, and push for the decisive victory." },
-              { name: "VR EXPERIENCE", code: "06 // IMMERSIVE", icon: "◎", description: "Step beyond the screen and explore an immersive world in virtual reality." },
-              { name: "PS5 RUSH", code: "07 // CONSOLE", icon: "△", description: "Grab the controller, challenge your rivals, and own the console arena." },
+              { name: "BGMI", code: "01 // BATTLE ROYALE", icon: "⌖", description: "Squad up and fight for the final zone." },
+              { name: "FREE FIRE", code: "02 // SURVIVAL", icon: "✦", description: "Move fast. Aim sharp. Claim the win." },
+              { name: "VALORANT", code: "03 // TACTICAL FPS", icon: "◈", description: "Teamwork and precision win every round." },
+              { name: "FIFA", code: "04 // FOOTBALL", icon: "⚽", description: "Control the pitch and score the win." },
+              { name: "MOBILE LEGENDS", code: "05 // MOBA", icon: "⬡", description: "Pick your hero. Team up. Push to win." },
+              { name: "VR EXPERIENCE", code: "06 // IMMERSIVE", icon: "◎", description: "Enter an immersive virtual world." },
+              { name: "PS5 RUSH", code: "07 // CONSOLE", icon: "△", description: "Grab a controller and challenge rivals." },
             ].map((module, index) => (
               <article className="bb-module-card" key={module.name}>
                 <div className="bb-module-poster">
@@ -3786,7 +4568,7 @@ export default function BattleblazeHero({ onSelectEvent }) {
             <p className="bb-team-kicker">The people behind the arena // 2026</p>
             <h2 className="bb-team-title">MEET THE TEAM</h2>
             <p className="bb-team-subtitle">
-              The crew bringing Battleblaze to life. Team photos and names can be added to each slot when ready.
+              Meet the crew behind Battleblaze.
             </p>
           </header>
           <div className="bb-team-grid">
