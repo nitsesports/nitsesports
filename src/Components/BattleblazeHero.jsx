@@ -8,28 +8,28 @@ import artworkUrl from "../assets/BattleblazeHeroArtwork.png";
 
 import jetUrl from "../assets/jet.png";
 
-import astronautUrl from "../assets/astro.png";
 
-import islandUrl from "../assets/island.png";
 
-import island2Url from "../assets/island2.png";
 
 import island3Url from "../assets/island3.png";
 
-import island4Url from "../assets/island4.png";
 
-import island5Url from "../assets/island5.png";
 
 import island6Url from "../assets/island6.png";
 
 import logoUrl from "../assets/logoo2.png";
 
-import comingSoonUrl from "../assets/cs.png";
 import overviewPosterUrl from "../assets/bgp.png";
+import feUrl from "../assets/fe.png";
+import ssUrl from "../assets/ss.png";
+import coordinator1Photo from "../assets/Members/member1.png";
+import moduleCoHeadPhoto from "../assets/Members/member2.png";
+import moduleHeadPhoto from "../assets/Members/member3.png";
+import coordinator2Photo from "../assets/Members/member4.png";
 
 const EVENTS = [
   { id: "FIFA", color: "#45ffb0", x: 9.5 },
-  { id: "VALORANT", color: "#ff4655", x: 22.5 },
+  { id: "VALORANT", color: "#8b5cf6", x: 22.5 },
   { id: "BGMI", color: "#ffb347", x: 35.5 },
   { id: "FF", color: "#ff6b35", x: 48.5 },
   { id: "PS5 RUSH", color: "#5c8dff", x: 61.5 },
@@ -57,7 +57,7 @@ export default function BattleblazeHero({ onSelectEvent }) {
 
   const [activeEvent, setActiveEvent] = useState("FIFA");
 
-  const [hoverColor, setHoverColor] = useState("#ff3f9f");
+  const [hoverColor, setHoverColor] = useState("#9b7bff");
 
   const [hovered, setHovered] = useState(false);
 
@@ -133,7 +133,6 @@ export default function BattleblazeHero({ onSelectEvent }) {
 
     const spaceshipFleet = [];
 
-    const astronautFleet = [];
 
     const floatingIslands = [];
 
@@ -173,7 +172,7 @@ export default function BattleblazeHero({ onSelectEvent }) {
 
     const starPalette = [
 
-      new THREE.Color("#ff2a85"),
+      new THREE.Color("#8b5cf6"),
 
       new THREE.Color("#00eaff"),
 
@@ -257,7 +256,7 @@ export default function BattleblazeHero({ onSelectEvent }) {
 
       grad.addColorStop(0.45, "rgba(0, 234, 255, 0.45)");
 
-      grad.addColorStop(0.85, "rgba(255, 42, 133, 0.9)");
+      grad.addColorStop(0.85, "rgba(139, 92, 246, 0.9)");
 
       grad.addColorStop(1, "rgba(255, 255, 255, 1)");
 
@@ -433,7 +432,7 @@ export default function BattleblazeHero({ onSelectEvent }) {
 
             : 2.5;
 
-        const shipCount = 4;
+        const shipCount = 2;
 
         const halfWidth = getVisibleWidth() / 2;
 
@@ -443,7 +442,7 @@ export default function BattleblazeHero({ onSelectEvent }) {
 
           const direction = Math.random() < 0.5 ? 1 : -1;
 
-          const width = randomBetween(7, 12);
+          const width = randomBetween(10, 16);
 
           const height = width / Math.max(aspect, 0.1);
 
@@ -477,13 +476,13 @@ export default function BattleblazeHero({ onSelectEvent }) {
 
             direction,
 
-            speed: randomBetween(13, 27),
+            speed: randomBetween(5, 10),
 
             baseY: randomBetween(-halfHeight * 0.7, halfHeight * 0.7),
 
-            amplitude: randomBetween(1.5, 4),
+            amplitude: randomBetween(4.5, 8),
 
-            frequency: randomBetween(0.45, 1),
+            frequency: randomBetween(0.65, 1.15),
 
             phase: Math.random() * Math.PI * 2,
 
@@ -676,209 +675,30 @@ export default function BattleblazeHero({ onSelectEvent }) {
     };
 
     const islandLayout = [
-
       {
-
-        asset: 0, // Lower-Left Island
-
-        x: randomBetween(-0.20, -0.12),
-
-        y: randomBetween(-0.16, -0.06),
-
-        widthFrac: randomBetween(0.14, 0.18),
-
-        z: 16,
-
-        phase: Math.random() * Math.PI * 2,
-
-        drift: randomBetween(2.2, 3.4),
-
-        speed: randomBetween(0.40, 0.58),
-
-        isStatic: false,
-
-      },
-
-      {
-
-        asset: 0, // Lower-Right Island
-
-        x: randomBetween(0.16, 0.24),
-
-        y: randomBetween(-0.28, -0.20),
-
-        widthFrac: randomBetween(0.14, 0.18),
-
-        z: 17,
-
-        phase: Math.random() * Math.PI * 2,
-
-        drift: randomBetween(2.4, 3.6),
-
-        speed: randomBetween(0.38, 0.55),
-
-        isStatic: false,
-
-      },
-
-      {
-
-        asset: 0, // Upper-Left Island
-
-        x: randomBetween(-0.34, -0.16),
-
-        y: randomBetween(0.12, 0.24),
-
-        widthFrac: randomBetween(0.14, 0.18),
-
-        z: 18,
-
-        phase: Math.random() * Math.PI * 2,
-
-        drift: randomBetween(2.0, 3.2),
-
-        speed: randomBetween(0.42, 0.60),
-
-        isStatic: false,
-
-      },
-
-      {
-
-        asset: 0, // Upper-Right Island
-
-        x: randomBetween(0.16, 0.24),
-
-        y: randomBetween(0.24, 0.32),
-
-        widthFrac: randomBetween(0.14, 0.18),
-
-        z: 19,
-
-        phase: Math.random() * Math.PI * 2,
-
-        drift: randomBetween(2.2, 3.4),
-
-        speed: randomBetween(0.39, 0.56),
-
-        isStatic: false,
-
-      },
-
-      {
-
-        asset: 1, // Central Island
-
-        x: randomBetween(-0.05, 0.05),
-
-        y: randomBetween(-0.08, 0.02),
-
-        widthFrac: 0.48,
-
-        z: 12,
-
-        phase: Math.random() * Math.PI * 2,
-
-        drift: randomBetween(2.5, 3.8),
-
-        speed: randomBetween(0.35, 0.50),
-
-        isStatic: false,
-
-      },
-
-      {
-
-        asset: 2, // Large Island 3 (with astronaut) - FRONT LAYER: STATIC
-
+        asset: 2, // Island 3 — main foreground island
         x: -0.28,
-
-        y: -0.06,
-
+        y: -0.20,
         widthFrac: 0.72,
-
-        z: 32, // Front layer
-
+        z: 32,
         renderOrder: 10,
-
         phase: 0,
-
-        drift: 0, // NO DRIFT
-
-        speed: 0, // NO SPEED
-
+        drift: 0,
+        speed: 0,
         isStatic: true,
-
       },
-
       {
-
-        asset: 3, // Island 4 (Far-Right & Middle height)
-
-        x: randomBetween(0.32, 0.40),
-
-        y: randomBetween(-0.02, 0.08),
-
-        widthFrac: randomBetween(0.24, 0.30),
-
-        z: 16,
-
-        phase: Math.random() * Math.PI * 2,
-
-        drift: randomBetween(2.2, 3.5),
-
-        speed: randomBetween(0.37, 0.54),
-
-        isStatic: false,
-
-      },
-
-      {
-
-        asset: 4, // Island 5 - Nestled in the Mid-Right open sky
-
-        x: randomBetween(0.12, 0.18),
-
-        y: randomBetween(0.04, 0.12),
-
-        widthFrac: randomBetween(0.18, 0.23),
-
-        z: 14,
-
-        phase: Math.random() * Math.PI * 2,
-
-        drift: randomBetween(2.0, 3.3),
-
-        speed: randomBetween(0.39, 0.56),
-
-        isStatic: false,
-
-      },
-
-      {
-
-        asset: 5, // Large Island 6 - Sticking to Bottom-Right Corner & Out of Screen at Bottom
-
+        asset: 5, // Large foreground island at bottom-right
         x: 0.31,
-
         y: -0.28,
-
         widthFrac: 0.74,
-
         z: 30,
-
         renderOrder: 8,
-
         phase: Math.random() * Math.PI * 2,
-
-        drift: randomBetween(1.8, 2.8),
-
-        speed: randomBetween(0.34, 0.48),
-
+        drift: randomBetween(1.0, 1.6),
+        speed: randomBetween(0.18, 0.26),
         isStatic: false,
-
       },
-
     ];
 
     // Soft ambient shadows add depth while staying subtle against the space background.
@@ -1034,163 +854,13 @@ export default function BattleblazeHero({ onSelectEvent }) {
 
     };
 
-    textureLoader.load(islandUrl, (tex) => addIslandTexture(tex, 0), undefined, (e) => console.error("island:", e));
 
-    textureLoader.load(island2Url, (tex) => addIslandTexture(tex, 1), undefined, (e) => console.error("island2:", e));
 
     textureLoader.load(island3Url, (tex) => addIslandTexture(tex, 2), undefined, (e) => console.error("island3:", e));
 
-    textureLoader.load(island4Url, (tex) => addIslandTexture(tex, 3), undefined, (e) => console.error("island4:", e));
 
-    textureLoader.load(island5Url, (tex) => addIslandTexture(tex, 4), undefined, (e) => console.error("island5:", e));
 
     textureLoader.load(island6Url, (tex) => addIslandTexture(tex, 5), undefined, (e) => console.error("island6:", e));
-
-    // ─────────────── FLYING ASTRONAUT FIGHTERS ───────────────
-
-    textureLoader.load(
-
-      astronautUrl,
-
-      (texture) => {
-
-        if (disposed) {
-
-          texture.dispose();
-
-          return;
-
-        }
-
-        texture.colorSpace = THREE.SRGBColorSpace;
-
-        texture.anisotropy = Math.min(renderer.capabilities.getMaxAnisotropy(), 4);
-
-        const displayTexture = texture;
-
-        disposableTextures.push(texture);
-
-        const leftFacingTexture = displayTexture.clone();
-
-        leftFacingTexture.wrapS = THREE.RepeatWrapping;
-
-        leftFacingTexture.repeat.x = -1;
-
-        leftFacingTexture.offset.x = 1;
-
-        leftFacingTexture.colorSpace = THREE.SRGBColorSpace;
-
-        leftFacingTexture.needsUpdate = true;
-
-        disposableTextures.push(leftFacingTexture);
-
-        const image = displayTexture.image;
-
-        const aspect = image?.width && image?.height ? image.width / image.height : 0.8;
-
-        const fighterConfigs = Array.from({ length: 3 }, () => ({
-
-          y: randomBetween(0.18, 0.78),
-
-          direction: -1,
-
-          size: randomBetween(5.5, 6.5),
-
-          speed: randomBetween(5.5, 9.5),
-
-          phase: Math.random() * Math.PI * 2,
-
-          amplitude: randomBetween(1.2, 3.8),
-
-          curve: randomBetween(1.0, 3.5),
-
-          frequency: randomBetween(0.35, 0.85),
-
-          z: randomBetween(8, 14),
-
-          startX: randomBetween(-0.95, 0.98),
-
-        }));
-
-        fighterConfigs.forEach((config) => {
-
-          const material = new THREE.SpriteMaterial({
-
-            map: leftFacingTexture,
-
-            transparent: true,
-
-            opacity: 1.0,
-
-            depthWrite: false,
-
-            depthTest: true,
-
-            alphaTest: 0.05,
-
-            toneMapped: false,
-
-          });
-
-          const sprite = new THREE.Sprite(material);
-
-          const height = config.size;
-
-          const width = height * Math.max(aspect, 0.45);
-
-          sprite.scale.set(width, height, 1);
-
-          sprite.position.set(
-
-            (config.startX * getVisibleWidth()) / 2,
-
-            (config.y * getVisibleHeight()) / 2,
-
-            config.z
-
-          );
-
-          sprite.renderOrder = 1;
-
-          scene.add(sprite);
-
-          astronautFleet.push({
-
-            sprite,
-
-            direction: -1,
-
-            speed: config.speed,
-
-            baseY: sprite.position.y,
-
-            phase: config.phase,
-
-            amplitude: config.amplitude,
-
-            curve: config.curve,
-
-            frequency: config.frequency,
-
-            baseWidth: width,
-
-            width,
-
-            aspect: Math.max(aspect, 0.45),
-
-            z: config.z,
-
-          });
-
-        });
-
-      },
-
-      undefined,
-
-      (error) => console.error("Unable to load astro.png:", error)
-
-    );
 
     // ─────────────── RESPONSIVE CANVAS & MOBILE SCALING ───────────────
 
@@ -1263,14 +933,6 @@ export default function BattleblazeHero({ onSelectEvent }) {
 
       });
 
-      astronautFleet.forEach((fighter) => {
-
-        fighter.width = fighter.baseWidth * scaleMultiplier;
-
-        fighter.sprite.scale.set(fighter.width, fighter.width / fighter.aspect, 1);
-
-      });
-
     };
 
     const handleScrollZoom = () => {
@@ -1294,12 +956,13 @@ export default function BattleblazeHero({ onSelectEvent }) {
 
       const zoomWave = Math.sin(progress * Math.PI);
 
-      camera.position.z = 100 + zoomWave * 24;
+      camera.position.z = 100 - zoomWave * 12;
       camera.updateProjectionMatrix();
 
-      hero.style.setProperty("--bb-scroll-scale", String(1 + zoomWave * 0.035));
+      hero.style.setProperty("--bb-scroll-scale", String(1 + zoomWave * 0.12));
+      hero.style.setProperty("--bb-ship-zoom", String(1 + zoomWave * 0.38));
 
-      const headingZoom = 1 + zoomWave * 0.16;
+      const headingZoom = 1 + zoomWave * 0.20;
       hero.style.setProperty("--bb-heading-zoom", String(headingZoom));
 
     };
@@ -1436,50 +1099,6 @@ export default function BattleblazeHero({ onSelectEvent }) {
 
       });
 
-      const astronautHalfWidth = getVisibleWidth() / 2;
-
-      const astronautHalfHeight = getVisibleHeight() / 2;
-
-      astronautFleet.forEach((fighter) => {
-
-        const { sprite, speed, phase, amplitude, frequency, width, curve } = fighter;
-
-        sprite.position.x -= speed * delta;
-
-        sprite.position.y =
-
-          fighter.baseY +
-
-          Math.sin(time * frequency + phase) * amplitude +
-
-          Math.sin(time * 0.22 + phase * 1.7) * curve;
-
-        sprite.material.rotation = Math.sin(time * frequency + phase) * 0.06;
-
-        if (sprite.position.x < -astronautHalfWidth - width) {
-
-          sprite.position.x = astronautHalfWidth + width + randomBetween(0, 24);
-
-          fighter.baseY = randomBetween(
-
-            astronautHalfHeight * 0.12,
-
-            astronautHalfHeight * 0.78
-
-          );
-
-          fighter.phase = Math.random() * Math.PI * 2;
-
-          fighter.amplitude = randomBetween(1.2, 3.8);
-
-          fighter.curve = randomBetween(1.0, 3.5);
-
-          fighter.speed = randomBetween(5.5, 9.5);
-
-        }
-
-      });
-
       // ─────────────── CALM & SMOOTH FLOATING ISLANDS MOVEMENT ───────────────
 
       floatingIslands.forEach((island) => {
@@ -1527,14 +1146,6 @@ export default function BattleblazeHero({ onSelectEvent }) {
       window.removeEventListener("scroll", handleScrollZoom);
 
       spaceshipFleet.forEach(({ sprite }) => {
-
-        scene.remove(sprite);
-
-        sprite.material.dispose();
-
-      });
-
-      astronautFleet.forEach(({ sprite }) => {
 
         scene.remove(sprite);
 
@@ -1620,6 +1231,32 @@ export default function BattleblazeHero({ onSelectEvent }) {
 
   };
 
+  // Scroll reveal is intentionally scoped to pages 2–4; page 1 remains untouched.
+  useEffect(() => {
+    const revealTargets = document.querySelectorAll(
+      ".bb-next-section .bb-overview-copy > *, .bb-modules-section .bb-modules-heading > *, .bb-module-card, .bb-team-section .bb-team-heading > *, .bb-team-card"
+    );
+    if (!("IntersectionObserver" in window) || !revealTargets.length) {
+      revealTargets.forEach((el) => el.classList.add("bb-scroll-revealed"));
+      return undefined;
+    }
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add("bb-scroll-revealed");
+            observer.unobserve(entry.target);
+          }
+        });
+      },
+      { threshold: 0.12, rootMargin: "0px 0px -35px 0px" }
+    );
+
+    revealTargets.forEach((el) => observer.observe(el));
+    return () => observer.disconnect();
+  }, []);
+
   const chooseEvent = (id) => {
 
     setActiveEvent(id);
@@ -1685,6 +1322,7 @@ export default function BattleblazeHero({ onSelectEvent }) {
           "--bb-parallax-y": "0px",
 
           "--bb-scroll-scale": "1",
+          "--bb-ship-zoom": "1",
           "--bb-scroll-darkness": "0",
 
         }}
@@ -1697,10 +1335,20 @@ export default function BattleblazeHero({ onSelectEvent }) {
           style={{ backgroundImage: `url(${artworkUrl})` }}
         />
 
+        {/* Spacecraft with multiple targeting astronauts — fully visible, top-left */}
+        <img
+          className="bb-ss-art"
+          src={ssUrl}
+          alt=""
+          aria-hidden="true"
+          draggable="false"
+        />
+
         <div className="bb-match-stars" ref={sceneMount} aria-hidden="true" />
 
         <div className="bb-match-vignette" aria-hidden="true" />
         <div className="bb-scroll-darken" aria-hidden="true" />
+        <div className="bb-load-black-fade" aria-hidden="true" />
 
         <a className="bb-hotspot bb-hotspot-brand" href="#home" aria-label="Battleblaze home" />
 
@@ -1740,7 +1388,7 @@ export default function BattleblazeHero({ onSelectEvent }) {
 
             aria-label="Battleblaze Event"
 
-            onMouseEnter={() => hover("#ff3b45")}
+            onMouseEnter={() => hover("#8b5cf6")}
 
             onMouseLeave={resetHover}
 
@@ -1761,6 +1409,15 @@ export default function BattleblazeHero({ onSelectEvent }) {
           </a>
 
         </div>
+
+        {/* Featured artwork — centered near the bottom, with safe spacing from the edge */}
+        <img
+          className="bb-fe-art"
+          src={feUrl}
+          alt=""
+          aria-hidden="true"
+          draggable="false"
+        />
 
         <a className="bb-hotspot bb-hotspot-contact" href="#contact" aria-label="Contact" />
 
@@ -1816,7 +1473,7 @@ export default function BattleblazeHero({ onSelectEvent }) {
 
           onClick={() => setMuted((value) => !value)}
 
-          onMouseEnter={() => hover("#ff2a85")}
+          onMouseEnter={() => hover("#8b5cf6")}
 
           onMouseLeave={resetHover}
 
@@ -1876,21 +1533,78 @@ export default function BattleblazeHero({ onSelectEvent }) {
 
         </div>
 
-        <div className="bb-coming-soon-wrap" aria-label="Coming soon">
-
-          <span className="bb-coming-soon-aura" aria-hidden="true" />
-
-          <img className="bb-coming-soon-art" src={comingSoonUrl} alt="Coming soon" draggable="false" />
-
-        </div>
-
-        <span className="bb-match-sound-state" aria-live="polite">
+<span className="bb-match-sound-state" aria-live="polite">
 
           {muted ? "AUDIO MUTED" : "AUDIO ON"}
 
         </span>
 
         <style>{`
+          /* Full-screen black cover fades away smoothly on initial load. */
+          .bb-load-black-fade {
+            position: fixed;
+            inset: 0;
+            z-index: 9999;
+            background: #000;
+            pointer-events: none;
+            opacity: 1;
+            animation: bb-initial-black-reveal 2.2s cubic-bezier(0.22, 1, 0.36, 1) 0.15s forwards;
+          }
+          @keyframes bb-initial-black-reveal {
+            0% { opacity: 1; visibility: visible; }
+            75% { opacity: 0.12; }
+            100% { opacity: 0; visibility: hidden; }
+          }
+          @media (prefers-reduced-motion: reduce) {
+            .bb-load-black-fade { animation-duration: 0.35s; }
+          }
+
+          /* Battleblaze themed page scrollbar: deep violet track, violet-blue thumb */
+          html {
+            scrollbar-width: thin;
+            scrollbar-color: #7656e8 #100a2a;
+          }
+
+          body {
+            scrollbar-width: thin;
+            scrollbar-color: #7656e8 #100a2a;
+          }
+
+          html::-webkit-scrollbar,
+          body::-webkit-scrollbar,
+          *::-webkit-scrollbar {
+            width: 10px;
+            height: 10px;
+          }
+
+          html::-webkit-scrollbar-track,
+          body::-webkit-scrollbar-track,
+          *::-webkit-scrollbar-track {
+            background: linear-gradient(180deg, #100a2a 0%, #1b0c36 55%, #100a2a 100%);
+            border-left: 1px solid rgba(0, 234, 255, 0.12);
+          }
+
+          html::-webkit-scrollbar-thumb,
+          body::-webkit-scrollbar-thumb,
+          *::-webkit-scrollbar-thumb {
+            background: linear-gradient(180deg, #a78bfa 0%, #7656e8 48%, #7d2bd4 100%);
+            border: 2px solid #100a2a;
+            border-radius: 999px;
+            box-shadow: inset 0 0 3px rgba(255, 255, 255, 0.22);
+          }
+
+          html::-webkit-scrollbar-thumb:hover,
+          body::-webkit-scrollbar-thumb:hover,
+          *::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(180deg, #c4b5fd 0%, #8b5cf6 48%, #00cfe8 100%);
+          }
+
+          html::-webkit-scrollbar-corner,
+          body::-webkit-scrollbar-corner,
+          *::-webkit-scrollbar-corner {
+            background: #100a2a;
+          }
+
           @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800&family=Rajdhani:wght@400;500;600;700&display=swap');
 
           /* Consistent Orbitron typography throughout the page */
@@ -1970,6 +1684,58 @@ export default function BattleblazeHero({ onSelectEvent }) {
 
           }
 
+          /* Spacecraft: slightly clipped on the left, gently floating, and tied to the hero's Three.js scroll zoom/darken variables. */
+          .bb-ss-art {
+            position: absolute;
+            top: clamp(108px, 13vh, 144px);
+            left: clamp(-76px, -4.5vw, -34px);
+            z-index: 1; /* Keep the spaceship behind the Three.js island layer, including island3 */
+            display: block;
+            width: clamp(220px, 27vw, 390px);
+            height: auto;
+            max-width: 40vw;
+            max-height: 48vh;
+            object-fit: contain;
+            object-position: left top;
+            pointer-events: none;
+            user-select: none;
+            opacity: calc(1 - var(--bb-scroll-darkness, 0) * 0.78);
+            transform: translate3d(0, 0, 0) scale(calc(var(--bb-scroll-scale, 1) * var(--bb-ship-zoom, 1)));
+            transform-origin: left top;
+            animation: bb-ss-float 3.8s ease-in-out infinite alternate;
+            will-change: transform, opacity;
+            filter: drop-shadow(0 6px 8px rgba(5, 3, 24, 0.2));
+          }
+
+          @keyframes bb-ss-float {
+            from { translate: 0 0; }
+            to { translate: 0 -26px; }
+          }
+
+          @media (max-width: 700px) {
+            .bb-ss-art {
+              top: 104px;
+              left: -52px;
+              width: clamp(160px, 39vw, 240px);
+              max-width: 46vw;
+              max-height: 30vh;
+            }
+          }
+
+          @media (prefers-reduced-motion: reduce) {
+            .bb-ss-art { animation: none; }
+          }
+
+          @media (max-width: 420px) {
+            .bb-ss-art {
+              top: 100px;
+              left: -38px;
+              width: 52vw;
+              max-width: 220px;
+              max-height: 29vh;
+            }
+          }
+
           .bb-match-stars {
 
             position: absolute;
@@ -2006,9 +1772,9 @@ export default function BattleblazeHero({ onSelectEvent }) {
 
             background:
 
-              linear-gradient(115deg, rgba(180, 20, 120, 0.3), transparent 50%, rgba(255, 50, 140, 0.2)),
+              linear-gradient(115deg, rgba(91, 70, 190, 0.28), transparent 50%, rgba(48, 83, 190, 0.22)),
 
-              linear-gradient(180deg, rgba(20, 10, 50, 0.5) 0%, transparent 30%, rgba(255, 40, 120, 0.15) 70%, rgba(15, 5, 35, 0.6) 100%);
+              linear-gradient(180deg, rgba(20, 10, 50, 0.5) 0%, transparent 30%, rgba(91, 70, 190, 0.15) 70%, rgba(15, 5, 35, 0.6) 100%);
 
             mix-blend-mode: screen;
 
@@ -2035,7 +1801,7 @@ export default function BattleblazeHero({ onSelectEvent }) {
 
             left: 50%;
 
-            top: 48%;
+            top: 46%;
 
             transform: translate(-50%, -50%) translate3d(calc(var(--bb-parallax-x, 0px) * 0.4), calc(var(--bb-parallax-y, 0px) * 0.4), 0);
 
@@ -2111,7 +1877,7 @@ export default function BattleblazeHero({ onSelectEvent }) {
 
                 transparent 74deg,
 
-                rgba(255, 43, 143, .11) 112deg,
+                rgba(139, 92, 246, .11) 112deg,
 
                 transparent 145deg,
 
@@ -2119,7 +1885,7 @@ export default function BattleblazeHero({ onSelectEvent }) {
 
                 transparent 220deg,
 
-                rgba(255, 43, 143, .09) 272deg,
+                rgba(139, 92, 246, .09) 272deg,
 
                 transparent 316deg);
 
@@ -2175,7 +1941,7 @@ export default function BattleblazeHero({ onSelectEvent }) {
 
             background: radial-gradient(ellipse at 48% 48%,
 
-              rgba(255, 45, 155, 0.035) 0%,
+              rgba(139, 92, 246, 0.035) 0%,
 
               rgba(115, 75, 255, 0.03) 31%,
 
@@ -2205,7 +1971,7 @@ export default function BattleblazeHero({ onSelectEvent }) {
 
             background: radial-gradient(ellipse at 50% 48%,
 
-              rgba(255, 70, 175, 0.025) 0%,
+              rgba(139, 92, 246, 0.025) 0%,
 
               rgba(60, 145, 255, 0.025) 38%,
 
@@ -2235,7 +2001,7 @@ export default function BattleblazeHero({ onSelectEvent }) {
 
               transparent 0deg,
 
-              rgba(255, 65, 165, 0.025) 55deg,
+              rgba(139, 92, 246, 0.025) 55deg,
 
               rgba(55, 150, 255, 0.025) 135deg,
 
@@ -2277,9 +2043,9 @@ export default function BattleblazeHero({ onSelectEvent }) {
 
             border-radius: 50%;
 
-            background: #ff8bc9;
+            background: #a78bfa;
 
-            box-shadow: 0 0 3px rgba(255, 105, 190, 0.35), 0 0 6px rgba(65, 155, 255, 0.25);
+            box-shadow: 0 0 3px rgba(167,139,250, 0.35), 0 0 6px rgba(65, 155, 255, 0.25);
 
             opacity: 0;
 
@@ -2367,32 +2133,52 @@ export default function BattleblazeHero({ onSelectEvent }) {
 
             display: block;
 
-            width: clamp(450px, 54vw, 830px);
-
-            max-width: 94vw;
-
+         width: clamp(440px, 58vw, 900px);
+max-width: 90vw;
             height: auto;
 
             object-fit: contain;
 
-            filter: drop-shadow(0 0 14px rgba(255, 59, 69, 0.30))
+            /* Restrained depth: crisp edge separation, soft natural shadow, minimal brand glow. */
+            filter:
+              drop-shadow(0 5px 4px rgba(5, 0, 20, 0.42))
+              drop-shadow(0 13px 13px rgba(5, 0, 20, 0.30))
+              drop-shadow(0 1px 1px rgba(235, 232, 255, 0.22))
+              drop-shadow(0 0 10px rgba(139, 92, 246, 0.16));
 
-                    drop-shadow(0 0 35px rgba(255, 42, 133, 0.16))
-
-                    drop-shadow(0 0 28px rgba(145, 90, 255, 0.05));
-
-            transition: filter 260ms ease;
+            transition: filter 260ms ease, transform 260ms ease;
 
           }
 
           .bb-logo-link:hover .bb-event-logo {
 
-            filter: drop-shadow(0 0 20px rgba(255, 59, 69, 0.42))
+            filter:
+              drop-shadow(0 6px 5px rgba(5, 0, 20, 0.46))
+              drop-shadow(0 16px 15px rgba(5, 0, 20, 0.34))
+              drop-shadow(0 1px 1px rgba(235, 232, 255, 0.26))
+              drop-shadow(0 0 13px rgba(139, 92, 246, 0.22));
 
-                    drop-shadow(0 0 50px rgba(255, 42, 133, 0.24))
+          }
 
-                    drop-shadow(0 0 34px rgba(145, 90, 255, 0.12));
-
+          /* fe.png: larger, lower-middle placement with a stronger cinematic shadow */
+          .bb-fe-art {
+            position: absolute;
+            left: 50%;
+            top: 73%;
+            transform: translateX(-50%);
+            z-index: 7;
+            display: block;
+            width: clamp(300px, 32vw, 460px);
+            max-width: 58vw;
+            max-height: 28vh;
+            height: auto;
+            object-fit: contain;
+            pointer-events: none;
+            user-select: none;
+            filter:
+              drop-shadow(0 8px 12px rgba(0, 0, 0, 0.72))
+              drop-shadow(0 0 18px rgba(0, 225, 255, 0.34))
+              drop-shadow(0 0 26px rgba(139, 92, 246, 0.28));
           }
 
           /* ─────────────── HOTSPOTS & AUDIO ─────────────── */
@@ -2423,12 +2209,11 @@ export default function BattleblazeHero({ onSelectEvent }) {
 
           }
 
+          /* Remove the unwanted rectangular focus box around hero hotspots. */
+          .bb-hotspot:focus,
           .bb-hotspot:focus-visible {
-
-            outline: 2px solid var(--bb-cursor);
-
-            outline-offset: 4px;
-
+            outline: none !important;
+            box-shadow: none !important;
           }
 
           .bb-hotspot-brand {
@@ -2495,17 +2280,17 @@ export default function BattleblazeHero({ onSelectEvent }) {
 
             right: 2.5%; bottom: 4%; z-index: 12; width: 54px; height: 54px;
 
-            display: grid; place-items: center; border: 1px solid rgba(255,42,133,.8);
+            display: grid; place-items: center; border: 1px solid rgba(139,92,246,.8);
 
             border-radius: 50%; background: rgba(13,7,30,.72);
 
-            box-shadow: 0 0 20px rgba(255,42,133,.2), inset 0 0 18px rgba(255,42,133,.08);
+            box-shadow: 0 0 20px rgba(139,92,246,.2), inset 0 0 18px rgba(139,92,246,.08);
 
             cursor: pointer; transition: background 180ms ease,transform 180ms ease;
 
           }
 
-          .bb-hotspot-sound:hover { background:rgba(255,42,133,.22); transform:scale(1.06); }
+          .bb-hotspot-sound:hover { background:rgba(139,92,246,.22); transform:scale(1.06); }
 
           .bb-hotspot-sound svg { width:22px;height:22px;fill:none;stroke:#fff;stroke-width:1.8;
 
@@ -2609,11 +2394,11 @@ export default function BattleblazeHero({ onSelectEvent }) {
 
             background:
 
-              radial-gradient(ellipse at 50% 70%, rgba(255, 38, 143, .16) 0%, rgba(255, 38, 143, .06) 34%, transparent 66%),
+              radial-gradient(ellipse at 50% 70%, rgba(139, 92, 246, .16) 0%, rgba(139, 92, 246, .06) 34%, transparent 66%),
 
               radial-gradient(ellipse at 28% 55%, rgba(0, 224, 255, .12) 0%, transparent 55%),
 
-              radial-gradient(ellipse at 75% 48%, rgba(255, 184, 74, .08) 0%, transparent 48%);
+              radial-gradient(ellipse at 75% 48%, rgba(100, 116, 255, .08) 0%, transparent 48%);
 
             filter: blur(14px); opacity: .52;
 
@@ -2635,11 +2420,11 @@ export default function BattleblazeHero({ onSelectEvent }) {
 
               rgba(0, 225, 255, .22) 58deg, transparent 82deg,
 
-              rgba(255, 43, 143, .20) 126deg, transparent 151deg,
+              rgba(139, 92, 246, .20) 126deg, transparent 151deg,
 
-              rgba(255, 187, 75, .08) 193deg, transparent 220deg,
+              rgba(100, 116, 255, .08) 193deg, transparent 220deg,
 
-              rgba(255, 43, 143, .18) 274deg, transparent 310deg);
+              rgba(139, 92, 246, .18) 274deg, transparent 310deg);
 
             filter: blur(12px); mix-blend-mode: screen; opacity: .45; transform-origin: 50% 65%;
 
@@ -2663,7 +2448,7 @@ export default function BattleblazeHero({ onSelectEvent }) {
 
             object-fit: contain;
 
-            filter: drop-shadow(0 0 5px rgba(255, 42, 133, .28))
+            filter: drop-shadow(0 0 5px rgba(139, 92, 246, .28))
 
                     drop-shadow(0 0 10px rgba(0, 220, 255, .18))
 
@@ -2727,11 +2512,11 @@ export default function BattleblazeHero({ onSelectEvent }) {
 
             .bb-match { min-height: 560px; }
 
-            .bb-hero-logo-box { top: 43%; max-width: 96vw; }
+            .bb-hero-logo-box { top: 43%; left: 50%; max-width: 96vw; }
 
             .bb-event-logo {
 
-              width: clamp(320px, 62vw, 520px);
+              width: clamp(300px, 68vw, 600px);
 
               max-width: 90vw;
 
@@ -2799,17 +2584,17 @@ export default function BattleblazeHero({ onSelectEvent }) {
 
             }
 
-            .bb-logo-link { max-width: 94vw; }
+            .bb-logo-link { max-width: 90vw; }
 
             .bb-event-logo {
 
               display: block;
 
-              width: 88vw;
+              width: 86vw;
 
-              max-width: 410px;
+              max-width: 450px;
 
-              max-height: 29svh;
+              max-height: 32svh;
 
               height: auto;
 
@@ -2919,15 +2704,15 @@ export default function BattleblazeHero({ onSelectEvent }) {
 
             .bb-hero-logo-box { top: 42%; }
 
-            .bb-logo-link { max-width: 92vw; }
+            .bb-logo-link { max-width: 86vw; }
 
             .bb-event-logo {
 
-              width: 86vw;
+              width: 82vw;
 
               max-width: 370px;
 
-              max-height: 28svh;
+              max-height: 30svh;
 
             }
 
@@ -2969,7 +2754,7 @@ export default function BattleblazeHero({ onSelectEvent }) {
 
           @media (max-width: 360px) {
 
-            .bb-event-logo { width: 78vw; }
+            .bb-event-logo { width: 78vw; max-width: 330px; max-height: 28svh; }
 
             .bb-coming-soon-wrap { width: 47vw; max-width: 175px; top: 65%; left: 50%; right: auto; bottom: auto; transform: translateX(-50%); }
 
@@ -2993,7 +2778,7 @@ export default function BattleblazeHero({ onSelectEvent }) {
 
             .bb-hero-logo-box { top: 43%; }
 
-            .bb-event-logo { width: min(56vw, 420px); max-height: 38svh; }
+            .bb-event-logo { width: min(58vw, 460px); max-height: 40svh; }
 
             .bb-coming-soon-wrap {
 
@@ -3013,6 +2798,24 @@ export default function BattleblazeHero({ onSelectEvent }) {
 
             .bb-hotspot-event { top: 69%; height: 20%; }
 
+          }
+
+          @media (max-width: 700px) {
+            .bb-fe-art {
+              top: 72%;
+              width: clamp(210px, 52vw, 320px);
+              max-width: 70vw;
+              max-height: 20svh;
+            }
+          }
+
+          @media (max-width: 420px) {
+            .bb-fe-art {
+              top: 71%;
+              width: 55vw;
+              max-width: 230px;
+              max-height: 18svh;
+            }
           }
 
           @media (prefers-reduced-motion: reduce) {
@@ -3055,7 +2858,7 @@ export default function BattleblazeHero({ onSelectEvent }) {
             background:
               radial-gradient(ellipse at 14% 22%, rgba(92, 57, 255, .34) 0%, transparent 34%),
               radial-gradient(ellipse at 78% 28%, rgba(0, 190, 255, .23) 0%, transparent 31%),
-              radial-gradient(ellipse at 68% 82%, rgba(255, 35, 145, .20) 0%, transparent 34%),
+              radial-gradient(ellipse at 68% 82%, rgba(139, 92, 246, .20) 0%, transparent 34%),
               radial-gradient(ellipse at 35% 72%, rgba(71, 38, 174, .24) 0%, transparent 37%),
               radial-gradient(ellipse at 50% 50%, rgba(13, 21, 62, .45) 0%, transparent 62%),
               linear-gradient(135deg, #030511 0%, #080b26 42%, #10071f 72%, #030511 100%);
@@ -3079,7 +2882,7 @@ export default function BattleblazeHero({ onSelectEvent }) {
               radial-gradient(1.5px 1.5px at 47% 87%, rgba(255,255,255,.8) 45%, transparent 75%),
               radial-gradient(2px 2px at 57% 19%, rgba(174,229,255,.9) 45%, transparent 75%),
               radial-gradient(1px 1px at 64% 52%, rgba(255,255,255,.85) 45%, transparent 75%),
-              radial-gradient(1.5px 1.5px at 73% 72%, rgba(255,42,145,.9) 45%, transparent 75%),
+              radial-gradient(1.5px 1.5px at 73% 72%, rgba(139,92,246,.9) 45%, transparent 75%),
               radial-gradient(2px 2px at 82% 13%, rgba(255,255,255,.9) 45%, transparent 75%),
               radial-gradient(1px 1px at 91% 43%, rgba(0,234,255,.9) 45%, transparent 75%),
               radial-gradient(1.5px 1.5px at 96% 83%, rgba(255,255,255,.8) 45%, transparent 75%),
@@ -3152,7 +2955,7 @@ export default function BattleblazeHero({ onSelectEvent }) {
             content: "";
             width: 30px;
             height: 2px;
-            background: linear-gradient(90deg, #ff2a91, #00eaff);
+            background: linear-gradient(90deg, #8b5cf6, #00eaff);
             box-shadow: 0 0 12px rgba(0,234,255,.55);
           }
 
@@ -3164,11 +2967,11 @@ export default function BattleblazeHero({ onSelectEvent }) {
             line-height: 1.08;
             letter-spacing: .025em;
             text-transform: uppercase;
-            background: linear-gradient(100deg, #fff 8%, #ffcce7 38%, #ff3b9d 63%, #82efff 100%);
+            background: linear-gradient(100deg, #fff 8%, #d9d2ff 38%, #8b5cf6 63%, #82efff 100%);
             -webkit-background-clip: text;
             background-clip: text;
             -webkit-text-fill-color: transparent;
-            filter: drop-shadow(0 8px 26px rgba(255,42,145,.16));
+            filter: drop-shadow(0 8px 26px rgba(139,92,246,.16));
             overflow-wrap: anywhere;
           }
 
@@ -3176,7 +2979,7 @@ export default function BattleblazeHero({ onSelectEvent }) {
             width: min(340px, 70%);
             height: 2px;
             margin: 18px 0;
-            background: linear-gradient(90deg, #ff2a91, #8a5cff 52%, #00eaff, transparent);
+            background: linear-gradient(90deg, #8b5cf6, #8a5cff 52%, #00eaff, transparent);
             box-shadow: 0 0 18px rgba(0,234,255,.18);
           }
 
@@ -3186,7 +2989,7 @@ export default function BattleblazeHero({ onSelectEvent }) {
             padding: 20px 24px;
             border: 1px solid rgba(159, 150, 255, .27);
             border-radius: 16px;
-            background: linear-gradient(115deg, rgba(255, 35, 145, .14), rgba(13, 19, 53, .9) 48%, rgba(0, 210, 255, .10));
+            background: linear-gradient(115deg, rgba(139, 92, 246, .14), rgba(13, 19, 53, .9) 48%, rgba(0, 210, 255, .10));
             box-shadow: 0 20px 55px rgba(0,0,0,.25), inset 0 1px 0 rgba(255,255,255,.08);
             backdrop-filter: blur(12px);
             overflow: hidden;
@@ -3199,13 +3002,13 @@ export default function BattleblazeHero({ onSelectEvent }) {
             left: 24px;
             width: 86px;
             height: 2px;
-            background: linear-gradient(90deg, #ff2a91, #00eaff);
-            box-shadow: 0 0 18px rgba(255,42,145,.6);
+            background: linear-gradient(90deg, #8b5cf6, #00eaff);
+            box-shadow: 0 0 18px rgba(139,92,246,.6);
           }
 
           .bb-overview-card-label {
             margin: 0 0 8px;
-            color: #ff8bc7;
+            color: #a78bfa;
             font: 800 11px/1.4 ui-monospace, SFMono-Regular, Menlo, monospace;
             letter-spacing: .2em;
             text-transform: uppercase;
@@ -3377,7 +3180,7 @@ export default function BattleblazeHero({ onSelectEvent }) {
             padding: clamp(70px, 8vw, 118px) clamp(20px, 5vw, 76px);
             color: #fff;
             background:
-              radial-gradient(ellipse at 8% 18%, rgba(255, 36, 151, .25), transparent 38%),
+              radial-gradient(ellipse at 8% 18%, rgba(91, 70, 190, .25), transparent 38%),
               radial-gradient(ellipse at 92% 35%, rgba(0, 205, 255, .23), transparent 40%),
               radial-gradient(ellipse at 50% 100%, rgba(105, 57, 255, .19), transparent 48%),
               linear-gradient(135deg, #090515 0%, #100821 42%, #061225 100%);
@@ -3393,7 +3196,7 @@ export default function BattleblazeHero({ onSelectEvent }) {
               radial-gradient(1px 1px at 7% 15%, #fff 55%, transparent 75%),
               radial-gradient(1.5px 1.5px at 18% 73%, #8deeff 55%, transparent 75%),
               radial-gradient(1px 1px at 34% 31%, #fff 55%, transparent 75%),
-              radial-gradient(2px 2px at 55% 14%, #ff8bc7 55%, transparent 75%),
+              radial-gradient(2px 2px at 55% 14%, #a78bfa 55%, transparent 75%),
               radial-gradient(1px 1px at 71% 65%, #fff 55%, transparent 75%),
               radial-gradient(1.5px 1.5px at 88% 27%, #8deeff 55%, transparent 75%),
               radial-gradient(1px 1px at 94% 83%, #fff 55%, transparent 75%);
@@ -3433,8 +3236,8 @@ export default function BattleblazeHero({ onSelectEvent }) {
             margin-bottom: 14px;
             border: 1px solid rgba(255,255,255,.13);
             border-radius: 28px;
-            background: linear-gradient(145deg, rgba(255,42,145,.12), rgba(8,12,37,.62), rgba(0,234,255,.12));
-            box-shadow: 0 0 40px rgba(255,42,145,.13), 0 0 55px rgba(0,234,255,.1), inset 0 1px 0 rgba(255,255,255,.08);
+            background: linear-gradient(145deg, rgba(139,92,246,.12), rgba(8,12,37,.62), rgba(0,234,255,.12));
+            box-shadow: 0 0 40px rgba(139,92,246,.13), 0 0 55px rgba(0,234,255,.1), inset 0 1px 0 rgba(255,255,255,.08);
             backdrop-filter: blur(10px);
           }
           .bb-modules-logo {
@@ -3442,7 +3245,7 @@ export default function BattleblazeHero({ onSelectEvent }) {
             width: 82%;
             max-height: 82%;
             object-fit: contain;
-            filter: drop-shadow(0 0 16px rgba(255,42,145,.25));
+            filter: drop-shadow(0 0 16px rgba(139,92,246,.25));
           }
           .bb-modules-kicker {
             margin: 0 0 12px;
@@ -3459,11 +3262,11 @@ export default function BattleblazeHero({ onSelectEvent }) {
             line-height: .9;
             letter-spacing: -.025em;
             text-transform: uppercase;
-            background: linear-gradient(100deg, #fff 8%, #ffcce7 38%, #ff3b9d 63%, #82efff 100%);
+            background: linear-gradient(100deg, #fff 8%, #d9d2ff 38%, #8b5cf6 63%, #82efff 100%);
             -webkit-background-clip: text;
             background-clip: text;
             -webkit-text-fill-color: transparent;
-            filter: drop-shadow(0 8px 26px rgba(255,42,145,.16));
+            filter: drop-shadow(0 8px 26px rgba(139,92,246,.16));
           }
           .bb-modules-subtitle {
             max-width: 620px;
@@ -3502,7 +3305,7 @@ export default function BattleblazeHero({ onSelectEvent }) {
             border-radius: 12px;
             border: 1px solid rgba(255,255,255,.14);
             background:
-              radial-gradient(ellipse at 15% 10%, rgba(255,42,145,.3), transparent 48%),
+              radial-gradient(ellipse at 15% 10%, rgba(139,92,246,.3), transparent 48%),
               radial-gradient(ellipse at 90% 85%, rgba(0,234,255,.25), transparent 48%),
               linear-gradient(150deg, rgba(21,12,48,.98), rgba(5,13,32,.98));
           }
@@ -3522,7 +3325,7 @@ export default function BattleblazeHero({ onSelectEvent }) {
             left: -25%;
             bottom: -16%;
             border-radius: 50%;
-            background: linear-gradient(90deg, rgba(255,42,145,.23), rgba(105,83,255,.1), rgba(0,234,255,.22));
+            background: linear-gradient(90deg, rgba(139,92,246,.23), rgba(105,83,255,.1), rgba(0,234,255,.22));
             filter: blur(25px);
             pointer-events: none;
           }
@@ -3539,7 +3342,7 @@ export default function BattleblazeHero({ onSelectEvent }) {
             content: "";
             width: 18px;
             height: 2px;
-            background: linear-gradient(90deg, #ff2a91, #00eaff);
+            background: linear-gradient(90deg, #8b5cf6, #00eaff);
           }
           .bb-poster-icon {
             display: grid;
@@ -3551,7 +3354,7 @@ export default function BattleblazeHero({ onSelectEvent }) {
             border-radius: 17px;
             color: #dffaff;
             font-size: 27px;
-            background: linear-gradient(135deg, rgba(255,42,145,.18), rgba(0,234,255,.12));
+            background: linear-gradient(135deg, rgba(139,92,246,.18), rgba(0,234,255,.12));
             box-shadow: 0 0 25px rgba(0,234,255,.12);
           }
           .bb-poster-title {
@@ -3578,6 +3381,10 @@ export default function BattleblazeHero({ onSelectEvent }) {
             font: 600 13px/1.45 "Rajdhani", "Segoe UI", sans-serif;
           }
           .bb-register-button {
+            position: relative;
+            z-index: 5;
+            pointer-events: auto;
+            cursor: pointer;
             font-family: "Orbitron", "Rajdhani", sans-serif;
             font-weight: 700;
             letter-spacing: .045em;
@@ -3594,7 +3401,7 @@ export default function BattleblazeHero({ onSelectEvent }) {
             text-transform: uppercase;
             font: 800 10px/1.2 ui-monospace, SFMono-Regular, Menlo, monospace;
             letter-spacing: .12em;
-            background: linear-gradient(100deg, rgba(255,42,145,.24), rgba(104,70,255,.16), rgba(0,234,255,.2));
+            background: linear-gradient(100deg, rgba(139,92,246,.24), rgba(104,70,255,.16), rgba(0,234,255,.2));
             transition: border-color .2s ease, filter .2s ease, transform .2s ease;
           }
           .bb-register-button:hover {
@@ -3631,7 +3438,7 @@ export default function BattleblazeHero({ onSelectEvent }) {
             padding: clamp(76px, 8vw, 124px) clamp(20px, 5vw, 76px);
             color: #fff;
             background:
-              radial-gradient(ellipse at 10% 16%, rgba(255, 36, 151, .24), transparent 38%),
+              radial-gradient(ellipse at 10% 16%, rgba(91, 70, 190, .24), transparent 38%),
               radial-gradient(ellipse at 90% 34%, rgba(0, 205, 255, .22), transparent 40%),
               radial-gradient(ellipse at 50% 100%, rgba(105, 57, 255, .22), transparent 48%),
               linear-gradient(135deg, #080411 0%, #100821 43%, #061225 100%);
@@ -3647,7 +3454,7 @@ export default function BattleblazeHero({ onSelectEvent }) {
               radial-gradient(1px 1px at 6% 18%, #fff 55%, transparent 75%),
               radial-gradient(1.5px 1.5px at 17% 72%, #8deeff 55%, transparent 75%),
               radial-gradient(1px 1px at 29% 38%, #fff 55%, transparent 75%),
-              radial-gradient(2px 2px at 48% 13%, #ff8bc7 55%, transparent 75%),
+              radial-gradient(2px 2px at 48% 13%, #a78bfa 55%, transparent 75%),
               radial-gradient(1px 1px at 66% 81%, #fff 55%, transparent 75%),
               radial-gradient(1.5px 1.5px at 82% 28%, #8deeff 55%, transparent 75%),
               radial-gradient(1px 1px at 94% 63%, #fff 55%, transparent 75%);
@@ -3664,6 +3471,7 @@ export default function BattleblazeHero({ onSelectEvent }) {
           }
           .bb-team-inner { position: relative; z-index: 1; width: min(1380px, 100%); margin: 0 auto; }
           .bb-team-heading { text-align: center; margin: 0 auto clamp(36px, 5vw, 64px); }
+          .bb-team-logo-shell { margin-left: auto; margin-right: auto; }
           .bb-team-kicker {
             margin: 0 0 12px; color: #9cefff;
             font: 800 11px/1.5 ui-monospace, SFMono-Regular, Menlo, monospace;
@@ -3673,9 +3481,9 @@ export default function BattleblazeHero({ onSelectEvent }) {
             margin: 0; font-family: "Orbitron", "Arial Black", sans-serif; font-weight: 800;
             font-size: clamp(2.3rem, 5.4vw, 4.4rem); line-height: .95; letter-spacing: -.025em;
             text-transform: uppercase;
-            background: linear-gradient(100deg, #fff 8%, #ffcce7 38%, #ff3b9d 63%, #82efff 100%);
+            background: linear-gradient(100deg, #fff 8%, #d9d2ff 38%, #8b5cf6 63%, #82efff 100%);
             -webkit-background-clip: text; background-clip: text; color: transparent;
-            filter: drop-shadow(0 0 26px rgba(255,59,157,.15));
+            filter: drop-shadow(0 0 26px rgba(139, 92, 246, .15));
           }
           .bb-team-subtitle { max-width: 620px; margin: 18px auto 0; color: rgba(233,241,255,.72); font: 500 clamp(12px, 1.1vw, 15px)/1.55 "Rajdhani", sans-serif; }
           .bb-team-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: clamp(14px, 2vw, 26px); }
@@ -3690,19 +3498,43 @@ export default function BattleblazeHero({ onSelectEvent }) {
             position: relative; display: grid; place-items: center; overflow: hidden; aspect-ratio: 4 / 5;
             border-radius: 13px; border: 1px solid rgba(255,255,255,.13);
             background:
-              radial-gradient(ellipse at 50% 35%, rgba(255,59,157,.25), transparent 38%),
+              radial-gradient(ellipse at 50% 35%, rgba(139, 92, 246, .25), transparent 38%),
               radial-gradient(ellipse at 80% 80%, rgba(0,205,255,.18), transparent 45%),
               linear-gradient(145deg, rgba(24,15,48,.95), rgba(5,13,32,.98));
           }
-          .bb-team-photo::before, .bb-team-photo::after { content: ""; position: absolute; pointer-events: none; }
+          .bb-team-photo { isolation: isolate; }
+          .bb-team-member-photo {
+            display: block;
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            inset: 0;
+            z-index: 0;
+            object-fit: cover;
+            object-position: center top;
+            border-radius: inherit;
+          }
+          .bb-team-photo::before, .bb-team-photo::after { content: ""; position: absolute; pointer-events: none; z-index: 1; }
           .bb-team-photo::before { inset: 12px; border: 1px solid rgba(130,239,255,.18); border-radius: 9px; }
-          .bb-team-photo::after { width: 76%; height: 1px; bottom: 17%; background: linear-gradient(90deg, transparent, rgba(130,239,255,.8), rgba(255,59,157,.8), transparent); box-shadow: 0 0 15px rgba(0,205,255,.45); }
+          .bb-team-photo::after { width: 76%; height: 1px; bottom: 17%; background: linear-gradient(90deg, transparent, rgba(130,239,255,.8), rgba(139, 92, 246, .8), transparent); box-shadow: 0 0 15px rgba(0,205,255,.45); }
           .bb-team-avatar-mark { color: rgba(255,255,255,.9); font-size: clamp(44px, 6vw, 76px); line-height: 1; text-shadow: 0 0 25px rgba(130,239,255,.42); }
           .bb-team-photo-hint { position: absolute; z-index: 1; bottom: 25px; left: 10px; right: 10px; text-align: center; color: rgba(224,241,255,.56); font: 700 9px/1.4 "Rajdhani", sans-serif; letter-spacing: .17em; text-transform: uppercase; }
           .bb-team-card-meta { padding: 18px 7px 8px; }
           .bb-team-role { margin: 0 0 7px; color: #91edff; font: 700 10px/1.4 "Rajdhani", sans-serif; letter-spacing: .19em; text-transform: uppercase; }
           .bb-team-name { margin: 0; color: #fff; font: 800 clamp(17px, 1.8vw, 24px)/1.2 "Orbitron", sans-serif; text-transform: uppercase; }
           .bb-team-name-hint { margin: 8px 0 0; color: rgba(226,236,255,.48); font: 600 12px/1.5 "Rajdhani", sans-serif; }
+          .bb-team-phone {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            margin-top: 10px;
+            color: #91edff;
+            font: 700 12px/1.5 "Rajdhani", sans-serif;
+            letter-spacing: .06em;
+            text-decoration: none;
+            transition: color 180ms ease, text-shadow 180ms ease;
+          }
+          .bb-team-phone:hover { color: #c4b5fd; text-shadow: 0 0 12px rgba(145,237,255,.38); }
           @media (max-width: 1000px) { .bb-team-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); max-width: 760px; margin: 0 auto; } }
           @media (max-width: 520px) {
             .bb-team-section { padding: 72px 17px; }
@@ -3989,7 +3821,7 @@ export default function BattleblazeHero({ onSelectEvent }) {
              Unifies the scroll sections with the first page's pink / violet / cyan
              artwork while keeping every section readable and visually connected. */
           .bb-page {
-            --bb-pink: #ff2a91;
+            --bb-pink: #8b5cf6;
             --bb-cyan: #00eaff;
             --bb-violet: #795cff;
             background: #07091b !important;
@@ -4002,7 +3834,7 @@ export default function BattleblazeHero({ onSelectEvent }) {
             color: #fff !important;
             background-color: #080a20 !important;
             background-image:
-              radial-gradient(ellipse at 8% 12%, rgba(255,42,145,.19) 0%, transparent 34%),
+              radial-gradient(ellipse at 8% 12%, rgba(139,92,246,.19) 0%, transparent 34%),
               radial-gradient(ellipse at 88% 20%, rgba(0,234,255,.15) 0%, transparent 32%),
               radial-gradient(ellipse at 52% 100%, rgba(111,76,255,.18) 0%, transparent 43%),
               linear-gradient(135deg, #071126 0%, #101034 48%, #09091f 100%) !important;
@@ -4014,7 +3846,7 @@ export default function BattleblazeHero({ onSelectEvent }) {
           .bb-modules-section::before,
           .bb-team-section::before {
             background:
-              radial-gradient(ellipse at 12% 18%, rgba(255,42,145,.19), transparent 35%),
+              radial-gradient(ellipse at 12% 18%, rgba(139,92,246,.19), transparent 35%),
               radial-gradient(ellipse at 84% 22%, rgba(0,234,255,.14), transparent 34%),
               radial-gradient(ellipse at 54% 88%, rgba(121,92,255,.16), transparent 40%),
               linear-gradient(115deg, rgba(3,7,24,.16), rgba(8,10,31,.02), rgba(3,7,24,.2)) !important;
@@ -4027,7 +3859,7 @@ export default function BattleblazeHero({ onSelectEvent }) {
               radial-gradient(1.5px 1.5px at 8% 24%, rgba(255,255,255,.9) 45%, transparent 75%),
               radial-gradient(1px 1px at 24% 72%, rgba(0,234,255,.8) 45%, transparent 75%),
               radial-gradient(1.5px 1.5px at 44% 17%, rgba(255,255,255,.8) 45%, transparent 75%),
-              radial-gradient(1px 1px at 69% 64%, rgba(255,42,145,.85) 45%, transparent 75%),
+              radial-gradient(1px 1px at 69% 64%, rgba(139,92,246,.85) 45%, transparent 75%),
               radial-gradient(1.5px 1.5px at 91% 31%, rgba(255,255,255,.8) 45%, transparent 75%),
               linear-gradient(180deg, rgba(4,7,22,.05), rgba(4,7,22,.2)) !important;
           }
@@ -4054,7 +3886,7 @@ export default function BattleblazeHero({ onSelectEvent }) {
             -webkit-background-clip: initial !important;
             background-clip: initial !important;
             -webkit-text-fill-color: #fff !important;
-            text-shadow: 0 0 10px rgba(255,255,255,.48), 0 0 28px rgba(255,42,145,.22), 0 0 42px rgba(0,234,255,.12);
+            text-shadow: 0 0 10px rgba(255,255,255,.48), 0 0 28px rgba(139,92,246,.22), 0 0 42px rgba(0,234,255,.12);
             filter: none !important;
           }
 
@@ -4068,8 +3900,8 @@ export default function BattleblazeHero({ onSelectEvent }) {
           .bb-overview-kicker::before,
           .bb-overview-rule,
           .bb-poster-index::before {
-            background: linear-gradient(90deg, #ff2a91, #a58bff 52%, #00eaff) !important;
-            box-shadow: 0 0 14px rgba(255,42,145,.36), 0 0 20px rgba(0,234,255,.25) !important;
+            background: linear-gradient(90deg, #8b5cf6, #a58bff 52%, #00eaff) !important;
+            box-shadow: 0 0 14px rgba(139,92,246,.36), 0 0 20px rgba(0,234,255,.25) !important;
           }
 
           .bb-overview-card,
@@ -4095,13 +3927,13 @@ export default function BattleblazeHero({ onSelectEvent }) {
             box-shadow:
               0 18px 42px rgba(0,0,0,.36),
               0 0 22px rgba(0,234,255,.12),
-              0 0 28px rgba(255,42,145,.08),
+              0 0 28px rgba(139,92,246,.08),
               inset 0 1px 0 rgba(255,255,255,.12) !important;
           }
 
           .bb-overview-card::before,
           .bb-overview-event-card::after {
-            background: linear-gradient(90deg, #ff2a91, #fff 50%, #00eaff) !important;
+            background: linear-gradient(90deg, #8b5cf6, #fff 50%, #00eaff) !important;
             box-shadow: 0 0 12px rgba(255,255,255,.46), 0 0 18px rgba(0,234,255,.25) !important;
           }
 
@@ -4122,7 +3954,7 @@ export default function BattleblazeHero({ onSelectEvent }) {
           .bb-poster-icon,
           .bb-register-button {
             border-color: rgba(255,255,255,.32) !important;
-            background: linear-gradient(110deg, rgba(255,42,145,.12), rgba(120,92,255,.12), rgba(0,234,255,.12)) !important;
+            background: linear-gradient(110deg, rgba(139,92,246,.12), rgba(120,92,255,.12), rgba(0,234,255,.12)) !important;
             box-shadow: 0 0 16px rgba(0,234,255,.06), inset 0 1px 0 rgba(255,255,255,.08);
           }
 
@@ -4134,12 +3966,12 @@ export default function BattleblazeHero({ onSelectEvent }) {
           }
 
           .bb-modules-logo {
-            filter: drop-shadow(0 0 12px rgba(255,42,145,.18)) drop-shadow(0 0 14px rgba(0,234,255,.14));
+            filter: drop-shadow(0 0 12px rgba(139,92,246,.18)) drop-shadow(0 0 14px rgba(0,234,255,.14));
           }
 
           .bb-register-button:hover {
             border-color: rgba(255,255,255,.78) !important;
-            box-shadow: 0 0 18px rgba(0,234,255,.14), 0 0 22px rgba(255,42,145,.10);
+            box-shadow: 0 0 18px rgba(0,234,255,.14), 0 0 22px rgba(139,92,246,.10);
           }
 
           @media (prefers-reduced-motion: reduce) {
@@ -4153,7 +3985,7 @@ export default function BattleblazeHero({ onSelectEvent }) {
 
           /* FINAL COLOR + POSTER OVERRIDES: stronger pink with a pink/blue neon glow */
           .bb-page {
-            --bb-pink: #ff2a91;
+            --bb-pink: #8b5cf6;
             --bb-cyan: #4d7dff;
             --bb-violet: #9a55ff;
           }
@@ -4162,7 +3994,7 @@ export default function BattleblazeHero({ onSelectEvent }) {
           .bb-modules-section,
           .bb-team-section {
             background-image:
-              radial-gradient(ellipse at 8% 12%, rgba(255,42,145,.34) 0%, transparent 38%),
+              radial-gradient(ellipse at 8% 12%, rgba(139,92,246,.34) 0%, transparent 38%),
               radial-gradient(ellipse at 88% 20%, rgba(65,112,255,.27) 0%, transparent 36%),
               radial-gradient(ellipse at 52% 100%, rgba(154,85,255,.25) 0%, transparent 45%),
               linear-gradient(135deg, #10091f 0%, #111438 48%, #09091f 100%) !important;
@@ -4172,7 +4004,7 @@ export default function BattleblazeHero({ onSelectEvent }) {
           .bb-modules-section::before,
           .bb-team-section::before {
             background:
-              radial-gradient(ellipse at 12% 18%, rgba(255,42,145,.32), transparent 38%),
+              radial-gradient(ellipse at 12% 18%, rgba(139,92,246,.32), transparent 38%),
               radial-gradient(ellipse at 84% 22%, rgba(65,112,255,.26), transparent 36%),
               radial-gradient(ellipse at 54% 88%, rgba(154,85,255,.22), transparent 42%),
               linear-gradient(115deg, rgba(3,7,24,.08), rgba(8,10,31,.01), rgba(3,7,24,.16)) !important;
@@ -4184,25 +4016,25 @@ export default function BattleblazeHero({ onSelectEvent }) {
           .bb-team-title {
             text-shadow:
               0 0 10px rgba(255,255,255,.5),
-              0 0 24px rgba(255,42,145,.42),
+              0 0 24px rgba(139,92,246,.42),
               0 0 42px rgba(91,111,255,.34) !important;
           }
 
           .bb-overview-kicker::before,
           .bb-overview-rule,
           .bb-poster-index::before {
-            background: linear-gradient(90deg, #ff2a91 0%, #a855f7 48%, #4d7dff 100%) !important;
-            box-shadow: 0 0 16px rgba(255,42,145,.58), 0 0 30px rgba(77,125,255,.42) !important;
+            background: linear-gradient(90deg, #8b5cf6 0%, #a855f7 48%, #4d7dff 100%) !important;
+            box-shadow: 0 0 16px rgba(139,92,246,.58), 0 0 30px rgba(77,125,255,.42) !important;
           }
 
           .bb-overview-card,
           .bb-overview-event-card,
           .bb-module-card,
           .bb-team-card {
-            border-color: rgba(255,126,198,.46) !important;
+            border-color: rgba(99, 102, 241, .46) !important;
             box-shadow:
               0 14px 36px rgba(0,0,0,.3),
-              0 0 20px rgba(255,42,145,.13),
+              0 0 20px rgba(139,92,246,.13),
               0 0 24px rgba(77,125,255,.10),
               inset 0 1px 0 rgba(255,255,255,.10) !important;
           }
@@ -4211,30 +4043,30 @@ export default function BattleblazeHero({ onSelectEvent }) {
           .bb-overview-event-card:hover,
           .bb-module-card:hover,
           .bb-team-card:hover {
-            border-color: rgba(255,126,198,.82) !important;
+            border-color: rgba(99, 102, 241, .82) !important;
             box-shadow:
               0 18px 42px rgba(0,0,0,.36),
-              0 0 26px rgba(255,42,145,.24),
+              0 0 26px rgba(139,92,246,.24),
               0 0 32px rgba(77,125,255,.18),
               inset 0 1px 0 rgba(255,255,255,.14) !important;
           }
 
           .bb-overview-card::before,
           .bb-overview-event-card::after {
-            background: linear-gradient(90deg, #ff2a91, #f6d7ff 48%, #4d7dff) !important;
-            box-shadow: 0 0 14px rgba(255,42,145,.72), 0 0 24px rgba(77,125,255,.52) !important;
+            background: linear-gradient(90deg, #8b5cf6, #f6d7ff 48%, #4d7dff) !important;
+            box-shadow: 0 0 14px rgba(139,92,246,.72), 0 0 24px rgba(77,125,255,.52) !important;
           }
 
           /* PINK-ONLY THEME OVERRIDE — larger framed overview poster */
           .bb-next-section,
           .bb-modules-section,
           .bb-team-section {
-            --bb-pink: #ff2a91 !important;
+            --bb-pink: #8b5cf6 !important;
             --bb-cyan: #ff63bd !important;
             --bb-violet: #ff4fa8 !important;
             background:
-              radial-gradient(ellipse at 18% 22%, rgba(255,42,145,.30), transparent 42%),
-              radial-gradient(ellipse at 78% 76%, rgba(255,80,175,.20), transparent 46%),
+              radial-gradient(ellipse at 18% 22%, rgba(139,92,246,.30), transparent 42%),
+              radial-gradient(ellipse at 78% 76%, rgba(139, 92, 246, .20), transparent 46%),
               linear-gradient(135deg, #16071b 0%, #21091f 52%, #100719 100%) !important;
             color: #fff !important;
           }
@@ -4242,8 +4074,8 @@ export default function BattleblazeHero({ onSelectEvent }) {
           .bb-modules-section::before,
           .bb-team-section::before {
             background:
-              radial-gradient(ellipse at 12% 18%, rgba(255,42,145,.34), transparent 38%),
-              radial-gradient(ellipse at 84% 22%, rgba(255,90,190,.22), transparent 40%),
+              radial-gradient(ellipse at 12% 18%, rgba(139,92,246,.34), transparent 38%),
+              radial-gradient(ellipse at 84% 22%, rgba(139, 92, 246, .22), transparent 40%),
               linear-gradient(115deg, rgba(20,4,18,.08), rgba(38,6,30,.02), rgba(18,4,20,.18)) !important;
           }
           .bb-overview-title,
@@ -4254,31 +4086,31 @@ export default function BattleblazeHero({ onSelectEvent }) {
             -webkit-background-clip: initial !important;
             background-clip: initial !important;
             -webkit-text-fill-color: #fff !important;
-            text-shadow: 0 0 10px rgba(255,75,170,.65), 0 0 28px rgba(255,42,145,.42) !important;
+            text-shadow: 0 0 10px rgba(139, 92, 246, .65), 0 0 28px rgba(139,92,246,.42) !important;
           }
           .bb-overview-kicker::before,
           .bb-overview-rule,
           .bb-poster-index::before {
             background: #ff4fa8 !important;
-            box-shadow: 0 0 12px rgba(255,42,145,.8), 0 0 26px rgba(255,42,145,.45) !important;
+            box-shadow: 0 0 12px rgba(139,92,246,.8), 0 0 26px rgba(139,92,246,.45) !important;
           }
           .bb-overview-card,
           .bb-overview-event-card,
           .bb-team-card {
-            border-color: rgba(255,130,200,.58) !important;
+            border-color: rgba(99, 102, 241, .58) !important;
             background: linear-gradient(145deg, rgba(55,12,43,.94), rgba(18,7,24,.97) 72%) !important;
-            box-shadow: 0 12px 32px rgba(0,0,0,.32), 0 0 18px rgba(255,42,145,.12), inset 0 1px 0 rgba(255,210,235,.12) !important;
+            box-shadow: 0 12px 32px rgba(0,0,0,.32), 0 0 18px rgba(139,92,246,.12), inset 0 1px 0 rgba(255,210,235,.12) !important;
           }
           .bb-overview-card::before,
           .bb-overview-event-card::after {
             background: #ff63bd !important;
-            box-shadow: 0 0 12px rgba(255,99,189,.95), 0 0 24px rgba(255,42,145,.48) !important;
+            box-shadow: 0 0 12px rgba(139, 92, 246, .95), 0 0 24px rgba(139,92,246,.48) !important;
           }
           .bb-overview-tag,
           .bb-register-button {
-            border-color: rgba(255,130,200,.72) !important;
-            background: rgba(255,42,145,.12) !important;
-            box-shadow: 0 0 14px rgba(255,42,145,.16), inset 0 1px 0 rgba(255,220,240,.12) !important;
+            border-color: rgba(99, 102, 241, .72) !important;
+            background: rgba(139,92,246,.12) !important;
+            box-shadow: 0 0 14px rgba(139,92,246,.16), inset 0 1px 0 rgba(255,220,240,.12) !important;
           }
           .bb-next-section {
             position: relative;
@@ -4307,13 +4139,13 @@ export default function BattleblazeHero({ onSelectEvent }) {
             height: auto !important;
             max-height: none !important;
             padding: 10px !important;
-            border: 2px solid rgba(255,125,200,.98) !important;
+            border: 2px solid rgba(99, 102, 241, .98) !important;
             border-radius: 18px !important;
             background: rgba(30,5,25,.92) !important;
             box-shadow:
-              0 0 0 1px rgba(255,42,145,.45),
-              0 0 26px rgba(255,42,145,.72),
-              0 0 62px rgba(255,42,145,.42),
+              0 0 0 1px rgba(139,92,246,.45),
+              0 0 26px rgba(139,92,246,.72),
+              0 0 62px rgba(139,92,246,.42),
               0 28px 72px rgba(0,0,0,.56),
               inset 0 0 18px rgba(255,210,235,.10) !important;
             object-fit: contain !important;
@@ -4462,12 +4294,608 @@ export default function BattleblazeHero({ onSelectEvent }) {
               background-position: center center !important;
             }
           }
-        `}
-</style>
+          /* ── Pages 2–4: smooth bottom-to-top text reveal; page 1 is unchanged ── */
+          .bb-next-section .bb-overview-copy > *,
+          .bb-modules-section .bb-modules-heading > *,
+          .bb-module-card,
+          .bb-team-section .bb-team-heading > *,
+          .bb-team-card {
+            opacity: 0;
+            transform: translate3d(0, 34px, 0);
+            transition: opacity 720ms ease, transform 780ms cubic-bezier(.2,.75,.25,1);
+            will-change: opacity, transform;
+          }
+
+          .bb-next-section .bb-overview-copy > *.bb-scroll-revealed,
+          .bb-modules-section .bb-modules-heading > *.bb-scroll-revealed,
+          .bb-module-card.bb-scroll-revealed,
+          .bb-team-section .bb-team-heading > *.bb-scroll-revealed,
+          .bb-team-card.bb-scroll-revealed {
+            opacity: 1;
+            transform: translate3d(0, 0, 0);
+          }
+
+          .bb-module-card:nth-child(2n),
+          .bb-team-card:nth-child(2n) { transition-delay: 100ms; }
+          .bb-module-card:nth-child(3n),
+          .bb-team-card:nth-child(3n) { transition-delay: 180ms; }
+
+          /* One or two slow ships per scroll page, independent of the hero canvas. */
+          .bb-next-section,
+          .bb-modules-section,
+          .bb-team-section { position: relative; }
+
+          .bb-scroll-ships {
+            position: absolute;
+            inset: 0;
+            overflow: hidden;
+            pointer-events: none;
+            z-index: 1;
+            contain: layout paint;
+          }
+
+          .bb-scroll-ship {
+            position: absolute;
+            display: block;
+            width: clamp(42px, 5vw, 72px);
+            aspect-ratio: 2.5 / 1;
+            background-image: var(--bb-jet-url);
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            opacity: .42;
+            filter: drop-shadow(0 0 8px rgba(0, 234, 255, .28));
+            will-change: transform;
+          }
+
+          .bb-scroll-ship-one {
+            top: 23%;
+            left: -10%;
+            animation: bb-scroll-ship-forward 34s linear infinite;
+          }
+
+          .bb-scroll-ship-two {
+            top: 69%;
+            right: -10%;
+            width: clamp(34px, 4vw, 58px);
+            opacity: .28;
+            transform: scaleX(-1);
+            animation: bb-scroll-ship-backward 43s linear infinite;
+            animation-delay: -17s;
+          }
+
+          @keyframes bb-scroll-ship-forward {
+            0% { transform: translate3d(0, 0, 0); }
+            45% { transform: translate3d(55vw, 12px, 0); }
+            100% { transform: translate3d(120vw, -8px, 0); }
+          }
+
+          @keyframes bb-scroll-ship-backward {
+            0% { transform: translate3d(0, 0, 0) scaleX(-1); }
+            50% { transform: translate3d(-55vw, -14px, 0) scaleX(-1); }
+            100% { transform: translate3d(-120vw, 8px, 0) scaleX(-1); }
+          }
+
+          .bb-scroll-ships > span { z-index: 1; }
+          @media (prefers-reduced-motion: reduce) {
+            .bb-next-section .bb-overview-copy > *,
+            .bb-modules-section .bb-modules-heading > *,
+            .bb-module-card,
+            .bb-team-section .bb-team-heading > *,
+            .bb-team-card {
+              opacity: 1;
+              transform: none;
+              transition: none;
+            }
+            .bb-scroll-ship { animation-duration: 90s !important; }
+          }
+
+          /* Mobile hero refinement: make the Battleblaze heading and featured logos readable. */
+          @media (max-width: 700px) and (orientation: portrait) {
+            .bb-hero-logo-box {
+              width: 100%;
+              top: 43%;
+              left: 50%;
+              transform: translate(-50%, -50%);
+            }
+            .bb-logo-link { width: 100%; max-width: 96vw; }
+            .bb-event-logo {
+              width: min(94vw, 520px);
+              max-width: 94vw;
+              max-height: 37svh;
+              object-fit: contain;
+            }
+            .bb-fe-art {
+              top: 69%;
+              width: clamp(285px, 76vw, 430px);
+              max-width: 88vw;
+              max-height: 25svh;
+            }
+            .bb-ss-art {
+              width: clamp(165px, 42vw, 245px);
+              max-width: 48vw;
+            }
+          }
+          @media (max-width: 420px) and (orientation: portrait) {
+            .bb-hero-logo-box { top: 43%; }
+            .bb-event-logo {
+              width: 96vw;
+              max-width: 96vw;
+              max-height: 39svh;
+            }
+            .bb-fe-art {
+              top: 69%;
+              width: 82vw;
+              max-width: 330px;
+              max-height: 24svh;
+            }
+          }
+          /* Preserve gentle ship drift while making the scroll zoom more noticeable on mobile. */
+          @media (max-width: 700px) {
+            .bb-scroll-ship-one { animation-duration: 27s; }
+            .bb-scroll-ship-two { animation-duration: 33s; }
+          }
+
+          /* Final mobile overrides: make the event mark and featured art readable,
+             and give the foreground spacecraft a clearly visible float. */
+          @media (max-width: 700px) {
+            .bb-ss-art {
+              animation: bb-ss-float 3.8s ease-in-out infinite alternate !important;
+              top: 96px;
+              width: clamp(190px, 48vw, 300px);
+              max-width: 54vw;
+              max-height: 34svh;
+            }
+            .bb-event-logo {
+              width: 96vw !important;
+              max-width: 560px !important;
+              max-height: 39svh !important;
+            }
+            .bb-logo-link {
+              width: 98vw;
+              max-width: 98vw !important;
+            }
+            .bb-fe-art {
+              top: 72% !important;
+              width: clamp(270px, 76vw, 390px) !important;
+              max-width: 82vw !important;
+              max-height: 25svh !important;
+            }
+          }
+          @media (max-width: 420px) {
+            .bb-ss-art {
+              top: 94px;
+              left: -18px;
+              width: 58vw;
+              max-width: 250px;
+              max-height: 32svh;
+            }
+            .bb-event-logo {
+              width: 94vw !important;
+              max-width: 430px !important;
+              max-height: 36svh !important;
+            }
+            .bb-fe-art {
+              top: 72% !important;
+              width: 72vw !important;
+              max-width: 310px !important;
+              max-height: 23svh !important;
+            }
+          }
+          @media (prefers-reduced-motion: reduce) {
+            .bb-ss-art { animation: none !important; }
+          }
+
+          /* VISIBLE PURPLE + ELECTRIC BLUE GRADIENT — PAGES 2, 3 & 4 ONLY */
+          .bb-next-section,
+          .bb-modules-section,
+          .bb-team-section {
+            position: relative;
+            isolation: isolate;
+            background-color: #07051b !important;
+            background-image:
+              radial-gradient(ellipse at 12% 18%, rgba(133, 56, 255, 0.62) 0%, rgba(104, 48, 245, 0.28) 24%, transparent 52%),
+              radial-gradient(ellipse at 88% 22%, rgba(0, 153, 255, 0.54) 0%, rgba(0, 112, 255, 0.24) 28%, transparent 55%),
+              radial-gradient(ellipse at 52% 100%, rgba(81, 44, 210, 0.42) 0%, transparent 48%),
+              linear-gradient(118deg, #100626 0%, #171044 28%, #101c4a 58%, #07172d 78%, #08051b 100%) !important;
+            background-size: 100% 100% !important;
+            animation: none !important;
+          }
+
+          /* Remove background photos, stars, grids and decorative image layers. */
+          .bb-next-section::before,
+          .bb-next-section::after,
+          .bb-modules-section::before,
+          .bb-modules-section::after,
+          .bb-team-section::before,
+          .bb-team-section::after {
+            content: none !important;
+            display: none !important;
+            background: none !important;
+            background-image: none !important;
+            animation: none !important;
+          }
+
+          /* Keep content cards dark so the brighter gradient stays visible around them. */
+          .bb-module-card,
+          .bb-team-card,
+          .bb-overview-event-card {
+            background-color: rgba(7, 8, 29, 0.78) !important;
+            background-image: none !important;
+            border-color: rgba(129, 113, 255, 0.36) !important;
+            box-shadow: 0 12px 36px rgba(1, 5, 24, 0.22), 0 0 22px rgba(88, 85, 255, 0.08);
+            backdrop-filter: blur(8px);
+          }
+
+          /* ───── PURPLE / WHITE PALETTE: OVERVIEW, MODULES & TEAM ───── */
+          .bb-next-section,
+          .bb-modules-section,
+          .bb-team-section {
+            --bb-violet: #a78bfa;
+            --bb-violet-bright: #c4b5fd;
+            --bb-violet-soft: rgba(139, 92, 246, .24);
+            --bb-white: #ffffff;
+            color: #fff !important;
+            background-color: #080411 !important;
+          }
+
+          .bb-next-section {
+            background-image:
+              radial-gradient(ellipse at 12% 18%, rgba(124, 58, 237, .26), transparent 38%),
+              radial-gradient(ellipse at 82% 76%, rgba(65, 75, 160, .12), transparent 38%),
+              linear-gradient(135deg, #050308 0%, #120820 48%, #080411 100%) !important;
+          }
+          .bb-next-section::before {
+            background:
+              radial-gradient(ellipse at 14% 22%, rgba(139, 92, 246, .28) 0%, transparent 36%),
+              radial-gradient(ellipse at 78% 28%, rgba(91, 88, 180, .12) 0%, transparent 32%),
+              radial-gradient(ellipse at 68% 82%, rgba(139, 92, 246, .18) 0%, transparent 36%),
+              radial-gradient(ellipse at 35% 72%, rgba(71, 38, 174, .18) 0%, transparent 38%),
+              linear-gradient(135deg, #050308 0%, #10071c 48%, #080411 100%) !important;
+          }
+          .bb-next-section::after {
+            background:
+              radial-gradient(2px 2px at 7% 22%, rgba(255,255,255,.9) 45%, transparent 75%),
+              radial-gradient(1px 1px at 15% 78%, rgba(196,181,253,.75) 45%, transparent 75%),
+              radial-gradient(1.5px 1.5px at 23% 16%, rgba(255,255,255,.8) 45%, transparent 75%),
+              radial-gradient(2px 2px at 31% 64%, rgba(196,181,253,.72) 45%, transparent 75%),
+              radial-gradient(1px 1px at 38% 34%, rgba(255,255,255,.8) 45%, transparent 75%),
+              radial-gradient(1.5px 1.5px at 47% 87%, rgba(255,255,255,.75) 45%, transparent 75%),
+              radial-gradient(2px 2px at 57% 19%, rgba(196,181,253,.75) 45%, transparent 75%),
+              radial-gradient(1px 1px at 64% 52%, rgba(255,255,255,.8) 45%, transparent 75%),
+              radial-gradient(1.5px 1.5px at 73% 72%, rgba(167,139,250,.8) 45%, transparent 75%),
+              radial-gradient(2px 2px at 82% 13%, rgba(255,255,255,.85) 45%, transparent 75%),
+              radial-gradient(1px 1px at 91% 43%, rgba(196,181,253,.7) 45%, transparent 75%),
+              radial-gradient(ellipse at 50% 50%, transparent 34%, rgba(0,0,0,.34) 100%) !important;
+          }
+          .bb-overview-kicker { color: #c4b5fd !important; }
+          .bb-overview-kicker::before,
+          .bb-overview-rule,
+          .bb-overview-card::before {
+            background: linear-gradient(90deg, #8b5cf6, #c4b5fd, rgba(196,181,253,0)) !important;
+            box-shadow: 0 0 14px rgba(167,139,250,.36) !important;
+          }
+          .bb-overview-title {
+            background: linear-gradient(100deg, #fff 8%, #f5f3ff 42%, #c4b5fd 75%, #fff 100%) !important;
+            -webkit-background-clip: text !important;
+            background-clip: text !important;
+            filter: drop-shadow(0 0 18px rgba(139,92,246,.22)) !important;
+          }
+          .bb-overview-card,
+          .bb-overview-event-card {
+            border-color: rgba(167,139,250,.28) !important;
+            background: linear-gradient(130deg, rgba(139,92,246,.13), rgba(10,6,20,.94) 62%, rgba(67,56,120,.10)) !important;
+            box-shadow: 0 18px 48px rgba(0,0,0,.3), inset 0 1px 0 rgba(255,255,255,.07), 0 0 22px rgba(139,92,246,.06) !important;
+          }
+          .bb-overview-card-label,
+          .bb-overview-event-card .event-kicker,
+          .bb-overview-event-card .event-date { color: #c4b5fd !important; }
+          .bb-overview-description,
+          .bb-overview-event-card p { color: rgba(255,255,255,.84) !important; }
+          .bb-overview-tag {
+            color: #f5f3ff !important;
+            border-color: rgba(196,181,253,.28) !important;
+            background: rgba(139,92,246,.10) !important;
+          }
+
+          .bb-modules-section {
+            background:
+              radial-gradient(ellipse at 8% 18%, rgba(124,58,237,.25), transparent 38%),
+              radial-gradient(ellipse at 92% 35%, rgba(67,75,150,.12), transparent 40%),
+              radial-gradient(ellipse at 50% 100%, rgba(105,57,255,.17), transparent 48%),
+              linear-gradient(135deg, #050308 0%, #10071c 48%, #080411 100%) !important;
+          }
+          .bb-modules-section::before {
+            background-image:
+              radial-gradient(1px 1px at 7% 15%, #fff 55%, transparent 75%),
+              radial-gradient(1.5px 1.5px at 18% 73%, #c4b5fd 55%, transparent 75%),
+              radial-gradient(1px 1px at 34% 31%, #fff 55%, transparent 75%),
+              radial-gradient(2px 2px at 55% 14%, #a78bfa 55%, transparent 75%),
+              radial-gradient(1px 1px at 71% 65%, #fff 55%, transparent 75%),
+              radial-gradient(1.5px 1.5px at 88% 27%, #c4b5fd 55%, transparent 75%),
+              radial-gradient(1px 1px at 94% 83%, #fff 55%, transparent 75%) !important;
+          }
+          .bb-modules-heading,
+          .bb-team-heading { color: #fff !important; }
+          .bb-modules-kicker,
+          .bb-team-kicker,
+          .bb-module-number,
+          .bb-module-label,
+          .bb-team-role,
+          .bb-team-name-hint { color: #c4b5fd !important; }
+          .bb-modules-title,
+          .bb-team-title {
+            color: #fff !important;
+            background: linear-gradient(100deg, #fff 12%, #f5f3ff 55%, #c4b5fd 100%) !important;
+            -webkit-background-clip: text !important;
+            background-clip: text !important;
+            -webkit-text-fill-color: transparent !important;
+            filter: drop-shadow(0 0 18px rgba(139,92,246,.2)) !important;
+          }
+          .bb-modules-section .bb-module-card,
+          .bb-team-section .bb-team-card {
+            color: #fff !important;
+            border-color: rgba(167,139,250,.26) !important;
+            background: linear-gradient(145deg, rgba(139,92,246,.12), rgba(8,4,17,.94) 65%, rgba(75,61,130,.10)) !important;
+            box-shadow: 0 18px 42px rgba(0,0,0,.3), inset 0 1px 0 rgba(255,255,255,.06), 0 0 20px rgba(139,92,246,.05) !important;
+          }
+          .bb-modules-section .bb-module-card:hover,
+          .bb-team-section .bb-team-card:hover {
+            border-color: rgba(196,181,253,.65) !important;
+            box-shadow: 0 20px 48px rgba(0,0,0,.36), 0 0 28px rgba(139,92,246,.18) !important;
+          }
+          .bb-module-card h3,
+          .bb-module-card h4,
+          .bb-team-name { color: #fff !important; }
+          .bb-module-card p,
+          .bb-team-subtitle { color: rgba(255,255,255,.78) !important; }
+          .bb-module-card svg,
+          .bb-module-icon,
+          .bb-team-avatar-mark { color: #c4b5fd !important; }
+          .bb-module-card::before,
+          .bb-team-card::before {
+            background: linear-gradient(90deg, transparent, #a78bfa, #fff, #a78bfa, transparent) !important;
+          }
+          .bb-team-photo {
+            border-color: rgba(167,139,250,.3) !important;
+            background: radial-gradient(circle at 50% 30%, rgba(139,92,246,.2), transparent 55%), linear-gradient(145deg, #120a20, #07040e) !important;
+          }
+          .bb-team-photo-hint { color: rgba(255,255,255,.58) !important; }
+
+          /* Overview is page two: remove every pink/original event accent */
+          .bb-next-section,
+          .bb-modules-section,
+          .bb-team-section {
+            color: #fff !important;
+            background:
+              radial-gradient(ellipse at 12% 18%, rgba(109,40,217,.28), transparent 40%),
+              radial-gradient(ellipse at 88% 30%, rgba(37,99,235,.16), transparent 42%),
+              radial-gradient(ellipse at 52% 100%, rgba(79,70,229,.16), transparent 50%),
+              linear-gradient(135deg, #05030d 0%, #100821 48%, #050914 100%) !important;
+          }
+          .bb-next-section::before,
+          .bb-modules-section::before,
+          .bb-team-section::before {
+            background-image:
+              radial-gradient(1px 1px at 7% 15%, #fff 55%, transparent 75%),
+              radial-gradient(1.5px 1.5px at 18% 73%, #c4b5fd 55%, transparent 75%),
+              radial-gradient(1px 1px at 34% 31%, #fff 55%, transparent 75%),
+              radial-gradient(2px 2px at 55% 14%, #a78bfa 55%, transparent 75%),
+              radial-gradient(1px 1px at 71% 65%, #fff 55%, transparent 75%),
+              radial-gradient(1.5px 1.5px at 88% 27%, #93c5fd 55%, transparent 75%),
+              radial-gradient(1px 1px at 94% 83%, #fff 55%, transparent 75%) !important;
+          }
+          .bb-next-section .bb-overview-event-card {
+            --event-accent: #a78bfa !important;
+            border-color: rgba(167,139,250,.3) !important;
+            background: linear-gradient(145deg, rgba(139,92,246,.12), rgba(8,4,17,.95) 64%, rgba(59,130,246,.08)) !important;
+            box-shadow: 0 18px 42px rgba(0,0,0,.32), inset 0 1px 0 rgba(255,255,255,.06), 0 0 18px rgba(139,92,246,.06) !important;
+          }
+          .bb-next-section .bb-overview-event-card *,
+          .bb-next-section .bb-overview-event-card h3,
+          .bb-next-section .bb-overview-event-card span,
+          .bb-next-section .bb-overview-event-card strong {
+            --event-accent: #a78bfa !important;
+          }
+          .bb-overview-event-card h3,
+          .bb-overview-event-icon,
+          .bb-overview-event-code,
+          .bb-overview-event-card [style*="color"] {
+            color: #f5f3ff !important;
+          }
+          .bb-overview-title,
+          .bb-modules-title,
+          .bb-team-title {
+            color: #fff !important;
+            background: linear-gradient(100deg, #fff 8%, #ddd6fe 48%, #bfdbfe 100%) !important;
+            -webkit-background-clip: text !important;
+            background-clip: text !important;
+            -webkit-text-fill-color: transparent !important;
+            filter: drop-shadow(0 0 18px rgba(139,92,246,.22)) !important;
+          }
+          .bb-overview-kicker,
+          .bb-overview-card-label,
+          .bb-overview-tag,
+          .bb-overview-event-code,
+          .bb-modules-kicker,
+          .bb-team-kicker,
+          .bb-module-number,
+          .bb-module-label,
+          .bb-team-role,
+          .bb-team-name-hint {
+            color: #c4b5fd !important;
+          }
+          .bb-overview-rule {
+            background: linear-gradient(90deg, #8b5cf6, #c4b5fd, #93c5fd, transparent) !important;
+            box-shadow: 0 0 16px rgba(139,92,246,.3) !important;
+          }
+          .bb-overview-card,
+          .bb-overview-event-card,
+          .bb-modules-section .bb-module-card,
+          .bb-team-section .bb-team-card {
+            border-color: rgba(167,139,250,.28) !important;
+            background: linear-gradient(145deg, rgba(139,92,246,.12), rgba(8,4,17,.95) 65%, rgba(59,130,246,.07)) !important;
+            box-shadow: 0 18px 42px rgba(0,0,0,.3), inset 0 1px 0 rgba(255,255,255,.06), 0 0 20px rgba(139,92,246,.05) !important;
+          }
+          .bb-overview-card:hover,
+          .bb-overview-event-card:hover,
+          .bb-modules-section .bb-module-card:hover,
+          .bb-team-section .bb-team-card:hover {
+            border-color: rgba(196,181,253,.68) !important;
+            box-shadow: 0 20px 48px rgba(0,0,0,.36), 0 0 28px rgba(139,92,246,.18) !important;
+          }
+          .bb-overview-tag {
+            color: #f5f3ff !important;
+            border-color: rgba(196,181,253,.28) !important;
+            background: rgba(139,92,246,.10) !important;
+          }
+          .bb-team-photo {
+            border-color: rgba(167,139,250,.3) !important;
+            background: radial-gradient(circle at 50% 30%, rgba(139,92,246,.2), transparent 55%), linear-gradient(145deg, #120a20, #07040e) !important;
+          }
+
+          /* FINAL FIX: remove the remaining pink neon bars/accents; use violet + blue only */
+          .bb-next-section,
+          .bb-modules-section,
+          .bb-team-section,
+          .bb-next-section *,
+          .bb-modules-section *,
+          .bb-team-section * {
+            --bb-pink: #8b5cf6 !important;
+            --bb-cyan: #60a5fa !important;
+            --bb-violet: #a78bfa !important;
+            --event-accent: #8b5cf6 !important;
+          }
+          .bb-next-section [style*="#ff4fa8"],
+          .bb-next-section [style*="#ff63bd"],
+          .bb-next-section [style*="255, 79, 168"],
+          .bb-next-section [style*="255, 99, 189"],
+          .bb-modules-section [style*="#ff4fa8"],
+          .bb-modules-section [style*="#ff63bd"],
+          .bb-team-section [style*="#ff4fa8"],
+          .bb-team-section [style*="#ff63bd"] {
+            color: #c4b5fd !important;
+            border-color: rgba(139,92,246,.65) !important;
+            background-color: #8b5cf6 !important;
+            box-shadow: 0 0 14px rgba(139,92,246,.45) !important;
+          }
+          .bb-overview-rule,
+          .bb-overview-card::before,
+          .bb-overview-card::after,
+          .bb-overview-event-card::before,
+          .bb-overview-event-card::after,
+          .bb-module-card::before,
+          .bb-module-card::after,
+          .bb-team-card::before,
+          .bb-team-card::after {
+            background-image: linear-gradient(90deg, #6d28d9 0%, #8b5cf6 48%, #60a5fa 100%) !important;
+            border-color: rgba(139,92,246,.55) !important;
+            box-shadow: 0 0 14px rgba(96,165,250,.22) !important;
+          }
+          .bb-overview-event-card,
+          .bb-overview-card,
+          .bb-module-card,
+          .bb-team-card {
+            --event-accent: #8b5cf6 !important;
+            accent-color: #8b5cf6 !important;
+          }
+
+
+          /* FINAL PINK-ACCENT OVERRIDE — purple/blue only across all three scroll sections */
+          .bb-page {
+            --bb-pink: #8b5cf6 !important;
+            --bb-cyan: #60a5fa !important;
+            --bb-violet: #a78bfa !important;
+            --event-accent: #8b5cf6 !important;
+          }
+          .bb-next-section,
+          .bb-modules-section,
+          .bb-team-section,
+          .bb-next-section *,
+          .bb-modules-section *,
+          .bb-team-section * {
+            --bb-pink: #8b5cf6 !important;
+            --bb-cyan: #60a5fa !important;
+            --bb-violet: #a78bfa !important;
+            --event-accent: #8b5cf6 !important;
+            accent-color: #8b5cf6 !important;
+          }
+          .bb-overview-rule,
+          .bb-overview-card::before,
+          .bb-overview-card::after,
+          .bb-overview-event-card::before,
+          .bb-overview-event-card::after,
+          .bb-module-card::before,
+          .bb-module-card::after,
+          .bb-team-card::before,
+          .bb-team-card::after,
+          .bb-modules-logo-shell::before,
+          .bb-modules-logo-shell::after,
+          .bb-team-photo::before,
+          .bb-team-photo::after {
+            background-image: linear-gradient(90deg, #6d28d9 0%, #8b5cf6 48%, #60a5fa 100%) !important;
+            border-color: rgba(139, 92, 246, .7) !important;
+            box-shadow: 0 0 12px rgba(96, 165, 250, .2) !important;
+          }
+          .bb-overview-card,
+          .bb-overview-event-card,
+          .bb-module-card,
+          .bb-team-card,
+          .bb-modules-logo-shell,
+          .bb-team-photo {
+            --event-accent: #8b5cf6 !important;
+            border-color: rgba(139, 92, 246, .55) !important;
+          }
+          .bb-next-section [style*="#ff"],
+          .bb-modules-section [style*="#ff"],
+          .bb-team-section [style*="#ff"] {
+            --event-accent: #8b5cf6 !important;
+          }
+          .bb-overview-rule {
+            background: linear-gradient(90deg, #6d28d9, #8b5cf6, #60a5fa, transparent) !important;
+          }
+
+          /* FIX: remove the oversized violet/blue pseudo-element covering team photos */
+          .bb-team-section .bb-team-photo::before,
+          .bb-team-section .bb-team-photo::after {
+            content: none !important;
+            display: none !important;
+            background: none !important;
+            background-image: none !important;
+            box-shadow: none !important;
+            border: 0 !important;
+          }
+          .bb-team-section .bb-team-member-photo {
+            position: absolute !important;
+            z-index: 1 !important;
+            display: block !important;
+            width: 100% !important;
+            height: 100% !important;
+            object-fit: cover !important;
+            object-position: center top !important;
+          }
+
+
+          /* FINAL PINK-LINE FIX: use violet-to-blue on all three pages */
+          .bb-overview-kicker::before,
+          .bb-overview-rule,
+          .bb-poster-index::before,
+          .bb-modules-section .bb-poster-index::before,
+          .bb-team-section .bb-poster-index::before {
+            background: linear-gradient(90deg, #8b5cf6 0%, #60a5fa 100%) !important;
+            background-image: linear-gradient(90deg, #8b5cf6 0%, #60a5fa 100%) !important;
+            box-shadow: 0 0 10px rgba(139, 92, 246, .65), 0 0 22px rgba(96, 165, 250, .32) !important;
+          }
+
+        `}</style>
 
       </main>
 
       <section className="bb-next-section" aria-label="Event overview">
+        <div className="bb-scroll-ships bb-scroll-ships-overview" style={{ "--bb-jet-url": `url(${jetUrl})` }} aria-hidden="true">
+          <span className="bb-scroll-ship bb-scroll-ship-one" />
+          <span className="bb-scroll-ship bb-scroll-ship-two" />
+        </div>
         <img className="bb-overview-poster" src={overviewPosterUrl} alt="Battleblaze event poster" draggable="false" />
 
         <div className="bb-next-layout">
@@ -4491,7 +4919,7 @@ export default function BattleblazeHero({ onSelectEvent }) {
             <div className="bb-overview-events" aria-label="Battleblaze events">
               {[
                 { name: "FIFA", code: "ARENA 01 // FOOTBALL", color: "#45ffb0", icon: "⚽", prize: "₹5,000" },
-                { name: "VALORANT", code: "ARENA 02 // TACTICAL FPS", color: "#ff4655", icon: "◈", prize: "₹8,000" },
+                { name: "VALORANT", code: "ARENA 02 // TACTICAL FPS", color: "#8b5cf6", icon: "◈", prize: "₹8,000" },
                 { name: "BGMI", code: "ARENA 03 // BATTLE ROYALE", color: "#ffb347", icon: "⌖", prize: "₹10,000" },
                 { name: "FF", code: "ARENA 04 // SURVIVAL", color: "#ff6b35", icon: "✦", prize: "₹6,000" },
                 { name: "PS5 RUSH", code: "ARENA 05 // CONSOLE", color: "#5c8dff", icon: "△", prize: "₹3,000" },
@@ -4516,6 +4944,10 @@ export default function BattleblazeHero({ onSelectEvent }) {
       </section>
 
       <section className="bb-modules-section" aria-label="Battleblaze modules">
+        <div className="bb-scroll-ships bb-scroll-ships-modules" style={{ "--bb-jet-url": `url(${jetUrl})` }} aria-hidden="true">
+          <span className="bb-scroll-ship bb-scroll-ship-one" />
+          <span className="bb-scroll-ship bb-scroll-ship-two" />
+        </div>
         <div className="bb-modules-inner">
           <header className="bb-modules-heading">
             <div className="bb-modules-logo-shell">
@@ -4530,13 +4962,14 @@ export default function BattleblazeHero({ onSelectEvent }) {
 
           <div className="bb-modules-grid">
             {[
-              { name: "BGMI", code: "01 // BATTLE ROYALE", icon: "⌖", description: "Squad up and fight for the final zone." },
-              { name: "FREE FIRE", code: "02 // SURVIVAL", icon: "✦", description: "Move fast. Aim sharp. Claim the win." },
-              { name: "VALORANT", code: "03 // TACTICAL FPS", icon: "◈", description: "Teamwork and precision win every round." },
-              { name: "FIFA", code: "04 // FOOTBALL", icon: "⚽", description: "Control the pitch and score the win." },
-              { name: "MOBILE LEGENDS", code: "05 // MOBA", icon: "⬡", description: "Pick your hero. Team up. Push to win." },
-              { name: "VR EXPERIENCE", code: "06 // IMMERSIVE", icon: "◎", description: "Enter an immersive virtual world." },
-              { name: "PS5 RUSH", code: "07 // CONSOLE", icon: "△", description: "Grab a controller and challenge rivals." },
+              { name: "BGMI", game: "BGMI", code: "01 // BATTLE ROYALE", icon: "⌖", description: "Squad up and fight for the final zone." },
+              { name: "FREE FIRE", game: "FREE_FIRE", code: "02 // SURVIVAL", icon: "✦", description: "Move fast. Aim sharp. Claim the win." },
+              { name: "VALORANT", game: "VALORANT", code: "03 // TACTICAL FPS", icon: "◈", description: "Teamwork and precision win every round." },
+              { name: "FIFA", game: "FIFA", code: "04 // FOOTBALL", icon: "⚽", description: "Control the pitch and score the win." },
+              { name: "MOBILE LEGENDS", game: "MOBILE_LEGENDS", code: "05 // MOBA", icon: "⬡", description: "Pick your hero. Team up. Push to win." },
+              { name: "VR EXPERIENCE", game: "VR_EXPERIENCE", code: "06 // IMMERSIVE", icon: "◎", description: "Enter an immersive virtual world." },
+              { name: "PS5 RUSH", game: "PS5_RUSH", code: "07 // CONSOLE", icon: "△", description: "Grab a controller and challenge rivals." },
+              { name: "RC", game: "RC", code: "08 // REAL CRICKET", icon: "🏏", description: "Represent your side and compete for the win." },
             ].map((module, index) => (
               <article className="bb-module-card" key={module.name}>
                 <div className="bb-module-poster">
@@ -4552,7 +4985,18 @@ export default function BattleblazeHero({ onSelectEvent }) {
                 </div>
                 <div className="bb-module-card-copy">
                   <p className="bb-module-description">{module.description}</p>
-                  <a className="bb-register-button" href={`/register?module=${encodeURIComponent(module.name.toLowerCase().replaceAll(" ", "-"))}`}>
+                  <a
+                    className="bb-register-button"
+                    href={`/register?game=${encodeURIComponent(module.game)}`}
+                    onClick={(event) => {
+                      event.preventDefault();
+                      const registrationUrl = `/register?game=${encodeURIComponent(module.game)}`;
+                      // Use same-origin navigation so the selected event query reaches Registerbb.jsx.
+                      window.location.assign(registrationUrl);
+                    }}
+                    role="link"
+                    aria-label={`Register for ${module.name}`}
+                  >
                     <span>Register Now</span><span aria-hidden="true">↗</span>
                   </a>
                 </div>
@@ -4563,8 +5007,15 @@ export default function BattleblazeHero({ onSelectEvent }) {
       </section>
 
       <section className="bb-team-section" aria-label="Battleblaze team">
+        <div className="bb-scroll-ships bb-scroll-ships-team" style={{ "--bb-jet-url": `url(${jetUrl})` }} aria-hidden="true">
+          <span className="bb-scroll-ship bb-scroll-ship-one" />
+          <span className="bb-scroll-ship bb-scroll-ship-two" />
+        </div>
         <div className="bb-team-inner">
           <header className="bb-team-heading">
+            <div className="bb-modules-logo-shell bb-team-logo-shell">
+              <img className="bb-modules-logo" src={logoUrl} alt="Battleblaze logo" draggable="false" />
+            </div>
             <p className="bb-team-kicker">The people behind the arena // 2026</p>
             <h2 className="bb-team-title">MEET THE TEAM</h2>
             <p className="bb-team-subtitle">
@@ -4573,20 +5024,52 @@ export default function BattleblazeHero({ onSelectEvent }) {
           </header>
           <div className="bb-team-grid">
             {[
-              { role: "Coordinator", label: "Coordinator 01", icon: "✦" },
-              { role: "Coordinator", label: "Coordinator 02", icon: "◈" },
-              { role: "Module Head", label: "Module Head", icon: "⌖" },
-              { role: "Module Co-Head", label: "Module Co-Head", icon: "⬡" },
+              {
+                role: "Module Head",
+                label: "Harendra Nagar",
+                phone: "9079359513",
+                photo: moduleHeadPhoto,
+                icon: "⌖",
+              },
+              {
+                role: "Module Co-Head",
+                label: "Chirag Khandelwal",
+                phone: "6003757252",
+                photo: moduleCoHeadPhoto,
+                icon: "⬡",
+              },
+              {
+                role: "Coordinator 01",
+                label: "Satyam Kumar Jha",
+                phone: "9829305027",
+                photo: coordinator1Photo,
+                icon: "✦",
+              },
+              {
+                role: "Coordinator 02",
+                label: "Praveen Goyal",
+                phone: "8209311875",
+                photo: coordinator2Photo,
+                icon: "◈",
+              },
             ].map((member, index) => (
-              <article className="bb-team-card" key={member.label}>
-                <div className="bb-team-photo" aria-label={`${member.label} image placeholder`}>
-                  <span className="bb-team-avatar-mark" aria-hidden="true">{member.icon}</span>
-                  <span className="bb-team-photo-hint">Add team photo</span>
+              <article className="bb-team-card" key={member.role}>
+                <div className="bb-team-photo" aria-label={`${member.label} photo`}>
+                  <img
+                    className="bb-team-member-photo"
+                    src={member.photo}
+                    alt={member.label}
+                    loading="lazy"
+                    decoding="async"
+                  />
                 </div>
                 <div className="bb-team-card-meta">
                   <p className="bb-team-role">{`TEAM MEMBER / 0${index + 1}`}</p>
                   <h3 className="bb-team-name">{member.label}</h3>
-                  <p className="bb-team-name-hint">{member.role} · NITS Esports</p>
+                  <p className="bb-team-name-hint">{member.role} · BattleBlaze</p>
+                  <a className="bb-team-phone" href={`tel:${member.phone}`}>
+                    <span aria-hidden="true">☎</span> {member.phone}
+                  </a>
                 </div>
               </article>
             ))}

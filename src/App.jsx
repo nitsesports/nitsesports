@@ -55,6 +55,7 @@ import Schedule from "./Components/Schedule";
 import Login from "./Components/Login";
 
 import Register from "./Components/Register";
+import Registerbb from "./Components/Registerbb";
 import BattleblazeHero from "./Components/BattleblazeHero";
 
 
@@ -321,7 +322,7 @@ function App() {
 
           path="/register"
 
-          element={<Register />}
+          element={<Registerbb />}
 
         />
 

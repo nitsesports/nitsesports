@@ -1057,6 +1057,7 @@ const Navbar = () => {
 
 
         @import url('https://fonts.cdnfonts.com/css/the-last-shuriken');
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&display=swap');
 
 
 
@@ -3502,7 +3503,7 @@ const Navbar = () => {
         .gaming-navbar[data-battleblaze="true"] {
           padding: 0 !important;
           background: transparent !important;
-          font-family: 'Google Sans', sans-serif;
+          font-family: 'Orbitron', sans-serif;
           letter-spacing: .12em;
         }
         .gaming-navbar[data-battleblaze="true"] > .navbar-enter {
@@ -3512,22 +3513,22 @@ const Navbar = () => {
         .gaming-navbar[data-battleblaze="true"] .navbar-body {
           height: 84px !important;
           border: 0 !important;
-          border-bottom: 1px solid rgba(117, 143, 255, .24) !important;
-          border-radius: 0 0 18px 18px !important;
-          background: linear-gradient(105deg, rgba(9, 8, 31, .84), rgba(20, 22, 63, .68) 52%, rgba(10, 7, 29, .84)) !important;
-          box-shadow: 0 10px 34px rgba(7, 5, 30, .2), inset 0 1px 0 rgba(255,255,255,.06) !important;
-          backdrop-filter: blur(18px) saturate(140%) !important;
-          -webkit-backdrop-filter: blur(18px) saturate(140%) !important;
+          border-radius: 0 !important;
+          background: transparent !important;
+          box-shadow: none !important;
+          backdrop-filter: none !important;
+          -webkit-backdrop-filter: none !important;
         }
         .gaming-navbar[data-battleblaze="true"] .navbar-body::after {
-          left: 3%; right: 3%; bottom: 0;
-          background: linear-gradient(90deg, transparent, rgba(91, 102, 255, .35), rgba(255, 61, 166, .36), rgba(91, 102, 255, .35), transparent);
-          box-shadow: 0 0 14px rgba(116, 79, 255, .12);
+          display: none !important;
+        }
+        .gaming-navbar[data-battleblaze="true"] .navbar-body > div.pointer-events-none {
+          opacity: 0 !important;
         }
         .gaming-navbar[data-battleblaze="true"] .navbar-link,
         .gaming-navbar[data-battleblaze="true"] .login-link,
         .gaming-navbar[data-battleblaze="true"] .mobile-navbar a {
-          font-family: 'Google Sans', sans-serif !important;
+          font-family: 'Orbitron', sans-serif !important;
           font-size: 11px; font-weight: 700; letter-spacing: .13em;
           text-shadow: 0 1px 8px rgba(7, 6, 26, .8);
         }
@@ -3543,13 +3544,106 @@ const Navbar = () => {
         .gaming-navbar[data-battleblaze="true"] .navbar-link::before {
           background: linear-gradient(90deg, transparent, rgba(110, 159, 255, .45), transparent);
         }
-        /* Balanced navigation spacing on both sides of the centered logo. */
+        /* BattleBlaze desktop layout: reserve equal space around the centered logo. */
         @media (min-width: 1280px) {
-          .gaming-navbar:not([data-battleblaze="true"]) .desktop-nav {
-            gap: clamp(18px, 1.8vw, 30px);
+          .gaming-navbar[data-battleblaze="true"] .navbar-body > div.relative.z-20 {
+            display: grid !important;
+            grid-template-columns: minmax(0, 1fr) 160px minmax(0, 1fr);
+            column-gap: 0;
+            justify-content: initial !important;
           }
+
+          .gaming-navbar[data-battleblaze="true"] .navbar-body > div.relative.z-20 > div:first-child {
+            grid-column: 1;
+            min-width: 0;
+            justify-self: stretch;
+          }
+
+          .gaming-navbar[data-battleblaze="true"] .navbar-body > div.relative.z-20 > .center-logo {
+            left: 50%;
+            width: 160px;
+          }
+
+          .gaming-navbar[data-battleblaze="true"] .navbar-body > div.relative.z-20 > div:last-child {
+            grid-column: 3;
+            min-width: 0;
+            justify-self: stretch;
+            justify-content: flex-end;
+            /* Push TEAM / ABOUT / EVENTS and the action buttons away from the center logo. */
+            transform: translateX(clamp(14px, 1.8vw, 32px));
+          }
+
+          .gaming-navbar[data-battleblaze="true"] .desktop-nav {
+            gap: clamp(10px, 1vw, 17px) !important;
+          }
+
+          .gaming-navbar[data-battleblaze="true"] .desktop-nav:first-of-type {
+            margin-left: clamp(12px, 1.2vw, 22px) !important;
+          }
+
+          .gaming-navbar[data-battleblaze="true"] .desktop-nav:last-of-type {
+            margin-right: clamp(8px, .8vw, 14px) !important;
+          }
+
+          /* Keep TEAM visible and prevent the center logo from covering it. */
+          .gaming-navbar[data-battleblaze="true"] .desktop-nav .navbar-link {
+            flex-shrink: 0;
+          }
+
+          .gaming-navbar[data-battleblaze="true"] .battleblaze-link {
+            padding-left: 10px;
+            padding-right: 10px;
+          }
+        }
+
+        /* Normal navbar: copy BattleBlaze button alignment only; preserve the normal theme and styles. */
+        @media (min-width: 1280px) {
+          .gaming-navbar:not([data-battleblaze="true"]) .navbar-body > div.relative.z-20 {
+            display: grid !important;
+            grid-template-columns: minmax(0, 1fr) 160px minmax(0, 1fr);
+            column-gap: 0;
+            justify-content: initial !important;
+          }
+
+          .gaming-navbar:not([data-battleblaze="true"]) .navbar-body > div.relative.z-20 > div:first-child {
+            grid-column: 1;
+            min-width: 0;
+            width: 100%;
+            justify-self: stretch;
+          }
+
+          .gaming-navbar:not([data-battleblaze="true"]) .navbar-body > div.relative.z-20 > .center-logo {
+            left: 50%;
+            width: 160px;
+            z-index: 80;
+          }
+
+          .gaming-navbar:not([data-battleblaze="true"]) .navbar-body > div.relative.z-20 > div:last-child {
+            grid-column: 3;
+            min-width: 0;
+            width: 100%;
+            justify-self: stretch;
+            justify-content: flex-end;
+            transform: translateX(clamp(14px, 1.8vw, 32px));
+          }
+
+          .gaming-navbar:not([data-battleblaze="true"]) .desktop-nav {
+            gap: clamp(10px, 1vw, 17px) !important;
+          }
+
+          .gaming-navbar:not([data-battleblaze="true"]) .desktop-nav .navbar-link,
+          .gaming-navbar:not([data-battleblaze="true"]) .battleblaze-nav-wrap,
+          .gaming-navbar:not([data-battleblaze="true"]) .login-link {
+            flex-shrink: 0;
+          }
+
           .gaming-navbar:not([data-battleblaze="true"]) .desktop-nav:first-of-type {
             justify-content: flex-end;
+            margin-left: clamp(12px, 1.2vw, 22px) !important;
+          }
+
+          .gaming-navbar:not([data-battleblaze="true"]) .desktop-nav:last-of-type {
+            margin-right: clamp(8px, .8vw, 14px) !important;
           }
         }
 
@@ -3566,20 +3660,25 @@ const Navbar = () => {
         }
         .gaming-navbar[data-battleblaze="true"] .login-link {
           border-color: rgba(151, 148, 221, .35); border-radius: 7px;
-          background: linear-gradient(135deg, rgba(75, 73, 125, .18), rgba(8, 9, 27, .35));
-          box-shadow: inset 0 1px 0 rgba(255,255,255,.08), 0 0 18px rgba(99, 92, 255, .08);
+          background: transparent !important;
+          box-shadow: none !important;
+          backdrop-filter: none !important;
+          -webkit-backdrop-filter: none !important;
         }
         .gaming-navbar[data-battleblaze="true"] .login-link::before {
           background: linear-gradient(90deg, rgba(80, 211, 255, .8), rgba(212, 117, 255, .8), rgba(255, 86, 170, .8)); opacity: .35;
         }
         .gaming-navbar[data-battleblaze="true"] .battleblaze-link {
           border-color: rgba(255, 72, 159, .82);
-          background: linear-gradient(110deg, rgba(255, 39, 131, .18), rgba(14, 16, 43, .9) 48%, rgba(43, 93, 168, .2));
-          box-shadow: 0 0 16px rgba(255, 57, 158, .12), inset 0 0 14px rgba(102, 145, 255, .06);
+          background: transparent !important;
+          box-shadow: none !important;
         }
         .gaming-navbar[data-battleblaze="true"] .mobile-navbar {
-          border-color: rgba(130, 127, 221, .28);
-          background: linear-gradient(120deg, rgba(8, 8, 30, .97), rgba(21, 22, 58, .96), rgba(8, 7, 27, .98));
+          border-color: transparent !important;
+          background: transparent !important;
+          box-shadow: none !important;
+          backdrop-filter: none !important;
+          -webkit-backdrop-filter: none !important;
         }
         @media (max-width: 640px) {
           .gaming-navbar[data-battleblaze="true"] .navbar-body { height: 76px !important; }
