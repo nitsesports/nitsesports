@@ -14,6 +14,11 @@ import coordinator1Photo from "../assets/bb3.png";
 import moduleCoHeadPhoto from "../assets/bb1.png";
 import moduleHeadPhoto from "../assets/bb2.png";
 import coordinator2Photo from "../assets/Members/member4.png";
+import valoPosterUrl from "../assets/bbv.png";
+import fifaPosterUrl from "../assets/bbfc.png";
+import mlbbPosterUrl from "../assets/bbmlbb.png";
+import ps5PosterUrl from "../assets/bbps5.png";
+import vrPosterUrl from "../assets/bbvrx.png";
 
 const EVENTS = [
   { id: "FIFA", color: "#45ffb0", x: 10 },
@@ -1907,6 +1912,66 @@ export default function BattleblazeHero({ onSelectEvent }) {
               radial-gradient(ellipse at 90% 85%, rgba(0, 234, 255, 0.2), transparent 48%),
               linear-gradient(150deg, rgba(21, 12, 48, 0.98), rgba(5, 13, 32, 0.98));
           }
+          .bb-module-poster.has-poster-image {
+            padding: 0;
+            gap: 0;
+            background: transparent;
+            border: 0;
+            border-radius: 0;
+            aspect-ratio: 4 / 5;
+            flex: 1 1 0;
+            min-height: 0;
+          }
+          .bb-module-poster.has-poster-image::before {
+            display: none;
+          }
+          .bb-module-poster-image {
+            display: block;
+            width: 100%;
+            height: auto;
+            min-height: 0;
+            flex: none;
+            align-self: stretch;
+            aspect-ratio: 4 / 5;
+            object-fit: contain;
+            object-position: center;
+            background: transparent;
+          }
+          /* Image cards: preserve the complete Instagram portrait without cropping. */
+          .bb-module-card:has(.bb-module-poster-image) {
+            padding: 0;
+            aspect-ratio: auto;
+            height: auto;
+            align-self: start;
+            clip-path: none;
+          }
+          .bb-module-card:has(.bb-module-poster-image) .bb-module-poster {
+            display: block;
+            flex: 0 0 auto;
+            width: 100%;
+            height: auto;
+            aspect-ratio: 4 / 5;
+            min-height: 0;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            line-height: 0;
+          }
+          .bb-module-card:has(.bb-module-poster-image) .bb-module-poster-image {
+            display: block;
+            width: 100%;
+            height: auto;
+            aspect-ratio: 4 / 5;
+            min-height: 0;
+            flex: none;
+            object-fit: contain;
+            object-position: center;
+            background: transparent;
+          }
+          .bb-module-card:has(.bb-module-poster-image) .bb-module-card-copy {
+            flex: 0 0 auto;
+            padding: 10px 12px 12px;
+          }
           .bb-module-poster::before {
             content: "";
             position: absolute;
@@ -2306,6 +2371,77 @@ export default function BattleblazeHero({ onSelectEvent }) {
               transition: none;
             }
           }
+          /* Uniform module cards: same width and total height for BGMI, RC and poster modules. */
+          .bb-modules-grid {
+            align-items: stretch;
+          }
+          .bb-module-card,
+          .bb-module-card:has(.bb-module-poster-image) {
+            display: flex;
+            flex-direction: column;
+            align-self: stretch;
+            width: 100%;
+            height: auto;
+            min-height: 0;
+            aspect-ratio: auto;
+            padding: 0;
+            clip-path: none;
+            overflow: hidden;
+          }
+          .bb-module-poster,
+          .bb-module-poster.has-poster-image,
+          .bb-module-card:has(.bb-module-poster-image) .bb-module-poster {
+            display: flex;
+            flex: 0 0 auto;
+            width: 100%;
+            height: auto;
+            min-height: 0;
+            aspect-ratio: 4 / 5;
+            margin: 0;
+            overflow: hidden;
+            border: 0;
+            border-radius: 0;
+          }
+          .bb-module-poster.has-poster-image,
+          .bb-module-card:has(.bb-module-poster-image) .bb-module-poster {
+            padding: 0;
+            background: transparent;
+            line-height: 0;
+          }
+          .bb-module-poster-image,
+          .bb-module-card:has(.bb-module-poster-image) .bb-module-poster-image {
+            display: block;
+            width: 100%;
+            height: 100%;
+            min-height: 0;
+            flex: 1 1 auto;
+            align-self: stretch;
+            aspect-ratio: auto;
+            object-fit: contain;
+            object-position: center;
+            background: transparent;
+          }
+          .bb-module-card-copy,
+          .bb-module-card:has(.bb-module-poster-image) .bb-module-card-copy {
+            flex: 1 1 auto;
+            min-width: 0;
+            padding: 10px 12px 12px;
+          }
+          .bb-module-card-copy .bb-module-description {
+            min-height: 0;
+            margin-bottom: 8px;
+          }
+          @media (max-width: 720px) {
+            .bb-module-card,
+            .bb-module-card:has(.bb-module-poster-image) {
+              padding: 0;
+              aspect-ratio: auto;
+            }
+            .bb-module-card-copy,
+            .bb-module-card:has(.bb-module-poster-image) .bb-module-card-copy {
+              padding: 8px 9px 10px;
+            }
+          }
         `}</style>
       </main>
 
@@ -2395,12 +2531,12 @@ export default function BattleblazeHero({ onSelectEvent }) {
           <div className="bb-modules-grid">
             {[
               { name: "BGMI", game: "BGMI", code: "01 // BATTLE ROYALE", icon: "⌖", description: "Squad up and fight for the final zone.", prize: "₹20,000" },
-              { name: "VALORANT", game: "VALORANT", code: "02 // TACTICAL FPS", icon: "◈", description: "Teamwork and precision win every round.", prize: "₹5,000" },
-              { name: "FIFA", game: "FIFA", code: "03 // FOOTBALL", icon: "⚽", description: "Control the pitch and score the win.", prize: "₹5,000" },
-              { name: "MOBILE LEGENDS", game: "MOBILE_LEGENDS", code: "04 // MOBA", icon: "⬡", description: "Pick your hero. Team up. Push to win.", prize: "₹5,000" },
+              { name: "VALORANT", game: "VALORANT", code: "02 // TACTICAL FPS", icon: "◈", description: "Teamwork and precision win every round.", prize: "₹5,000", posterImage: valoPosterUrl },
+              { name: "FIFA", game: "FIFA", code: "03 // FOOTBALL", icon: "⚽", description: "Control the pitch and score the win.", prize: "₹5,000", posterImage: fifaPosterUrl },
+              { name: "MOBILE LEGENDS", game: "MOBILE_LEGENDS", code: "04 // MOBA", icon: "⬡", description: "Pick your hero. Team up. Push to win.", prize: "₹5,000", posterImage: mlbbPosterUrl },
               { name: "RC", game: "RC", code: "05 // REAL CRICKET", icon: "🏏", description: "Represent your side and compete for the win.", prize: "₹5,000" },
-              { name: "VR EXPERIENCE", game: "VR_EXPERIENCE", code: "06 // IMMERSIVE", icon: "◎", description: "Enter an immersive virtual world.", comingSoon: true },
-              { name: "PS5 RUSH", game: "PS5_RUSH", code: "07 // CONSOLE", icon: "△", description: "Grab a controller and challenge rivals.", comingSoon: true },
+              { name: "VR EXPERIENCE", game: "VR_EXPERIENCE", code: "06 // IMMERSIVE", icon: "◎", description: "Enter an immersive virtual world.", comingSoon: true, posterImage: vrPosterUrl },
+              { name: "PS5 RUSH", game: "PS5_RUSH", code: "07 // CONSOLE", icon: "△", description: "Grab a controller and challenge rivals.", comingSoon: true, posterImage: ps5PosterUrl },
             ].map((module, index) => (
               <a
                 className={`bb-module-card ${module.comingSoon ? "is-coming-soon" : ""}`}
@@ -2417,16 +2553,28 @@ export default function BattleblazeHero({ onSelectEvent }) {
                   goToRegistration(module.game);
                 }}
               >
-                <div className="bb-module-poster">
-                  <div className="bb-poster-top">
-                    <span className="bb-poster-index">BATTLEBLAZE / {String(index + 1).padStart(2, "0")}</span>
-                    <div className="bb-poster-icon" aria-hidden="true">{module.icon}</div>
-                    <h3 className="bb-poster-title">{module.name}</h3>
-                    <p className="bb-poster-code">{module.code}</p>
-                  </div>
-                  <div className="bb-poster-bottom">
-                    <span className="bb-poster-index">NITS ESPORTS · 2026</span>
-                  </div>
+                <div className={`bb-module-poster ${module.posterImage ? "has-poster-image" : ""}`}>
+                  {module.posterImage ? (
+                    <img
+                      className="bb-module-poster-image"
+                      src={module.posterImage}
+                      alt={`${module.name} Instagram tournament poster`}
+                      loading="lazy"
+                      decoding="async"
+                    />
+                  ) : (
+                    <>
+                      <div className="bb-poster-top">
+                        <span className="bb-poster-index">BATTLEBLAZE / {String(index + 1).padStart(2, "0")}</span>
+                        <div className="bb-poster-icon" aria-hidden="true">{module.icon}</div>
+                        <h3 className="bb-poster-title">{module.name}</h3>
+                        <p className="bb-poster-code">{module.code}</p>
+                      </div>
+                      <div className="bb-poster-bottom">
+                        <span className="bb-poster-index">NITS ESPORTS · 2026</span>
+                      </div>
+                    </>
+                  )}
                 </div>
                 <div className="bb-module-card-copy">
                   <p className="bb-module-description">{module.description}</p>
