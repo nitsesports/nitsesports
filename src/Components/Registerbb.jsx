@@ -1,4 +1,5 @@
 import { Fragment, useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 
 import { useLocation } from "react-router-dom";
 
@@ -7,6 +8,7 @@ import { createClient } from "@supabase/supabase-js";
 import logoUrl from "../assets/logoo2.png";
 
 import rampageQR from "../assets/rqr.png";
+import rampageQR2 from "../assets/rqr2.png";
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 
@@ -20,9 +22,17 @@ const supabase =
 
     : null;
 
-const RAMPAGE_REGISTRATION_TABLE = "rampage_registrations";
+const BATTLEBLAZE_REGISTRATION_TABLE = "battleblaze2026";
 
-const RAMPAGE_PAYMENT_BUCKET = "rampage-payment-proofs";
+const BATTLEBLAZE_PAYMENT_BUCKET = "battleblaze2026-payment-proofs";
+
+const BATTLEBLAZE_WHATSAPP_GROUPS = {
+  RC: "https://chat.whatsapp.com/FCUZUlWJHYNCgMd7uP3o5R?s=cl&p=a&mlu=4&ilr=4",
+  VALORANT: "https://chat.whatsapp.com/HFRAyJh4UnEEe4cHuJUKVb?s=cl&p=a&mlu=4&ilr=4",
+  MOBILE_LEGENDS: "https://chat.whatsapp.com/LOUaQZ92r6sJAyt1lWaYDl?s=cl&p=a&mlu=4&ilr=4",
+  BGMI: "https://chat.whatsapp.com/FTSoR5xFIucKl4opCG1qkB?s=cl&p=a&mlu=4&ilr=4",
+  FIFA: "https://chat.whatsapp.com/DmVQOu8HqK1LjcFX5tMpsp?s=cl&p=a&mlu=4&ilr=4",
+};
 
 const tournaments = {
 
@@ -144,7 +154,7 @@ const tournaments = {
 
     title: "FIFA",
 
-    subtitle: "EA SPORTS FC / FIFA",
+    subtitle: "EA SPORTS FC / FIFA • RAMPAGE 2026",
 
     fields: [
 
@@ -152,11 +162,9 @@ const tournaments = {
 
       { name: "email", label: "EMAIL ADDRESS", placeholder: "you@example.com", type: "email" },
 
-      { name: "phone", label: "CONTACT NUMBER", placeholder: "10-digit mobile number", type: "tel" },
+      { name: "phone", label: "CONTACT NUMBER 1", placeholder: "10-digit mobile number", type: "tel" },
 
-      { name: "gameId", label: "IN-GAME ID", placeholder: "Your EA ID / Gamer tag" },
-
-      { name: "platform", label: "PLATFORM", options: ["PC", "PlayStation", "Xbox", "Other"] },
+      { name: "phone2", label: "CONTACT NUMBER 2 (OPTIONAL)", placeholder: "10-digit mobile number", type: "tel" },
 
     ],
 
@@ -372,7 +380,15 @@ export default function Registerbb() {
 
   const current = tournaments[game];
 
-  const isPaymentGame = ["BGMI", "MOBILE_LEGENDS", "VALORANT", "RC"].includes(game);
+  // BGMI and RC are free to register; other games in this form require ₹100 per team.
+  const isPaymentGame = ["BGMI", "MOBILE_LEGENDS", "VALORANT", "RC", "FIFA"].includes(game);
+  const isFreeRegistration = ["BGMI", "RC"].includes(game);
+  const requiresPayment = isPaymentGame && !isFreeRegistration;
+  const successDisplayName =
+    (form.teamName || form.playerName || form.iglName || form.captain || "").trim() ||
+    "YOUR REGISTRATION";
+  const successNameType = form.teamName?.trim() ? "TEAM NAME" : "PLAYER NAME";
+  const whatsappGroupUrl = BATTLEBLAZE_WHATSAPP_GROUPS[game];
 
   async function handleSubmit(e) {
 
@@ -386,21 +402,25 @@ export default function Registerbb() {
 
       const isRC = game === "RC";
 
+      const isFIFA = game === "FIFA";
+
+      const isSoloPaidGame = isRC || isFIFA;
+
       const playerCount =
 
         game === "MOBILE_LEGENDS" || game === "VALORANT" ? 5 : game === "BGMI" ? 4 : 1;
 
-      const fee = game === "MOBILE_LEGENDS" ? 50 : 40;
+      const fee = 100;
 
-      const player1Name = (isRC ? form.playerName : form.iglName || "").trim();
+      const player1Name = (isSoloPaidGame ? form.playerName || "" : form.iglName || "").trim();
 
-      const player1Ign = (isRC ? form.gameId : form.iglIgn || "").trim();
+      const player1Ign = (isSoloPaidGame ? form.gameId || "" : form.iglIgn || "").trim();
 
-      const email = (isRC ? form.email : form.iglEmail || "").trim();
+      const email = (isSoloPaidGame ? form.email || "" : form.iglEmail || "").trim();
 
-      const phone1 = isRC ? form.phone : form.phone1;
+      const phone1 = isSoloPaidGame ? form.phone : form.phone1;
 
-      if (!form.teamName?.trim()) {
+      if (!isFIFA && !form.teamName?.trim()) {
 
         setFormError("TEAM NAME IS REQUIRED.");
 
@@ -416,13 +436,17 @@ export default function Registerbb() {
 
       }
 
-      if (!player1Name || !player1Ign) {
+      if (!player1Name || (!isFIFA && !player1Ign)) {
 
         setFormError(
 
           isRC
 
             ? "PLAYER NAME AND PLAYER UID ARE REQUIRED."
+
+            : isFIFA
+
+            ? "PLAYER NAME IS REQUIRED."
 
             : "PLAYER 1 / IGL NAME AND IN-GAME NAME / RIOT ID ARE REQUIRED."
 
@@ -468,7 +492,7 @@ export default function Registerbb() {
 
       const substituteIgn = (form.substituteIgn || "").trim();
 
-      if (!isRC && Boolean(substituteName) !== Boolean(substituteIgn)) {
+      if (!isSoloPaidGame && Boolean(substituteName) !== Boolean(substituteIgn)) {
 
         setFormError("SUBSTITUTE: ENTER BOTH NAME AND IN-GAME NAME, OR LEAVE BOTH EMPTY.");
 
@@ -502,7 +526,7 @@ export default function Registerbb() {
 
       }
 
-      if (!paymentProof) {
+      if (requiresPayment && !paymentProof) {
 
         setFormError(`PAYMENT SCREENSHOT IS REQUIRED FOR ₹${fee}.`);
 
@@ -524,35 +548,27 @@ export default function Registerbb() {
 
       try {
 
-        const safeFileName = paymentProof.name.toLowerCase().replace(/[^a-z0-9._-]/g, "-");
+        if (requiresPayment && paymentProof) {
+          const safeFileName = paymentProof.name.toLowerCase().replace(/[^a-z0-9._-]/g, "-");
+          const uniqueId =
+            globalThis.crypto?.randomUUID?.() ||
+            `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
+          uploadedProofPath = `battleblaze2026/${Date.now()}-${uniqueId}-${safeFileName}`;
 
-        const uniqueId =
+          const { error: uploadError } = await supabase.storage
+            .from(BATTLEBLAZE_PAYMENT_BUCKET)
+            .upload(uploadedProofPath, paymentProof, {
+              cacheControl: "3600",
+              upsert: false,
+              contentType: paymentProof.type || "application/octet-stream",
+            });
 
-          globalThis.crypto?.randomUUID?.() ||
-
-          `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
-
-        uploadedProofPath = `rampage-2026/${Date.now()}-${uniqueId}-${safeFileName}`;
-
-        const { error: uploadError } = await supabase.storage
-
-          .from(RAMPAGE_PAYMENT_BUCKET)
-
-          .upload(uploadedProofPath, paymentProof, {
-
-            cacheControl: "3600",
-
-            upsert: false,
-
-            contentType: paymentProof.type || "application/octet-stream",
-
-          });
-
-        if (uploadError) throw new Error(`PAYMENT PROOF UPLOAD FAILED: ${uploadError.message}`);
+          if (uploadError) throw new Error(`PAYMENT PROOF UPLOAD FAILED: ${uploadError.message}`);
+        }
 
         const { error: insertError } = await supabase
 
-          .from(RAMPAGE_REGISTRATION_TABLE)
+          .from(BATTLEBLAZE_REGISTRATION_TABLE)
 
           .insert({
 
@@ -564,6 +580,10 @@ export default function Registerbb() {
 
               ? "RC"
 
+              : isFIFA
+
+              ? "FIFA"
+
               : game === "MOBILE_LEGENDS"
 
               ? "MLBB"
@@ -574,29 +594,33 @@ export default function Registerbb() {
 
               : "BGMI",
 
-            team_name: form.teamName.trim(),
+            // FIFA is a solo registration; use the player's name for the existing required team_name column.
+
+            team_name: isFIFA ? player1Name : form.teamName.trim(),
 
             igl_name: player1Name,
 
-            igl_ign: player1Ign,
+            // EA ID/platform are not collected in the simplified FIFA registration form.
+
+            igl_ign: isFIFA ? null : player1Ign,
 
             igl_email: email,
 
-            player2_name: isRC ? null : (form.player2Name || "").trim() || null,
+            player2_name: isSoloPaidGame ? null : (form.player2Name || "").trim() || null,
 
-            player2_ign: isRC ? null : (form.player2Ign || "").trim() || null,
+            player2_ign: isSoloPaidGame ? null : (form.player2Ign || "").trim() || null,
 
-            player3_name: isRC ? null : (form.player3Name || "").trim() || null,
+            player3_name: isSoloPaidGame ? null : (form.player3Name || "").trim() || null,
 
-            player3_ign: isRC ? null : (form.player3Ign || "").trim() || null,
+            player3_ign: isSoloPaidGame ? null : (form.player3Ign || "").trim() || null,
 
-            player4_name: isRC ? null : (form.player4Name || "").trim() || null,
+            player4_name: isSoloPaidGame ? null : (form.player4Name || "").trim() || null,
 
-            player4_ign: isRC ? null : (form.player4Ign || "").trim() || null,
+            player4_ign: isSoloPaidGame ? null : (form.player4Ign || "").trim() || null,
 
             player5_name:
 
-              !isRC && (game === "MOBILE_LEGENDS" || game === "VALORANT")
+              !isSoloPaidGame && (game === "MOBILE_LEGENDS" || game === "VALORANT")
 
                 ? (form.player5Name || "").trim() || null
 
@@ -604,23 +628,26 @@ export default function Registerbb() {
 
             player5_ign:
 
-              !isRC && (game === "MOBILE_LEGENDS" || game === "VALORANT")
+              !isSoloPaidGame && (game === "MOBILE_LEGENDS" || game === "VALORANT")
 
                 ? (form.player5Ign || "").trim() || null
 
                 : null,
 
-            substitute_name: !isRC ? substituteName || null : null,
+            substitute_name: !isSoloPaidGame ? substituteName || null : null,
 
-            substitute_ign: !isRC ? substituteIgn || null : null,
+            substitute_ign: !isSoloPaidGame ? substituteIgn || null : null,
 
             phone1,
 
             phone2: phone2 || null,
 
-            payment_proof_path: uploadedProofPath,
+            registration_fee: isFreeRegistration ? 0 : fee,
 
-            random_pairing: "NO",
+            payment_status: isFreeRegistration ? "free" : "proof_submitted",
+
+            payment_proof_path: uploadedProofPath || null,
+
 
           });
 
@@ -634,7 +661,7 @@ export default function Registerbb() {
 
           await supabase.storage
 
-            .from(RAMPAGE_PAYMENT_BUCKET)
+            .from(BATTLEBLAZE_PAYMENT_BUCKET)
 
             .remove([uploadedProofPath])
 
@@ -710,11 +737,12 @@ export default function Registerbb() {
 
   return (
 
+    <Fragment>
     <main className="reg-page">
 
       <style>{`
 
-        @import url('https\\://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800&display=swap');
 
         /* BattleblazeHero.jsx Exact Page Scrollbar */
 
@@ -1742,6 +1770,250 @@ export default function Registerbb() {
 
         }
 
+        /* ─────────────── SUCCESS POPUP / BATTLEBLAZE THEME ─────────────── */
+        .bb-success-overlay,
+        .bb-success-overlay * {
+          box-sizing: border-box;
+          font-family: 'Orbitron', system-ui, sans-serif;
+        }
+
+        .bb-success-overlay {
+          position: fixed;
+          inset: 0;
+          z-index: 2147483000;
+          display: grid;
+          place-items: center;
+          padding: 20px;
+          overflow-y: auto;
+          background: rgba(2, 2, 12, 0.82);
+          -webkit-backdrop-filter: blur(18px);
+          backdrop-filter: blur(18px);
+          animation: bb-success-overlay-in 220ms ease both;
+        }
+
+        .bb-success-modal {
+          position: relative;
+          width: min(100%, 660px);
+          padding: clamp(24px, 4vw, 40px);
+          overflow: hidden;
+          text-align: center;
+          border: 1px solid rgba(139, 92, 246, 0.64);
+          border-radius: 22px;
+          background:
+            radial-gradient(ellipse at 12% 0%, rgba(109, 40, 217, 0.25), transparent 42%),
+            radial-gradient(ellipse at 100% 100%, rgba(0, 234, 255, 0.11), transparent 40%),
+            linear-gradient(145deg, rgba(15, 10, 35, 0.99), rgba(5, 4, 17, 0.99) 58%, rgba(9, 10, 30, 0.99));
+          box-shadow: 0 28px 90px rgba(0, 0, 0, 0.62), 0 0 45px rgba(109, 40, 217, 0.2), inset 0 1px 0 rgba(255,255,255,0.08);
+          animation: bb-success-modal-in 300ms cubic-bezier(.2,.8,.2,1) both;
+        }
+
+        .bb-success-modal::before {
+          content: "";
+          position: absolute;
+          top: 0;
+          left: 12%;
+          right: 12%;
+          height: 2px;
+          background: linear-gradient(90deg, transparent, #8b5cf6, #00eaff, transparent);
+          box-shadow: 0 0 18px rgba(0, 234, 255, 0.35);
+        }
+
+        .bb-success-close {
+          position: absolute;
+          top: 12px;
+          right: 12px;
+          width: 36px;
+          height: 36px;
+          border: 1px solid rgba(196, 181, 253, 0.28);
+          border-radius: 10px;
+          background: rgba(139, 92, 246, 0.1);
+          color: #e9e4ff;
+          font-size: 22px;
+          line-height: 1;
+          cursor: pointer;
+          transition: background 180ms ease, border-color 180ms ease, transform 180ms ease;
+        }
+
+        .bb-success-close:hover {
+          transform: rotate(90deg);
+          border-color: #00eaff;
+          background: rgba(0, 234, 255, 0.12);
+        }
+
+        .bb-success-logo-shell {
+          width: 84px;
+          height: 84px;
+          display: grid;
+          place-items: center;
+          margin: 0 auto 18px;
+          border: 1px solid rgba(139, 92, 246, 0.58);
+          border-radius: 23px;
+          background: linear-gradient(135deg, rgba(139, 92, 246, 0.18), rgba(8, 12, 37, 0.78) 56%, rgba(0, 234, 255, 0.12));
+          box-shadow: 0 0 34px rgba(139, 92, 246, 0.18), inset 0 1px 0 rgba(255,255,255,0.08);
+        }
+
+        .bb-success-logo-shell img {
+          width: 80%;
+          height: 80%;
+          object-fit: contain;
+          filter: drop-shadow(0 0 12px rgba(139, 92, 246, 0.3));
+        }
+
+        .bb-success-check {
+          width: 46px;
+          height: 46px;
+          display: grid;
+          place-items: center;
+          margin: 0 auto 14px;
+          border: 1px solid rgba(103, 232, 249, 0.72);
+          border-radius: 50%;
+          color: #67e8f9;
+          background: rgba(0, 234, 255, 0.08);
+          box-shadow: 0 0 28px rgba(0, 234, 255, 0.16);
+          font-size: 23px;
+          font-weight: 800;
+        }
+
+        .bb-success-kicker {
+          display: block;
+          margin-bottom: 10px;
+          color: #c4b5fd;
+          font-size: 10px;
+          font-weight: 800;
+          letter-spacing: 0.24em;
+          text-transform: uppercase;
+        }
+
+        .bb-success-title {
+          margin: 0;
+          font-size: clamp(24px, 4.5vw, 36px);
+          line-height: 1.13;
+          font-weight: 800;
+          letter-spacing: 0.015em;
+          background: linear-gradient(100deg, #fff 8%, #ddd6fe 48%, #bfdbfe 100%);
+          -webkit-background-clip: text;
+          background-clip: text;
+          -webkit-text-fill-color: transparent;
+          filter: drop-shadow(0 0 16px rgba(139, 92, 246, 0.2));
+        }
+
+        .bb-success-message {
+          max-width: 480px;
+          margin: 12px auto 20px;
+          color: rgba(255, 255, 255, 0.78);
+          font-size: 12px;
+          line-height: 1.75;
+        }
+
+        .bb-success-name-card {
+          margin: 0 auto 26px;
+          max-width: 470px;
+          padding: 16px 18px;
+          border: 1px solid rgba(0, 234, 255, 0.32);
+          border-radius: 12px;
+          background: linear-gradient(110deg, rgba(139, 92, 246, 0.13), rgba(0, 234, 255, 0.055));
+          box-shadow: inset 0 1px 0 rgba(255,255,255,0.04);
+        }
+
+        .bb-success-name-card span {
+          display: block;
+          margin-bottom: 7px;
+          color: #67e8f9;
+          font-size: 9px;
+          font-weight: 800;
+          letter-spacing: 0.19em;
+        }
+
+        .bb-success-name-card strong {
+          display: block;
+          color: #fff;
+          font-size: clamp(15px, 2.5vw, 20px);
+          line-height: 1.4;
+          overflow-wrap: anywhere;
+        }
+
+        .bb-success-actions {
+          display: grid;
+          grid-template-columns: repeat(3, minmax(0, 1fr));
+          gap: 11px;
+        }
+
+        .bb-success-action {
+          min-height: 92px;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          gap: 10px;
+          padding: 16px 12px;
+          border: 1px solid rgba(139, 92, 246, 0.48);
+          border-radius: 12px;
+          color: #f5f3ff;
+          text-decoration: none;
+          text-align: center;
+          background: linear-gradient(145deg, rgba(139, 92, 246, 0.16), rgba(4, 6, 21, 0.82));
+          font-size: 10px;
+          font-weight: 800;
+          line-height: 1.5;
+          letter-spacing: 0.06em;
+          text-transform: uppercase;
+          transition: transform 180ms ease, border-color 180ms ease, box-shadow 180ms ease, background 180ms ease;
+        }
+
+        .bb-success-action:hover {
+          transform: translateY(-3px);
+          border-color: #00eaff;
+          background: linear-gradient(145deg, rgba(139, 92, 246, 0.22), rgba(0, 234, 255, 0.08));
+          box-shadow: 0 10px 26px rgba(0,0,0,0.25), 0 0 22px rgba(0,234,255,0.11);
+        }
+
+        .bb-success-action-icon {
+          color: #67e8f9;
+          font-size: 22px;
+          line-height: 1;
+        }
+
+        .bb-success-action-whatsapp {
+          border-color: rgba(74, 222, 128, 0.45);
+          background: linear-gradient(145deg, rgba(34, 197, 94, 0.13), rgba(4, 6, 21, 0.86));
+        }
+
+        .bb-success-action-whatsapp .bb-success-action-icon { color: #86efac; }
+        .bb-success-action-whatsapp:hover { border-color: #86efac; }
+
+        .bb-success-action-disabled {
+          opacity: 0.48;
+          cursor: not-allowed;
+          pointer-events: none;
+        }
+
+        @keyframes bb-success-overlay-in {
+          from { opacity: 0; }
+          to { opacity: 1; }
+        }
+
+        @keyframes bb-success-modal-in {
+          from { opacity: 0; transform: translateY(18px) scale(0.98); }
+          to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        @media (max-width: 620px) {
+          .bb-success-overlay { padding: 12px; }
+          .bb-success-modal { padding: 28px 16px 20px; border-radius: 17px; }
+          .bb-success-logo-shell { width: 68px; height: 68px; border-radius: 18px; margin-bottom: 14px; }
+          .bb-success-message { font-size: 11px; }
+          .bb-success-actions { grid-template-columns: 1fr; gap: 9px; }
+          .bb-success-action { min-height: 64px; flex-direction: row; justify-content: flex-start; text-align: left; padding: 14px 16px; }
+          .bb-success-action-icon { width: 28px; flex: 0 0 28px; }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+          .bb-success-overlay, .bb-success-modal, .bb-success-close, .bb-success-action {
+            animation: none !important;
+            transition: none !important;
+          }
+        }
+
         .reg-footer {
 
           max-width: 940px;
@@ -1870,99 +2142,188 @@ export default function Registerbb() {
 
         }
 
-      
-
           /* ─────────────── BATTLEBLAZE UI CONSISTENCY POLISH ─────────────── */
+
           .reg-page {
+
             background-color: #05030d;
+
             background-image:
+
               radial-gradient(ellipse at 14% 7%, rgba(109, 40, 217, 0.22), transparent 36%),
+
               radial-gradient(ellipse at 88% 16%, rgba(0, 234, 255, 0.09), transparent 32%),
+
               radial-gradient(ellipse at 50% 95%, rgba(59, 130, 246, 0.12), transparent 48%),
+
               linear-gradient(135deg, #05030d 0%, #100821 48%, #050914 100%);
+
           }
+
           .reg-page::before {
+
             content: "";
+
             position: absolute;
+
             inset: 0;
+
             z-index: 0;
+
             pointer-events: none;
+
             opacity: 0.18;
+
             background-image:
+
               linear-gradient(rgba(139, 92, 246, 0.12) 1px, transparent 1px),
+
               linear-gradient(90deg, rgba(0, 234, 255, 0.08) 1px, transparent 1px);
+
             background-size: 48px 48px;
+
             mask-image: linear-gradient(to bottom, #000 0%, rgba(0, 0, 0, 0.65) 62%, transparent 100%);
+
           }
+
           .reg-header,
+
           .reg-container,
+
           .reg-footer {
+
             position: relative;
+
             z-index: 1;
+
           }
+
           .reg-brand {
+
             border-color: rgba(139, 92, 246, 0.58);
+
             background: linear-gradient(135deg, rgba(139, 92, 246, 0.18), rgba(8, 12, 37, 0.78) 56%, rgba(0, 234, 255, 0.12));
+
             box-shadow: 0 0 28px rgba(139, 92, 246, 0.17), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+
           }
+
           .reg-glass-card,
+
           .reg-review,
+
           .reg-payment-panel {
+
             -webkit-backdrop-filter: blur(14px);
+
             backdrop-filter: blur(14px);
+
           }
+
           .reg-glass-card {
+
             border-color: rgba(139, 92, 246, 0.5);
+
             background:
+
               linear-gradient(145deg, rgba(139, 92, 246, 0.14), rgba(8, 4, 17, 0.94) 58%, rgba(0, 234, 255, 0.055));
+
             box-shadow: 0 22px 52px rgba(0, 0, 0, 0.42), 0 0 30px rgba(109, 40, 217, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.065);
+
           }
+
           .reg-status {
+
             border-color: rgba(96, 165, 250, 0.42);
+
             background: linear-gradient(110deg, rgba(139, 92, 246, 0.14), rgba(59, 130, 246, 0.12));
+
           }
+
           .reg-field input,
+
           .reg-field select {
+
             border-color: rgba(139, 92, 246, 0.38);
+
             background: rgba(4, 4, 15, 0.82);
+
           }
+
           .reg-field input:hover,
+
           .reg-field select:hover {
+
             border-color: rgba(167, 139, 250, 0.7);
+
           }
+
           .reg-field input:focus,
+
           .reg-field select:focus {
+
             border-color: #00eaff;
+
             box-shadow: 0 0 0 3px rgba(0, 234, 255, 0.1), 0 0 18px rgba(139, 92, 246, 0.18);
+
           }
+
           .reg-submit {
+
             min-height: 52px;
+
             border-color: rgba(196, 181, 253, 0.62);
+
             border-radius: 7px;
+
             background: linear-gradient(105deg, #6d28d9 0%, #8b5cf6 48%, #2563eb 100%);
+
             box-shadow: 0 10px 28px rgba(0, 0, 0, 0.34), 0 0 22px rgba(139, 92, 246, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.14);
+
           }
+
           .reg-submit:hover:not(:disabled) {
+
             border-color: #00eaff;
+
             box-shadow: 0 12px 32px rgba(0, 0, 0, 0.38), 0 0 26px rgba(0, 234, 255, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.18);
+
           }
+
           .reg-success-icon {
+
             border-color: rgba(0, 234, 255, 0.72);
+
             color: #67e8f9;
+
             box-shadow: 0 0 24px rgba(0, 234, 255, 0.2), 0 0 22px rgba(139, 92, 246, 0.16);
+
           }
+
           .reg-footer {
+
             border-top: 1px solid rgba(139, 92, 246, 0.18);
+
             padding-top: 16px;
+
           }
+
           @media (prefers-reduced-motion: reduce) {
+
             .reg-brand,
+
             .reg-submit,
+
             .reg-field input,
+
             .reg-field select {
+
               transition: none !important;
+
             }
+
           }
+
 `}</style>
 
       <header className={`reg-header ${isPaymentGame ? "reg-header-bgmi" : ""}`}>
@@ -2103,6 +2464,10 @@ export default function Registerbb() {
 
                     ? "At least one player is required. Player 1 / IGL must have a name and Riot ID. Players 2–5 are optional, but if you start entering any player’s details, both that player’s name and Riot ID must be completed. Only the IGL email is required; no other player email fields are collected."
 
+                    : game === "FIFA"
+
+                    ? "Complete the single-player registration with player name, email address and contact number 1. Contact number 2 is optional."
+
                     : "Enter the mandatory team name, player name, player UID, email address and contact number 1. Contact number 2 is optional."}{" "}
 
                   Contact number 1 is mandatory.
@@ -2118,6 +2483,10 @@ export default function Registerbb() {
                   ? (game === "RC"
 
                       ? ["teamName", "playerName", "gameId", "email", "phone", "phone2"]
+
+                      : game === "FIFA"
+
+                      ? ["playerName", "email", "phone", "phone2"]
 
                       : [
 
@@ -2174,6 +2543,10 @@ export default function Registerbb() {
                     ? {
 
                         teamName: "TEAM DETAILS",
+
+                        playerName: game === "FIFA" ? "PLAYER DETAILS" : undefined,
+
+                        email: game === "FIFA" ? "CONTACT DETAILS" : undefined,
 
                         iglName: "PLAYER NAMES",
 
@@ -2341,6 +2714,20 @@ export default function Registerbb() {
 
                           ]
 
+                        : game === "FIFA"
+
+                        ? [
+
+                            ["PLAYER NAME", form.playerName],
+
+                            ["EMAIL ADDRESS", form.email],
+
+                            ["CONTACT NUMBER 1", form.phone],
+
+                            ["CONTACT NUMBER 2", form.phone2],
+
+                          ]
+
                         : [
 
                             ["TEAM NAME", form.teamName],
@@ -2427,103 +2814,72 @@ export default function Registerbb() {
 
                   </section>
 
-                  <div className="reg-divider" />
-
-                  <section className="reg-payment-panel">
-
-                    <div className="reg-section-label">
-
-                      <span>03</span> PAYMENT DETAILS
-
-                    </div>
-
-                    <p className="reg-payment-amount">
-
-                      REGISTRATION FEE:{" "}
-
-                      <strong>₹{game === "MOBILE_LEGENDS" ? 50 : 40} PER TEAM</strong>
-
-                    </p>
-
-                    <p className="reg-payment-note">
-
-                      Complete the payment, then upload the payment screenshot. Accepted formats: JPG, PNG or WEBP.
-
-                    </p>
-
-                    <div className="reg-qr-grid" aria-label="Payment QR codes">
-
-                      <div className="reg-qr-slot">
-
-                        <strong>PAYMENT QR — SLOT 1</strong>
-
-                        <img
-
-                          src={rampageQR}
-
-                          alt="Rampage payment QR code 1"
-
-                          loading="lazy"
-
-                          decoding="async"
-
-                        />
-
-                        <span>Scan this QR to pay the registration fee.</span>
-
-                      </div>
-
-                      <div className="reg-qr-slot">
-
-                        <strong>PAYMENT QR — SLOT 2</strong>
-
-                        <img
-
-                          src={rampageQR}
-
-                          alt="Rampage payment QR code 2"
-
-                          loading="lazy"
-
-                          decoding="async"
-
-                        />
-
-                        <span>Alternate payment QR.</span>
-
-                      </div>
-
-                    </div>
-
-                    <label className="reg-field reg-payment-upload">
-
-                      <span>
-
-                        PAYMENT SCREENSHOT <b>*</b>
-
-                      </span>
-
-                      <input
-
-                        type="file"
-
-                        accept="image/png,image/jpeg,image/webp"
-
-                        required
-
-                        onChange={(e) => {
-
-                          setPaymentProof(e.target.files?.[0] || null);
-
-                          setFormError("");
-
-                        }}
-
-                      />
-
-                    </label>
-
-                  </section>
+                  {requiresPayment ? (
+                    <>
+                      <div className="reg-divider" />
+                      <section className="reg-payment-panel">
+                        <div className="reg-section-label">
+                          <span>03</span> PAYMENT DETAILS
+                        </div>
+                        <p className="reg-payment-amount">
+                          REGISTRATION FEE:{" "}
+                          <strong>₹100 PER TEAM</strong>
+                        </p>
+                        <p className="reg-payment-note">
+                          Complete the ₹100 team payment, then upload the payment screenshot. Accepted formats: JPG, PNG or WEBP.
+                        </p>
+                        <div className="reg-qr-grid" aria-label="Payment QR codes">
+                          <div className="reg-qr-slot">
+                            <strong>PAYMENT QR — SLOT 1</strong>
+                            <img
+                              src={rampageQR}
+                              alt="Rampage payment QR code 1"
+                              loading="lazy"
+                              decoding="async"
+                            />
+                            <span>Scan this QR to pay the registration fee.</span>
+                          </div>
+                          <div className="reg-qr-slot">
+                            <strong>PAYMENT QR — SLOT 2</strong>
+                            <img
+                              src={rampageQR2}
+                              alt="Rampage payment QR code 2"
+                              loading="lazy"
+                              decoding="async"
+                            />
+                            <span>Alternate payment QR.</span>
+                          </div>
+                        </div>
+                        <label className="reg-field reg-payment-upload">
+                          <span>PAYMENT SCREENSHOT <b>*</b></span>
+                          <input
+                            type="file"
+                            accept="image/png,image/jpeg,image/webp"
+                            required
+                            onChange={(e) => {
+                              setPaymentProof(e.target.files?.[0] || null);
+                              setFormError("");
+                            }}
+                          />
+                        </label>
+                      </section>
+                    </>
+                  ) : (
+                    <>
+                      <div className="reg-divider" />
+                      <section className="reg-payment-panel reg-free-registration-panel">
+                        <div className="reg-section-label">
+                          <span>03</span> REGISTRATION FEE
+                        </div>
+                        <p className="reg-payment-amount">
+                          REGISTRATION FEE: <strong>FREE</strong>
+                        </p>
+                        <p className="reg-payment-note">
+                          {current.title} registration is free. No payment or payment screenshot is required.
+                        </p>
+                      </section>
+                    </>
+                  )}
 
                 </>
 
@@ -2582,6 +2938,71 @@ export default function Registerbb() {
       </section>
 
     </main>
+
+    {success && typeof document !== "undefined" && createPortal(
+      <div className="bb-success-overlay">
+        <section
+          className="bb-success-modal"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="bb-success-title"
+          aria-describedby="bb-success-message"
+        >
+          <button
+            className="bb-success-close"
+            type="button"
+            aria-label="Close registration success popup"
+            onClick={() => {
+              setSuccess(false);
+              setForm({});
+              setPaymentProof(null);
+              setReviewConfirmed(false);
+              setFormError("");
+            }}
+          >
+            ×
+          </button>
+
+          <div className="bb-success-logo-shell">
+            <img src={logoUrl} alt="NITS Esports logo" draggable="false" />
+          </div>
+          <div className="bb-success-check" aria-hidden="true">✓</div>
+          <span className="bb-success-kicker">BATTLEBLAZE 2026 · REGISTRATION CONFIRMED</span>
+          <h2 className="bb-success-title" id="bb-success-title">REGISTRATION SUCCESSFUL</h2>
+          <p className="bb-success-message" id="bb-success-message">
+            Your {current.title} registration has been submitted successfully. Welcome to the arena!
+          </p>
+          <div className="bb-success-name-card">
+            <span>{successNameType}</span>
+            <strong>{successDisplayName}</strong>
+          </div>
+
+          <div className="bb-success-actions">
+            <a
+              className={`bb-success-action bb-success-action-whatsapp ${whatsappGroupUrl ? "" : "bb-success-action-disabled"}`}
+              href={whatsappGroupUrl || undefined}
+              target={whatsappGroupUrl ? "_blank" : undefined}
+              rel={whatsappGroupUrl ? "noopener noreferrer" : undefined}
+              aria-disabled={!whatsappGroupUrl}
+              title={whatsappGroupUrl ? `Join the ${current.title} WhatsApp group` : "WhatsApp group link is not configured for this game"}
+            >
+              <span className="bb-success-action-icon" aria-hidden="true">☏</span>
+              <span>JOIN WHATSAPP GROUP</span>
+            </a>
+            <a className="bb-success-action" href="/battleblaze#modules">
+              <span className="bb-success-action-icon" aria-hidden="true">⌘</span>
+              <span>EXPLORE OTHER MODULES</span>
+            </a>
+            <a className="bb-success-action" href="/battleblaze">
+              <span className="bb-success-action-icon" aria-hidden="true">↗</span>
+              <span>EXPLORE BATTLEBLAZE</span>
+            </a>
+          </div>
+        </section>
+      </div>,
+      document.body
+    )}
+    </Fragment>
 
   );
 
