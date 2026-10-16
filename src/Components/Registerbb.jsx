@@ -4,24 +4,34 @@ import { useLocation } from "react-router-dom";
 
 import { createClient } from "@supabase/supabase-js";
 
+
+
 import logoUrl from "../assets/logoo2.png";
 
 import rampageQR from "../assets/rqr.png";
+
 
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 
 const SUPABASE_PUBLISHABLE_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
 
-const supabase = SUPABASE_URL && SUPABASE_PUBLISHABLE_KEY
 
-  ? createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY)
 
-  : null;
+const supabase =
+
+  SUPABASE_URL && SUPABASE_PUBLISHABLE_KEY
+
+    ? createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY)
+
+    : null;
+
+
 
 const RAMPAGE_REGISTRATION_TABLE = "rampage_registrations";
 
 const RAMPAGE_PAYMENT_BUCKET = "rampage-payment-proofs";
+
 
 
 const tournaments = {
@@ -45,6 +55,7 @@ const tournaments = {
       { name: "player4Name", label: "PLAYER 4 NAME", placeholder: "Full name" },
 
       { name: "iglIgn", label: "PLAYER 1 / IGL IN-GAME NAME", placeholder: "In-game name" },
+
       { name: "iglEmail", label: "PLAYER 1 / IGL EMAIL ADDRESS", placeholder: "igl@example.com", type: "email" },
 
       { name: "player2Ign", label: "PLAYER 2 IN-GAME NAME", placeholder: "In-game name" },
@@ -127,7 +138,6 @@ const tournaments = {
 
       { name: "iglEmail", label: "PLAYER 1 / IGL EMAIL ADDRESS", placeholder: "igl@example.com", type: "email" },
 
-
       { name: "substituteName", label: "SUBSTITUTE PLAYER NAME (OPTIONAL)", placeholder: "Full name" },
 
       { name: "substituteIgn", label: "SUBSTITUTE RIOT ID (OPTIONAL)", placeholder: "Riot ID: Name#TAG" },
@@ -183,6 +193,7 @@ const tournaments = {
       { name: "player5Name", label: "PLAYER 5 NAME", placeholder: "Full name" },
 
       { name: "iglIgn", label: "PLAYER 1 / IGL IN-GAME NAME", placeholder: "In-game name" },
+
       { name: "iglEmail", label: "PLAYER 1 / IGL EMAIL ADDRESS", placeholder: "igl@example.com", type: "email" },
 
       { name: "player2Ign", label: "PLAYER 2 IN-GAME NAME", placeholder: "In-game name" },
@@ -276,44 +287,57 @@ const tournaments = {
 };
 
 
+
 function getRequestedGame(search) {
 
-  const query = typeof search === "string"
+  const query =
 
-    ? search
+    typeof search === "string"
 
-    : (typeof window !== "undefined" ? window.location.search : "");
+      ? search
+
+      : typeof window !== "undefined"
+
+      ? window.location.search
+
+      : "";
 
   const requestedGame = new URLSearchParams(query).get("game");
 
-  const normalized = (requestedGame || "BGMI").trim().toUpperCase().replace(/[\s-]+/g, "_");
+  const normalized = (requestedGame || "BGMI")
+
+    .trim()
+
+    .toUpperCase()
+
+    .replace(/[\s-]+/g, "_");
 
 
-  // Accept common URL variations while keeping Battleblaze module keys supported.
 
   const aliases = {
 
-    "FF": "FREE_FIRE",
+    FF: "FREE_FIRE",
 
-    "FREEFIRE": "FREE_FIRE",
+    FREEFIRE: "FREE_FIRE",
 
-    "FREE_FIRE": "FREE_FIRE",
+    FREE_FIRE: "FREE_FIRE",
 
-    "MLBB": "MOBILE_LEGENDS",
+    MLBB: "MOBILE_LEGENDS",
 
-    "MOBILELEGENDS": "MOBILE_LEGENDS",
+    MOBILELEGENDS: "MOBILE_LEGENDS",
 
-    "MOBILE_LEGENDS": "MOBILE_LEGENDS",
+    MOBILE_LEGENDS: "MOBILE_LEGENDS",
 
-    "VR": "VR_EXPERIENCE",
+    VR: "VR_EXPERIENCE",
 
-    "VR_EXPERIENCE": "VR_EXPERIENCE",
+    VR_EXPERIENCE: "VR_EXPERIENCE",
 
-    "PS5": "PS5_RUSH",
+    PS5: "PS5_RUSH",
 
-    "PS5_RUSH": "PS5_RUSH",
+    PS5_RUSH: "PS5_RUSH",
 
   };
+
 
 
   const key = aliases[normalized] || normalized;
@@ -321,6 +345,7 @@ function getRequestedGame(search) {
   return tournaments[key] ? key : "BGMI";
 
 }
+
 
 
 export default function Registerbb() {
@@ -342,7 +367,6 @@ export default function Registerbb() {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
 
-  // Select the correct form from the route query. No in-form game switching.
 
   useEffect(() => {
 
@@ -358,517 +382,1621 @@ export default function Registerbb() {
 
     setSuccess(false);
 
+    if (typeof window !== "undefined") {
+
+      window.scrollTo({ top: 0, behavior: "instant" });
+
+    }
+
   }, [location.search]);
+
 
 
   const current = tournaments[game];
 
+  const isPaymentGame = ["BGMI", "MOBILE_LEGENDS", "VALORANT", "RC"].includes(game);
+
+
 
   async function handleSubmit(e) {
+
     e.preventDefault();
+
     setFormError("");
 
-    const paymentGames = ["BGMI", "MOBILE_LEGENDS", "VALORANT", "RC"];
-    if (paymentGames.includes(game)) {
+
+
+    if (isPaymentGame) {
+
       if (isSubmitting) return;
 
+
+
       const isRC = game === "RC";
-      const playerCount = game === "MOBILE_LEGENDS" || game === "VALORANT" ? 5 : game === "BGMI" ? 4 : 1;
+
+      const playerCount =
+
+        game === "MOBILE_LEGENDS" || game === "VALORANT" ? 5 : game === "BGMI" ? 4 : 1;
+
       const fee = game === "MOBILE_LEGENDS" ? 50 : 40;
+
       const player1Name = (isRC ? form.playerName : form.iglName || "").trim();
+
       const player1Ign = (isRC ? form.gameId : form.iglIgn || "").trim();
+
       const email = (isRC ? form.email : form.iglEmail || "").trim();
+
       const phone1 = isRC ? form.phone : form.phone1;
 
+
+
       if (!form.teamName?.trim()) {
+
         setFormError("TEAM NAME IS REQUIRED.");
+
         return;
+
       }
+
       if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+
         setFormError("A VALID EMAIL ADDRESS IS REQUIRED.");
+
         return;
+
       }
+
       if (!player1Name || !player1Ign) {
-        setFormError(isRC ? "PLAYER NAME AND PLAYER UID ARE REQUIRED." : "PLAYER 1 / IGL NAME AND IN-GAME NAME / RIOT ID ARE REQUIRED.");
+
+        setFormError(
+
+          isRC
+
+            ? "PLAYER NAME AND PLAYER UID ARE REQUIRED."
+
+            : "PLAYER 1 / IGL NAME AND IN-GAME NAME / RIOT ID ARE REQUIRED."
+
+        );
+
         return;
+
       }
+
+
 
       for (let i = 2; i <= playerCount; i += 1) {
+
         const name = (form[`player${i}Name`] || "").trim();
+
         const ign = (form[`player${i}Ign`] || "").trim();
+
         if (game === "MOBILE_LEGENDS" && (!name || !ign)) {
+
           setFormError(`PLAYER ${i}: NAME AND IN-GAME NAME ARE REQUIRED.`);
+
           return;
+
         }
+
         if (Boolean(name) !== Boolean(ign)) {
-          setFormError(game === "VALORANT" ? `PLAYER ${i}: IF YOU ENTER THIS PLAYER, BOTH FULL NAME AND RIOT ID ARE REQUIRED.` : `PLAYER ${i}: ENTER BOTH NAME AND IN-GAME NAME / RIOT ID, OR LEAVE BOTH EMPTY.`);
+
+          setFormError(
+
+            game === "VALORANT"
+
+              ? `PLAYER ${i}: IF YOU ENTER THIS PLAYER, BOTH FULL NAME AND RIOT ID ARE REQUIRED.`
+
+              : `PLAYER ${i}: ENTER BOTH NAME AND IN-GAME NAME / RIOT ID, OR LEAVE BOTH EMPTY.`
+
+          );
+
           return;
+
         }
+
       }
+
+
 
       const substituteName = (form.substituteName || "").trim();
+
       const substituteIgn = (form.substituteIgn || "").trim();
+
       if (!isRC && Boolean(substituteName) !== Boolean(substituteIgn)) {
+
         setFormError("SUBSTITUTE: ENTER BOTH NAME AND IN-GAME NAME, OR LEAVE BOTH EMPTY.");
+
         return;
+
       }
+
+
 
       if (!/^\d{10}$/.test(phone1 || "")) {
+
         setFormError("CONTACT NUMBER 1 MUST CONTAIN EXACTLY 10 DIGITS.");
+
         return;
+
       }
+
       const phone2 = (form.phone2 || "").trim();
+
       if (phone2 && !/^\d{10}$/.test(phone2)) {
+
         setFormError("CONTACT NUMBER 2 MUST CONTAIN EXACTLY 10 DIGITS IF PROVIDED.");
+
         return;
+
       }
+
+
 
       if (!reviewConfirmed) {
+
         setFormError("PLEASE REVIEW YOUR ENTRIES AND CONFIRM THAT ALL DETAILS ARE CORRECT.");
+
         return;
+
       }
+
       if (!paymentProof) {
+
         setFormError(`PAYMENT SCREENSHOT IS REQUIRED FOR ₹${fee}.`);
+
         return;
+
       }
+
       if (!supabase) {
+
         setFormError("SUPABASE IS NOT CONFIGURED. CHECK VITE_SUPABASE_URL AND VITE_SUPABASE_PUBLISHABLE_KEY.");
+
         return;
+
       }
+
+
 
       setIsSubmitting(true);
+
       let uploadedProofPath = "";
+
       try {
-        const safeFileName = paymentProof.name.toLowerCase().replace(/[^a-z0-9.\_-]/g, "-");
-        const uniqueId = globalThis.crypto?.randomUUID?.() || `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
+
+        const safeFileName = paymentProof.name.toLowerCase().replace(/[^a-z0-9._-]/g, "-");
+
+        const uniqueId =
+
+          globalThis.crypto?.randomUUID?.() ||
+
+          `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
+
         uploadedProofPath = `rampage-2026/${Date.now()}-${uniqueId}-${safeFileName}`;
 
+
+
         const { error: uploadError } = await supabase.storage
+
           .from(RAMPAGE_PAYMENT_BUCKET)
+
           .upload(uploadedProofPath, paymentProof, {
+
             cacheControl: "3600",
+
             upsert: false,
+
             contentType: paymentProof.type || "application/octet-stream",
+
           });
+
         if (uploadError) throw new Error(`PAYMENT PROOF UPLOAD FAILED: ${uploadError.message}`);
 
+
+
         const { error: insertError } = await supabase
+
           .from(RAMPAGE_REGISTRATION_TABLE)
+
           .insert({
+
             event_name: "RAMPAGE 2026",
+
             tournament: current.title,
-            game: isRC ? "RC" : game === "MOBILE_LEGENDS" ? "MLBB" : game === "VALORANT" ? "VALORANT" : "BGMI",
+
+            game: isRC
+
+              ? "RC"
+
+              : game === "MOBILE_LEGENDS"
+
+              ? "MLBB"
+
+              : game === "VALORANT"
+
+              ? "VALORANT"
+
+              : "BGMI",
+
             team_name: form.teamName.trim(),
+
             igl_name: player1Name,
+
             igl_ign: player1Ign,
+
             igl_email: email,
-            player2_name: isRC ? null : ((form.player2Name || "").trim() || null),
-            player2_ign: isRC ? null : ((form.player2Ign || "").trim() || null),
-            player3_name: isRC ? null : ((form.player3Name || "").trim() || null),
-            player3_ign: isRC ? null : ((form.player3Ign || "").trim() || null),
-            player4_name: isRC ? null : ((form.player4Name || "").trim() || null),
-            player4_ign: isRC ? null : ((form.player4Ign || "").trim() || null),
-            player5_name: !isRC && (game === "MOBILE_LEGENDS" || game === "VALORANT") ? ((form.player5Name || "").trim() || null) : null,
-            player5_ign: !isRC && (game === "MOBILE_LEGENDS" || game === "VALORANT") ? ((form.player5Ign || "").trim() || null) : null,
-            substitute_name: !isRC ? (substituteName || null) : null,
-            substitute_ign: !isRC ? (substituteIgn || null) : null,
+
+            player2_name: isRC ? null : (form.player2Name || "").trim() || null,
+
+            player2_ign: isRC ? null : (form.player2Ign || "").trim() || null,
+
+            player3_name: isRC ? null : (form.player3Name || "").trim() || null,
+
+            player3_ign: isRC ? null : (form.player3Ign || "").trim() || null,
+
+            player4_name: isRC ? null : (form.player4Name || "").trim() || null,
+
+            player4_ign: isRC ? null : (form.player4Ign || "").trim() || null,
+
+            player5_name:
+
+              !isRC && (game === "MOBILE_LEGENDS" || game === "VALORANT")
+
+                ? (form.player5Name || "").trim() || null
+
+                : null,
+
+            player5_ign:
+
+              !isRC && (game === "MOBILE_LEGENDS" || game === "VALORANT")
+
+                ? (form.player5Ign || "").trim() || null
+
+                : null,
+
+            substitute_name: !isRC ? substituteName || null : null,
+
+            substitute_ign: !isRC ? substituteIgn || null : null,
+
             phone1,
+
             phone2: phone2 || null,
+
             payment_proof_path: uploadedProofPath,
+
             random_pairing: "NO",
+
           });
+
         if (insertError) throw new Error(`REGISTRATION SAVE FAILED: ${insertError.message}`);
+
         setSuccess(true);
+
       } catch (error) {
+
         if (uploadedProofPath) {
-          await supabase.storage.from(RAMPAGE_PAYMENT_BUCKET).remove([uploadedProofPath]).catch(() => {});
+
+          await supabase.storage
+
+            .from(RAMPAGE_PAYMENT_BUCKET)
+
+            .remove([uploadedProofPath])
+
+            .catch(() => {});
+
         }
+
         setFormError(error?.message || "REGISTRATION FAILED. PLEASE TRY AGAIN.");
+
       } finally {
+
         setIsSubmitting(false);
+
       }
+
       return;
+
     }
 
+
+
     setSuccess(true);
+
   }
 
+
+
   function isOptional(field) {
+
     const optionalBgmiPlayerFields = [
-      "player2Name", "player2Ign", "player3Name", "player3Ign", "player4Name", "player4Ign",
+
+      "player2Name",
+
+      "player2Ign",
+
+      "player3Name",
+
+      "player3Ign",
+
+      "player4Name",
+
+      "player4Ign",
+
     ];
+
     const optionalValorantPlayerFields = [
-      "player2Name", "player2Ign", "player3Name", "player3Ign",
-      "player4Name", "player4Ign", "player5Name", "player5Ign",
+
+      "player2Name",
+
+      "player2Ign",
+
+      "player3Name",
+
+      "player3Ign",
+
+      "player4Name",
+
+      "player4Ign",
+
+      "player5Name",
+
+      "player5Ign",
+
     ];
-    return field.label.includes("OPTIONAL") ||
+
+    return (
+
+      field.label.includes("OPTIONAL") ||
+
       (game === "BGMI" && optionalBgmiPlayerFields.includes(field.name)) ||
-      (game === "VALORANT" && optionalValorantPlayerFields.includes(field.name));
+
+      (game === "VALORANT" && optionalValorantPlayerFields.includes(field.name))
+
+    );
+
   }
+
+
 
   return (
 
     <main className="reg-page">
 
-      <style>{`/* Force the same dark Battleblaze background used by the other registration forms */
-html, body, #root {
-  min-height: 100%;
-  background-color: #070713 !important;
-}
-body {
-  margin: 0;
-}
-.reg-page {
-  min-height: 100vh !important;
-  min-height: 100dvh !important;
-  width: 100%;
-  box-sizing: border-box;
-  color: #f5f5ff !important;
-  background: radial-gradient(ellipse at 12% 8%, rgba(139, 92, 246, .24), transparent 40%), radial-gradient(ellipse at 88% 78%, rgba(59, 130, 246, .16), transparent 38%), linear-gradient(135deg, #070713 0%, #100b2b 48%, #080d22 100%) !important;
-}
-/* Blue + purple scrollbar theme */
-:root, * {
-  scrollbar-width: thin;
-  scrollbar-color: #8b5cf6 #0a1028;
-}
-*::-webkit-scrollbar {
-  width: 10px;
-  height: 10px;
-}
-*::-webkit-scrollbar-track {
-  background: #0a1028;
-  border-radius: 999px;
-}
-*::-webkit-scrollbar-thumb {
-  background: linear-gradient(180deg, #3b82f6 0%, #6366f1 48%, #8b5cf6 100%);
-  border: 2px solid #0a1028;
-  border-radius: 999px;
-}
-*::-webkit-scrollbar-thumb:hover {
-  background: linear-gradient(180deg, #60a5fa 0%, #818cf8 48%, #a78bfa 100%);
-}
-.reg-page {
+      <style>{`
 
-  min-height: 100vh;
+        @import url('https\://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800&display=swap');
 
-  padding: 24px clamp(16px, 4vw, 56px) 36px;
 
-  color: #f5f5ff;
 
-  background: radial-gradient(ellipse at 12% 8%, rgba(139, 92, 246, .24), transparent 40%), radial-gradient(ellipse at 88% 78%, rgba(59, 130, 246, .16), transparent 38%), linear-gradient(135deg, #070713 0%, #100b2b 48%, #080d22 100%) !important;
+        /* BattleblazeHero.jsx Exact Page Scrollbar */
 
-  font-family: Orbitron, system-ui, sans-serif;
+        html, body {
 
-  position: relative;
+          min-height: 100%;
 
-  overflow: hidden;
+          margin: 0;
 
-}
+          background-color: #05030d !important;
 
-.reg-orb { position: absolute; width: 280px; height: 280px; border-radius: 50%; filter: blur(90px); opacity: .16; pointer-events: none; }
+          scrollbar-width: thin;
 
-.reg-orb-one { background: #8b5cf6; top: 18%; left: -130px; }
+          scrollbar-color: #7656e8 #100a2a;
 
-.reg-orb-two { background: #3b82f6; right: -140px; bottom: 10%; }
+        }
 
-.reg-header { max-width: 1120px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; gap: 20px; position: relative; z-index: 1; }
+        html::-webkit-scrollbar, body::-webkit-scrollbar, *::-webkit-scrollbar {
 
-.reg-brand img { width: 76px; height: 76px; object-fit: contain; }
+          width: 10px;
 
-.reg-header-label, .reg-eyebrow, .reg-card-index, .reg-status, .reg-section-label, .reg-footnote, .reg-footer { letter-spacing: .12em; font-size: 11px; color: #b9b7d5; }
+          height: 10px;
 
-.reg-container { max-width: 920px; margin: 42px auto 0; position: relative; z-index: 1; }
+        }
 
-.reg-heading { text-align: center; margin-bottom: 28px; }
+        html::-webkit-scrollbar-track, body::-webkit-scrollbar-track, *::-webkit-scrollbar-track {
 
-/\* Event Overview-inspired glowing headline with violet-to-blue lighting. \*/
+          background: linear-gradient(180deg, #100a2a 0%, #1b0c36 55%, #100a2a 100%);
 
-.reg-heading h1 {
+          border-left: 1px solid rgba(0, 234, 255, 0.12);
 
-  position: relative;
+        }
 
-  display: inline-block;
+        html::-webkit-scrollbar-thumb, body::-webkit-scrollbar-thumb, *::-webkit-scrollbar-thumb {
 
-  margin: 10px 0 26px;
+          background: linear-gradient(180deg, #a78bfa 0%, #7656e8 48%, #7d2bd4 100%);
 
-  font-size: clamp(30px, 5vw, 52px);
+          border: 2px solid #100a2a;
 
-  line-height: 1.1;
+          border-radius: 999px;
 
-  font-weight: 800;
+        }
 
-  letter-spacing: .045em;
+        html::-webkit-scrollbar-thumb:hover, body::-webkit-scrollbar-thumb:hover, *::-webkit-scrollbar-thumb:hover {
 
-  color: #eee8ff;
+          background: linear-gradient(180deg, #c4b5fd 0%, #8b5cf6 48%, #00cfe8 100%);
 
-  background: linear-gradient(180deg, #ffffff 0%, #e4d5ff 42%, #b7a0ff 74%, #93c5fd 100%);
+        }
 
-  -webkit-background-clip: text;
 
-  background-clip: text;
 
-  -webkit-text-fill-color: transparent;
+        /* Global Typography & BattleblazeHero.jsx Nebula Background */
 
-  text-shadow: 0 0 12px rgba(167,139,250,.48), 0 0 28px rgba(139,92,246,.34), 0 0 48px rgba(96,165,250,.16);
+        .reg-page, .reg-page *, .reg-page *::before, .reg-page *::after {
 
-  filter: drop-shadow(0 0 9px rgba(139,92,246,.32));
+          box-sizing: border-box;
 
-}
+          font-family: 'Orbitron', system-ui, sans-serif !important;
 
-.reg-heading h1::after {
+        }
 
-  content: "";
 
-  position: absolute;
 
-  left: 0;
+        .reg-page {
 
-  bottom: -18px;
+          position: relative;
 
-  width: min(100%, 470px);
+          isolation: isolate;
 
-  height: 3px;
+          min-height: 100vh;
 
-  background: linear-gradient(90deg, #8b5cf6 0%, #a78bfa 45%, #60a5fa 100%);
+          min-height: 100svh;
 
-  box-shadow: 0 0 10px rgba(139,92,246,.55), 0 0 22px rgba(96,165,250,.24);
+          width: 100%;
 
-}
+          padding: clamp(24px, 4vw, 44px) clamp(16px, 4vw, 56px) 52px;
 
-.reg-heading h1 span, .reg-card-top h2 span {
+          color: #fff;
 
-  color: #c4b5fd;
+          background-color: #05030d;
 
-  background: linear-gradient(90deg, #c4b5fd 0%, #a78bfa 48%, #93c5fd 100%);
+          background-image:
 
-  -webkit-background-clip: text;
+            radial-gradient(ellipse at 12% 18%, rgba(109, 40, 217, 0.28), transparent 40%),
 
-  background-clip: text;
+            radial-gradient(ellipse at 88% 30%, rgba(37, 99, 235, 0.16), transparent 42%),
 
-  -webkit-text-fill-color: transparent;
+            radial-gradient(ellipse at 52% 100%, rgba(79, 70, 229, 0.16), transparent 50%),
 
-  text-shadow: 0 0 12px rgba(167,139,250,.55), 0 0 26px rgba(96,165,250,.22);
+            linear-gradient(135deg, #05030d 0%, #100821 48%, #050914 100%);
 
-}
+          overflow-x: hidden;
 
-.reg-heading p, .reg-card-top p { color: #aaa8c6; font-size: 13px; }
+        }
 
-.reg-glass-card { border: 1px solid rgba(167, 139, 250, .30); background: linear-gradient(145deg, rgba(24, 16, 49, .94), rgba(8, 10, 28, .96)); border-radius: 16px; padding: clamp(18px, 4vw, 34px); box-shadow: 0 20px 70px rgba(0,0,0,.35); backdrop-filter: blur(14px); }
 
-.reg-card-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 20px; }
 
-.reg-card-top h2 {
+        /* ─────────────── HEADER & LOGO SHELL ─────────────── */
 
-  margin: 12px 0 8px;
+        .reg-header {
 
-  font-size: clamp(20px, 3vw, 30px);
+          max-width: 1120px;
 
-  color: #f5f0ff;
+          /* Move the complete presents + logo block below the navbar */
+          margin: clamp(130px, 14vh, 170px) auto 0;
 
-  text-shadow: 0 0 10px rgba(139,92,246,.28), 0 0 22px rgba(96,165,250,.12);
+          display: flex;
 
-}
+          justify-content: space-between;
 
-.reg-status { border: 1px solid rgba(139,92,246,.35); border-radius: 30px; padding: 8px 10px; white-space: nowrap; }
+          align-items: center;
 
-.reg-status span { display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: #8b5cf6; margin-right: 7px; }
+          gap: 18px;
 
-.reg-divider { height: 1px; background: linear-gradient(90deg, transparent, #4c426d, transparent); margin: 24px 0; }
+          position: relative;
 
-.reg-section-label { margin-bottom: 18px; }
+          z-index: 1;
 
-.reg-section-label span { color: #8b5cf6; margin-right: 10px; }
+        }
 
-.reg-fields { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; }
+        .reg-header-bgmi {
 
-.reg-field { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+          justify-content: center;
 
-.reg-field > span { font-size: 10px; letter-spacing: .07em; color: #d0cde4; }
+          flex-direction: column;
 
-.reg-field b { color: #a78bfa; }
+          gap: 12px;
 
-.reg-field input, .reg-field select { width: 100%; min-height: 46px; box-sizing: border-box; border: 1px solid #37314f; border-radius: 8px; outline: none; background: #0a0917; color: white; padding: 12px 13px; font: inherit; font-size: 12px; }
+        }
 
-.reg-field input:focus, .reg-field select:focus { border-color: #8b5cf6; box-shadow: 0 0 0 3px rgba(139,92,246,.14); }
+        .reg-header-branding {
 
-.reg-consent { display: flex; gap: 10px; align-items: flex-start; color: #bdbbd3; font-size: 11px; line-height: 1.6; }
+          display: flex;
 
-.reg-consent input { accent-color: #8b5cf6; margin-top: 3px; }
+          flex-direction: column;
 
-.reg-submit { display: flex; justify-content: center; align-items: center; gap: 12px; width: 100%; margin-top: 22px; border: 0; border-radius: 8px; padding: 15px 18px; background: linear-gradient(90deg, #8a35ff, #3b82f6); color: white; font: inherit; font-size: 12px; font-weight: 700; letter-spacing: .08em; cursor: pointer; }
+          align-items: center;
 
-.reg-submit:hover { filter: brightness(1.12); }
+          gap: 10px;
 
-.reg-footnote { text-align: center; margin-top: 15px; font-size: 9px; }
+        }
 
-.reg-success { text-align: center; padding: 25px 0; }
+        .reg-header-presents {
 
-.reg-success-icon { width: 54px; height: 54px; display: grid; place-items: center; margin: 0 auto 18px; border: 1px solid #a78bfa; border-radius: 50%; color: #c4b5fd; font-size: 28px; }
+          color: #c4b5fd;
 
-.reg-success h2 { font-size: 28px; }
+          font-size: clamp(10px, 1.2vw, 12px);
 
-.reg-success p { color: #bdbbd3; line-height: 1.7; font-size: 13px; }
+          font-weight: 800;
 
-.reg-footer { max-width: 920px; margin: 26px auto 0; display: flex; justify-content: space-between; gap: 12px; }
+          letter-spacing: 0.28em;
 
-@media (max-width: 620px) {
+          text-align: center;
 
-  .reg-header { align-items: flex-start; }
+          text-transform: uppercase;
 
-  .reg-brand img { width: 58px; height: 58px; }
+        }
 
-  .reg-header-label { text-align: right; max-width: 180px; line-height: 1.6; }
 
-  .reg-container { margin-top: 28px; }
 
-  .reg-card-top { flex-direction: column; }
+        /* Matches .bb-modules-logo-shell from BattleblazeHero.jsx */
 
-  .reg-fields { grid-template-columns: 1fr; }
+        .reg-brand {
 
-  .reg-footer { flex-direction: column; text-align: center; }
+          display: grid;
 
-}
+          place-items: center;
 
-/\* Unified Battleblaze purple / blue theme — no pink accents \*/
+          width: 82px;
 
-.reg-page, .reg-page \* {
+          height: 82px;
 
-  --reg-violet: #8b5cf6;
+          border: 1px solid rgba(139, 92, 246, 0.5);
 
-  --reg-lavender: #c4b5fd;
+          border-radius: 22px;
 
-  --reg-blue: #60a5fa;
+          background: linear-gradient(110deg, rgba(139, 92, 246, 0.14), rgba(8, 12, 37, 0.65), rgba(0, 234, 255, 0.12));
 
-}
+          box-shadow: 0 0 32px rgba(139, 92, 246, 0.14);
 
-.reg-page .reg-header-label,
+          transition: transform 220ms ease, border-color 220ms ease;
 
-.reg-page .reg-eyebrow,
+        }
 
-.reg-page .reg-card-index,
+        .reg-brand:hover {
 
-.reg-page .reg-section-label span,
+          transform: translateY(-2px);
 
-.reg-page .reg-field b,
+          border-color: rgba(196, 181, 253, 0.78);
 
-.reg-page .reg-status span,
+        }
 
-.reg-page .reg-success-icon {
+        .reg-brand img {
 
-  color: #c4b5fd !important;
+          width: 80%;
 
-}
+          height: 80%;
 
-.reg-page .reg-field b { color: #a78bfa !important; }
+          object-fit: contain;
 
-.reg-page .reg-status { border-color: rgba(139,92,246,.38) !important; }
+          filter: drop-shadow(0 0 12px rgba(139, 92, 246, 0.24));
 
-.reg-page .reg-status span { background: #8b5cf6 !important; }
+        }
 
-.reg-page .reg-field input:focus,
+        .reg-logo-large {
 
-.reg-page .reg-field select:focus { border-color: #8b5cf6 !important; }
+          width: clamp(96px, 12vw, 138px);
 
-.reg-page .reg-consent input { accent-color: #8b5cf6 !important; }
+          height: clamp(96px, 12vw, 138px);
 
-.reg-page .reg-divider {
+          border-radius: 26px;
 
-  background: linear-gradient(90deg, transparent, #6d28d9 25%, #8b5cf6 50%, #60a5fa 75%, transparent) !important;
+        }
 
-}
 
-.reg-page .reg-submit {
 
-  background: linear-gradient(100deg, #6d28d9 0%, #8b5cf6 48%, #3b82f6 100%) !important;
+        .reg-header-label,
 
-  box-shadow: 0 8px 24px rgba(96,165,250,.12), 0 0 22px rgba(139,92,246,.14);
+        .reg-eyebrow,
 
-}
+        .reg-card-index,
 
-.reg-page .reg-glass-card {
+        .reg-status,
 
-  border-color: rgba(167,139,250,.30) !important;
+        .reg-section-label,
 
-  background: linear-gradient(145deg, rgba(24,16,49,.94), rgba(8,10,28,.96)) !important;
+        .reg-footnote,
 
-}
+        .reg-footer {
 
-.reg-page .reg-field input,
+          letter-spacing: 0.2em;
 
-.reg-page .reg-field select {
+          font-size: 10px;
 
-  border-color: rgba(139,92,246,.28) !important;
+          font-weight: 800;
 
-}
+          color: #c4b5fd;
 
-.reg-page .reg-success-icon { border-color: #8b5cf6 !important; }
+          text-transform: uppercase;
 
-.reg-header-branding { display:flex; flex-direction:column; align-items:center; gap:8px; }
+        }
 
-.reg-header-presents { color:#e9ddff; font-size:clamp(10px,1.4vw,14px); font-weight:800; letter-spacing:.18em; text-align:center; text-shadow:0 0 14px rgba(139,92,246,.45); }
+        .reg-header-bgmi .reg-header-label {
 
-.reg-header-bgmi { justify-content:center; flex-direction:column; gap:14px; }
+          text-align: center;
 
-.reg-header-bgmi .reg-header-label { text-align:center; }
+        }
 
-.reg-logo-large img { width:clamp(100px,13vw,150px); height:clamp(100px,13vw,150px); }
 
-.reg-subsection-heading { grid-column: 1 / -1; margin: 10px 0 -4px; padding-top: 12px; border-top: 1px solid rgba(139,92,246,.18); color: #e9ddff; }
 
-.reg-review { margin-top:24px; padding:18px; border:1px solid rgba(167,139,250,.28); border-radius:12px; background:rgba(10,9,23,.55); }
+        /* ─────────────── MAIN CONTAINER & BATTLEBLAZE HEADING ─────────────── */
 
-.reg-review-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; }
+        .reg-container {
 
-.reg-review-item { min-width:0; padding:10px 12px; border:1px solid rgba(139,92,246,.16); border-radius:8px; background:rgba(139,92,246,.045); }
+          max-width: 940px;
 
-.reg-review-item small { display:block; color:#aaa8c6; font-size:9px; letter-spacing:.08em; margin-bottom:5px; }
+          margin: clamp(28px, 4vw, 42px) auto 0;
 
-.reg-review-item strong { display:block; color:#f5f0ff; font-size:12px; overflow-wrap:anywhere; }
+          position: relative;
 
-.reg-qr-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:14px; margin:14px 0 18px; }
+          z-index: 1;
 
-.reg-qr-slot { min-height:170px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:10px; padding:12px; border:1px dashed rgba(167,139,250,.45); border-radius:10px; background:rgba(7,7,19,.6); text-align:center; }
+        }
 
-.reg-qr-slot img { width:130px; height:130px; object-fit:contain; background:white; border-radius:6px; padding:5px; }
 
-.reg-qr-slot strong { font-size:10px; letter-spacing:.08em; color:#e9ddff; }
 
-.reg-qr-slot span { font-size:9px; color:#aaa8c6; line-height:1.5; }
+        .reg-heading {
 
-.reg-review-consent { margin-top:16px; }
+          text-align: center;
 
-@media (max-width:620px) { .reg-review-grid,.reg-qr-grid { grid-template-columns:1fr; } }
+          margin-bottom: clamp(24px, 3.5vw, 34px);
 
-.reg-payment-panel { margin: 4px 0 8px; padding: 18px; border: 1px solid rgba(139,92,246,.28); border-radius: 12px; background: linear-gradient(135deg, rgba(109,40,217,.10), rgba(59,130,246,.07)); }
+        }
 
-.reg-payment-amount { color: #e9ddff; font-size: 13px; letter-spacing: .08em; margin: 0 0 8px; }
 
-.reg-payment-amount strong { color: #c4b5fd; text-shadow: 0 0 12px rgba(139,92,246,.28); }
 
-.reg-payment-note { color: #aaa8c6; font-size: 11px; line-height: 1.6; margin-bottom: 16px; }
+        /* Exact Heading Color & Gradient from BattleblazeHero.jsx (.bb-overview-title / .bb-modules-title) */
 
-.reg-payment-upload input { padding: 10px; min-height: auto; background: rgba(7,7,19,.7); }
+        .reg-heading h1 {
 
-.reg-form-error { margin-top: 16px; padding: 12px 14px; border: 1px solid rgba(248,113,113,.35); border-radius: 9px; background: rgba(127,29,29,.16); color: #fecaca; font-size: 10px; line-height: 1.6; letter-spacing: .04em; }
+          position: relative;
 
-.reg-submit:disabled { opacity: .65; cursor: wait; }
+          display: inline-block;
 
-`}</style>
+          margin: 10px 0 24px;
 
-      <div className="reg-orb reg-orb-one" />
+          font-size: clamp(2rem, 4.6vw, 3.8rem);
 
-      <div className="reg-orb reg-orb-two" />
+          line-height: 1.08;
 
+          font-weight: 800;
 
-      <header className={`reg-header ${["BGMI", "MOBILE_LEGENDS", "VALORANT", "RC"].includes(game) ? "reg-header-bgmi" : ""}`}>
+          letter-spacing: 0.02em;
+
+          text-transform: uppercase;
+
+          color: #fff;
+
+          background: linear-gradient(100deg, #fff 8%, #ddd6fe 48%, #bfdbfe 100%);
+
+          -webkit-background-clip: text;
+
+          background-clip: text;
+
+          -webkit-text-fill-color: transparent;
+
+          filter: drop-shadow(0 0 18px rgba(139, 92, 246, 0.22));
+
+        }
+
+        .reg-heading h1 span {
+
+          background: inherit;
+
+          -webkit-background-clip: text;
+
+          background-clip: text;
+
+          -webkit-text-fill-color: transparent;
+
+        }
+
+        .reg-heading h1::after {
+
+          content: "";
+
+          position: absolute;
+
+          left: 50%;
+
+          transform: translateX(-50%);
+
+          bottom: -14px;
+
+          width: min(84%, 360px);
+
+          height: 2px;
+
+          background: linear-gradient(90deg, transparent, #8b5cf6, #60a5fa, transparent);
+
+          box-shadow: 0 0 12px rgba(139, 92, 246, 0.55);
+
+        }
+
+
+
+        .reg-heading p,
+
+        .reg-card-top p {
+
+          margin: 0;
+
+          color: rgba(255, 255, 255, 0.78);
+
+          font-size: clamp(11px, 0.95vw, 13px);
+
+          line-height: 1.55;
+
+        }
+
+
+
+        /* ─────────────── MAIN CARD (MATCHES BATTLEBLAZE CARDS) ─────────────── */
+
+        .reg-glass-card {
+
+          position: relative;
+
+          overflow: hidden;
+
+          border: 1px solid rgba(139, 92, 246, 0.45);
+
+          border-radius: 18px;
+
+          padding: clamp(18px, 3.8vw, 34px);
+
+          background: linear-gradient(
+
+            145deg,
+
+            rgba(139, 92, 246, 0.12),
+
+            rgba(8, 4, 17, 0.95) 65%,
+
+            rgba(59, 130, 246, 0.08)
+
+          );
+
+          box-shadow:
+
+            0 18px 42px rgba(0, 0, 0, 0.35),
+
+            inset 0 1px 0 rgba(255, 255, 255, 0.06);
+
+        }
+
+        .reg-glass-card::before {
+
+          content: "";
+
+          position: absolute;
+
+          top: 0;
+
+          left: clamp(18px, 3.8vw, 34px);
+
+          width: 96px;
+
+          height: 2px;
+
+          background: linear-gradient(90deg, #6d28d9, #8b5cf6, #60a5fa);
+
+          box-shadow: 0 0 14px rgba(139, 92, 246, 0.65);
+
+        }
+
+
+
+        .reg-card-top {
+
+          display: flex;
+
+          align-items: flex-start;
+
+          justify-content: space-between;
+
+          gap: 16px;
+
+        }
+
+        .reg-card-top h2 {
+
+          margin: 10px 0 8px;
+
+          font-size: clamp(1.35rem, 2.8vw, 2.1rem);
+
+          font-weight: 800;
+
+          line-height: 1.12;
+
+          text-transform: uppercase;
+
+          background: linear-gradient(100deg, #fff 8%, #ddd6fe 48%, #bfdbfe 100%);
+
+          -webkit-background-clip: text;
+
+          background-clip: text;
+
+          -webkit-text-fill-color: transparent;
+
+          filter: drop-shadow(0 0 14px rgba(139, 92, 246, 0.2));
+
+        }
+
+        .reg-card-top h2 span {
+
+          background: inherit;
+
+          -webkit-background-clip: text;
+
+          background-clip: text;
+
+          -webkit-text-fill-color: transparent;
+
+        }
+
+
+
+        .reg-status {
+
+          display: inline-flex;
+
+          align-items: center;
+
+          border: 1px solid rgba(196, 181, 253, 0.38);
+
+          border-radius: 999px;
+
+          padding: 8px 12px;
+
+          background: rgba(139, 92, 246, 0.12);
+
+          color: #f5f3ff;
+
+          font-size: 9px;
+
+          letter-spacing: 0.14em;
+
+          white-space: nowrap;
+
+        }
+
+        .reg-status span {
+
+          display: inline-block;
+
+          width: 6px;
+
+          height: 6px;
+
+          border-radius: 50%;
+
+          background: #60a5fa;
+
+          box-shadow: 0 0 8px #60a5fa;
+
+          margin-right: 8px;
+
+        }
+
+
+
+        .reg-divider {
+
+          height: 1px;
+
+          background: linear-gradient(90deg, transparent, #6d28d9 25%, #8b5cf6 50%, #60a5fa 75%, transparent);
+
+          margin: 24px 0;
+
+          opacity: 0.75;
+
+        }
+
+
+
+        .reg-section-label {
+
+          display: flex;
+
+          align-items: center;
+
+          gap: 8px;
+
+          margin-bottom: 16px;
+
+          color: #c4b5fd;
+
+          font-size: 11px;
+
+          letter-spacing: 0.22em;
+
+        }
+
+        .reg-section-label span {
+
+          color: #60a5fa;
+
+        }
+
+
+
+        .reg-subsection-heading {
+
+          grid-column: 1 / -1;
+
+          margin: 8px 0 -2px;
+
+          padding-top: 14px;
+
+          border-top: 1px solid rgba(139, 92, 246, 0.22);
+
+          color: #f5f3ff;
+
+        }
+
+
+
+        /* ─────────────── FORM FIELDS ─────────────── */
+
+        .reg-fields {
+
+          display: grid;
+
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+
+          gap: 16px;
+
+        }
+
+        .reg-field {
+
+          display: flex;
+
+          flex-direction: column;
+
+          gap: 8px;
+
+          min-width: 0;
+
+        }
+
+        .reg-field > span {
+
+          font-size: 10px;
+
+          font-weight: 700;
+
+          letter-spacing: 0.08em;
+
+          color: rgba(255, 255, 255, 0.88);
+
+        }
+
+        .reg-field b {
+
+          color: #60a5fa;
+
+        }
+
+
+
+        .reg-field input,
+
+        .reg-field select {
+
+          width: 100%;
+
+          min-height: 48px;
+
+          border: 1px solid rgba(139, 92, 246, 0.35);
+
+          border-radius: 10px;
+
+          outline: none;
+
+          background: rgba(6, 5, 16, 0.88);
+
+          color: #fff;
+
+          padding: 12px 14px;
+
+          font-size: 12px;
+
+          font-weight: 500;
+
+          letter-spacing: 0.03em;
+
+          transition: border-color 180ms ease, box-shadow 180ms ease, background 180ms ease;
+
+        }
+
+        .reg-field input::placeholder {
+
+          color: rgba(196, 181, 253, 0.42);
+
+        }
+
+        .reg-field input:focus,
+
+        .reg-field select:focus {
+
+          border-color: #60a5fa;
+
+          background: rgba(10, 8, 26, 0.96);
+
+          box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.16), 0 0 14px rgba(139, 92, 246, 0.2);
+
+        }
+
+
+
+        /* ─────────────── REVIEW & PAYMENT PANELS ─────────────── */
+
+        .reg-review,
+
+        .reg-payment-panel {
+
+          margin-top: 8px;
+
+          padding: clamp(16px, 2.5vw, 22px);
+
+          border: 1px solid rgba(139, 92, 246, 0.38);
+
+          border-radius: 14px;
+
+          background: linear-gradient(
+
+            145deg,
+
+            rgba(139, 92, 246, 0.09),
+
+            rgba(7, 5, 18, 0.92) 68%,
+
+            rgba(59, 130, 246, 0.07)
+
+          );
+
+        }
+
+        .reg-review-grid {
+
+          display: grid;
+
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+
+          gap: 12px;
+
+        }
+
+        .reg-review-item {
+
+          min-width: 0;
+
+          padding: 10px 12px;
+
+          border: 1px solid rgba(139, 92, 246, 0.25);
+
+          border-radius: 9px;
+
+          background: rgba(139, 92, 246, 0.06);
+
+        }
+
+        .reg-review-item small {
+
+          display: block;
+
+          color: #c4b5fd;
+
+          font-size: 9px;
+
+          font-weight: 700;
+
+          letter-spacing: 0.1em;
+
+          margin-bottom: 5px;
+
+        }
+
+        .reg-review-item strong {
+
+          display: block;
+
+          color: #fff;
+
+          font-size: 12px;
+
+          overflow-wrap: anywhere;
+
+        }
+
+
+
+        .reg-payment-amount {
+
+          color: #fff;
+
+          font-size: 13px;
+
+          font-weight: 700;
+
+          letter-spacing: 0.08em;
+
+          margin: 0 0 8px;
+
+        }
+
+        .reg-payment-amount strong {
+
+          color: #93c5fd;
+
+          text-shadow: 0 0 12px rgba(96, 165, 250, 0.35);
+
+        }
+
+        .reg-payment-note {
+
+          color: rgba(255, 255, 255, 0.76);
+
+          font-size: 11px;
+
+          line-height: 1.6;
+
+          margin: 0 0 16px;
+
+        }
+
+
+
+        .reg-qr-grid {
+
+          display: grid;
+
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+
+          gap: 14px;
+
+          margin: 14px 0 18px;
+
+        }
+
+        .reg-qr-slot {
+
+          min-height: 176px;
+
+          display: flex;
+
+          flex-direction: column;
+
+          align-items: center;
+
+          justify-content: center;
+
+          gap: 10px;
+
+          padding: 14px;
+
+          border: 1px dashed rgba(167, 139, 250, 0.48);
+
+          border-radius: 12px;
+
+          background: rgba(6, 5, 16, 0.75);
+
+          text-align: center;
+
+        }
+
+        .reg-qr-slot img {
+
+          width: 132px;
+
+          height: 132px;
+
+          object-fit: contain;
+
+          background: #fff;
+
+          border-radius: 8px;
+
+          padding: 6px;
+
+        }
+
+        .reg-qr-slot strong {
+
+          font-size: 10px;
+
+          letter-spacing: 0.1em;
+
+          color: #f5f3ff;
+
+        }
+
+        .reg-qr-slot span {
+
+          font-size: 9px;
+
+          color: rgba(255, 255, 255, 0.7);
+
+          line-height: 1.5;
+
+        }
+
+
+
+        .reg-payment-upload input {
+
+          padding: 10px;
+
+          min-height: auto;
+
+          background: rgba(6, 5, 16, 0.85);
+
+          cursor: pointer;
+
+        }
+
+
+
+        /* ─────────────── CONSENT, SUBMIT & STATUS ─────────────── */
+
+        .reg-consent {
+
+          display: flex;
+
+          gap: 10px;
+
+          align-items: flex-start;
+
+          color: rgba(255, 255, 255, 0.82);
+
+          font-size: 11px;
+
+          line-height: 1.6;
+
+          cursor: pointer;
+
+        }
+
+        .reg-consent input {
+
+          width: 16px;
+
+          height: 16px;
+
+          accent-color: #8b5cf6;
+
+          margin-top: 2px;
+
+          flex-shrink: 0;
+
+        }
+
+        .reg-review-consent {
+
+          margin-top: 16px;
+
+        }
+
+
+
+        .reg-form-error {
+
+          margin-top: 16px;
+
+          padding: 12px 14px;
+
+          border: 1px solid rgba(248, 113, 113, 0.45);
+
+          border-radius: 10px;
+
+          background: rgba(127, 29, 29, 0.22);
+
+          color: #fecaca;
+
+          font-size: 10px;
+
+          font-weight: 700;
+
+          line-height: 1.6;
+
+          letter-spacing: 0.05em;
+
+        }
+
+
+
+        /* Matches BattleblazeHero.jsx CTA Button Styling */
+
+        .reg-submit {
+
+          display: flex;
+
+          justify-content: center;
+
+          align-items: center;
+
+          gap: 10px;
+
+          width: 100%;
+
+          margin-top: 22px;
+
+          border: 1px solid rgba(196, 181, 253, 0.55);
+
+          border-radius: 10px;
+
+          padding: 15px 18px;
+
+          background: linear-gradient(100deg, #6d28d9 0%, #8b5cf6 48%, #3b82f6 100%);
+
+          box-shadow: 0 10px 26px rgba(0, 0, 0, 0.32), 0 0 20px rgba(139, 92, 246, 0.22);
+
+          color: #fff;
+
+          font-size: 11px;
+
+          font-weight: 800;
+
+          letter-spacing: 0.14em;
+
+          text-transform: uppercase;
+
+          cursor: pointer;
+
+          transition: transform 200ms ease, filter 200ms ease, border-color 200ms ease;
+
+        }
+
+        .reg-submit:hover:not(:disabled) {
+
+          transform: translateY(-2px);
+
+          border-color: #fff;
+
+          filter: brightness(1.12);
+
+        }
+
+        .reg-submit:disabled {
+
+          opacity: 0.65;
+
+          cursor: wait;
+
+        }
+
+
+
+        .reg-footnote {
+
+          text-align: center;
+
+          margin-top: 15px;
+
+          font-size: 9px;
+
+          color: rgba(196, 181, 253, 0.72);
+
+        }
+
+
+
+        .reg-success {
+
+          text-align: center;
+
+          padding: 28px 0;
+
+        }
+
+        .reg-success-icon {
+
+          width: 56px;
+
+          height: 56px;
+
+          display: grid;
+
+          place-items: center;
+
+          margin: 0 auto 18px;
+
+          border: 1px solid #8b5cf6;
+
+          border-radius: 50%;
+
+          background: rgba(139, 92, 246, 0.14);
+
+          color: #c4b5fd;
+
+          font-size: 26px;
+
+          box-shadow: 0 0 22px rgba(139, 92, 246, 0.25);
+
+        }
+
+        .reg-success h2 {
+
+          margin: 10px 0 12px;
+
+          font-size: clamp(22px, 3.2vw, 30px);
+
+          background: linear-gradient(100deg, #fff 8%, #ddd6fe 48%, #bfdbfe 100%);
+
+          -webkit-background-clip: text;
+
+          background-clip: text;
+
+          -webkit-text-fill-color: transparent;
+
+        }
+
+        .reg-success p {
+
+          color: rgba(255, 255, 255, 0.8);
+
+          line-height: 1.7;
+
+          font-size: 12px;
+
+          margin: 0 auto 8px;
+
+          max-width: 520px;
+
+        }
+
+
+
+        .reg-footer {
+
+          max-width: 940px;
+
+          margin: 26px auto 0;
+
+          display: flex;
+
+          justify-content: space-between;
+
+          gap: 12px;
+
+          color: rgba(196, 181, 253, 0.75);
+
+        }
+
+
+
+        /* ─────────────── MOBILE & TABLET OPTIMIZATION ─────────────── */
+
+        @media (max-width: 680px) {
+
+          .reg-page {
+
+            padding: 20px 14px 40px;
+
+          }
+
+          .reg-header {
+
+            align-items: center;
+          margin-top: 110px;
+
+          }
+
+          .reg-brand {
+
+            width: 64px;
+
+            height: 64px;
+
+            border-radius: 18px;
+
+          }
+
+          .reg-logo-large {
+
+            width: 88px;
+
+            height: 88px;
+
+            border-radius: 22px;
+
+          }
+
+          .reg-header-label {
+
+            text-align: right;
+
+            max-width: 175px;
+
+            line-height: 1.5;
+
+            font-size: 9px;
+
+          }
+
+          .reg-container {
+
+            margin-top: 22px;
+
+          }
+
+          .reg-heading h1 {
+
+            font-size: clamp(1.65rem, 7.2vw, 2.4rem);
+
+          }
+
+          .reg-glass-card {
+
+            padding: 18px 14px;
+
+            border-radius: 15px;
+
+          }
+
+          .reg-card-top {
+
+            flex-direction: column;
+
+            gap: 12px;
+
+          }
+
+          .reg-fields,
+
+          .reg-review-grid,
+
+          .reg-qr-grid {
+
+            grid-template-columns: 1fr;
+
+            gap: 14px;
+
+          }
+
+          .reg-field input,
+
+          .reg-field select {
+
+            font-size: 13px;
+
+            min-height: 48px;
+
+          }
+
+          .reg-footer {
+
+            flex-direction: column;
+
+            text-align: center;
+
+            gap: 8px;
+
+          }
+
+        }
+
+      `}</style>
+
+
+
+      <header className={`reg-header ${isPaymentGame ? "reg-header-bgmi" : ""}`}>
 
         <div className="reg-header-branding">
 
           <span className="reg-header-presents">NITS ESPORTS PRESENTS</span>
 
-          <a href="/" className={`reg-brand ${["BGMI", "MOBILE_LEGENDS", "VALORANT", "RC"].includes(game) ? "reg-logo-large" : ""}`} aria-label="NITS Esports home">
+          <a
 
-            <img src={logoUrl} alt="NITS Esports Logo" />
+            href="/"
+
+            className={`reg-brand ${isPaymentGame ? "reg-logo-large" : ""}`}
+
+            aria-label="NITS Esports home"
+
+          >
+
+            <img src={logoUrl} alt="NITS Esports Logo" draggable="false" />
 
           </a>
 
@@ -879,11 +2007,12 @@ body {
       </header>
 
 
+
       <section className="reg-container">
 
         <div className="reg-heading">
 
-          <span className="reg-eyebrow">NITS ESPORTS PRESENTS</span>
+          <span className="reg-eyebrow">BATTLEBLAZE // 2026</span>
 
           <h1>
 
@@ -894,6 +2023,7 @@ body {
           <p>Complete the registration form for your selected tournament.</p>
 
         </div>
+
 
 
         <section className="reg-glass-card">
@@ -929,7 +2059,9 @@ body {
           </div>
 
 
+
           <div className="reg-divider" />
+
 
 
           {success ? (
@@ -944,7 +2076,7 @@ body {
 
               <p>
 
-                {["BGMI", "MOBILE_LEGENDS", "VALORANT", "RC"].includes(game)
+                {isPaymentGame
 
                   ? "Your tournament registration has been saved successfully."
 
@@ -978,7 +2110,9 @@ body {
 
               </div>
 
-              {(game === "BGMI" || game === "MOBILE_LEGENDS" || game === "VALORANT" || game === "RC") && (
+
+
+              {isPaymentGame && (
 
                 <p className="reg-payment-note">
 
@@ -988,40 +2122,67 @@ body {
 
                     : game === "MOBILE_LEGENDS"
 
-                      ? "All five players must provide their full name and IGN."
+                    ? "All five players must provide their full name and IGN."
 
-                      : game === "VALORANT"
-                        ? "At least one player is required. Player 1 / IGL must have a name and Riot ID. Players 2–5 are optional, but if you start entering any player’s details, both that player’s name and Riot ID must be completed. Only the IGL email is required; no other player email fields are collected."
-                        : "Enter the mandatory team name, player name, player UID, email address and contact number 1. Contact number 2 is optional."}
+                    : game === "VALORANT"
 
-                  {" "}Contact number 1 is mandatory.
+                    ? "At least one player is required. Player 1 / IGL must have a name and Riot ID. Players 2–5 are optional, but if you start entering any player’s details, both that player’s name and Riot ID must be completed. Only the IGL email is required; no other player email fields are collected."
+
+                    : "Enter the mandatory team name, player name, player UID, email address and contact number 1. Contact number 2 is optional."}{" "}
+
+                  Contact number 1 is mandatory.
 
                 </p>
 
               )}
 
 
+
               <div className="reg-fields">
 
-                {(game === "BGMI" || game === "MOBILE_LEGENDS" || game === "VALORANT" || game === "RC"
+                {(isPaymentGame
 
                   ? (game === "RC"
-                    ? ["teamName", "playerName", "gameId", "email", "phone", "phone2"]
-                    : [
 
-                      "teamName", "iglName", "player2Name", "player3Name", "player4Name",
+                      ? ["teamName", "playerName", "gameId", "email", "phone", "phone2"]
 
-                      ...(["MOBILE_LEGENDS", "VALORANT"].includes(game) ? ["player5Name"] : []),
+                      : [
 
-                      "iglIgn", "player2Ign", "player3Ign", "player4Ign",
+                          "teamName",
 
-                      ...(["MOBILE_LEGENDS", "VALORANT"].includes(game) ? ["player5Ign"] : []),
+                          "iglName",
 
-                      "iglEmail",
+                          "player2Name",
 
-                      "substituteName", "substituteIgn", "phone1", "phone2",
+                          "player3Name",
 
-                    ])
+                          "player4Name",
+
+                          ...(["MOBILE_LEGENDS", "VALORANT"].includes(game) ? ["player5Name"] : []),
+
+                          "iglIgn",
+
+                          "player2Ign",
+
+                          "player3Ign",
+
+                          "player4Ign",
+
+                          ...(["MOBILE_LEGENDS", "VALORANT"].includes(game) ? ["player5Ign"] : []),
+
+                          "iglEmail",
+
+                          "substituteName",
+
+                          "substituteIgn",
+
+                          "phone1",
+
+                          "phone2",
+
+                        ]
+
+                    )
 
                       .map((name) => current.fields.find((field) => field.name === name))
 
@@ -1033,22 +2194,30 @@ body {
 
                   const optional = isOptional(field);
 
+                  const isPhoneField = ["phone", "phone1", "phone2"].includes(field.name);
 
-                  const sectionHeading = (["BGMI", "MOBILE_LEGENDS", "VALORANT", "RC"].includes(game)) ? ({
 
-                    teamName: "TEAM DETAILS",
 
-                    iglName: "PLAYER NAMES",
+                  const sectionHeading = isPaymentGame
 
-                    iglIgn: "IN-GAME NAMES / RIOT IDs",
+                    ? {
 
-                    iglEmail: "IGL EMAIL",
+                        teamName: "TEAM DETAILS",
 
-                    substituteName: "SUBSTITUTE PLAYER",
+                        iglName: "PLAYER NAMES",
 
-                    phone1: "CONTACT DETAILS",
+                        iglIgn: "IN-GAME NAMES / RIOT IDs",
 
-                  }[field.name]) : null;
+                        iglEmail: "IGL EMAIL",
+
+                        substituteName: "SUBSTITUTE PLAYER",
+
+                        phone1: "CONTACT DETAILS",
+
+                      }[field.name]
+
+                    : null;
+
 
 
                   return (
@@ -1057,7 +2226,13 @@ body {
 
                       {sectionHeading && (
 
-                        <div className="reg-section-label reg-subsection-heading" key={`${game}-${field.name}-section`}>
+                        <div
+
+                          className="reg-section-label reg-subsection-heading"
+
+                          key={`${game}-${field.name}-section`}
+
+                        >
 
                           <span>◆</span> {sectionHeading}
 
@@ -1065,88 +2240,91 @@ body {
 
                       )}
 
-                    <label
+                      <label
 
-                      className={`reg-field ${
+                        className={`reg-field ${
 
-                        field.name === "teamName" || field.name === "captain"
+                          field.name === "teamName" || field.name === "captain"
 
-                          ? "reg-field-half"
+                            ? "reg-field-half"
 
-                          : ""
+                            : ""
 
-                      }`}
+                        }`}
 
-                      key={`${game}-${field.name}`}
+                        key={`${game}-${field.name}`}
 
-                    >
+                      >
 
-                      <span>
+                        <span>
 
-                        {field.label}
+                          {field.label}
 
-                        {!optional && <b> \*</b>}
+                          {!optional && <b> *</b>}
 
-                      </span>
+                        </span>
 
 
-                      {field.options ? (
 
-                        <select
+                        {field.options ? (
 
-                          required={!optional}
+                          <select
 
-                          value={form[field.name] || ""}
+                            required={!optional}
 
-                          onChange={(e) =>
+                            value={form[field.name] || ""}
 
-                            setForm({ ...form, [field.name]: e.target.value })
+                            onChange={(e) =>
 
-                          }
+                              setForm({ ...form, [field.name]: e.target.value })
 
-                        >
+                            }
 
-                          <option value="">Select an option</option>
+                          >
 
-                          {field.options.map((option) => (
+                            <option value="">Select an option</option>
 
-                            <option key={option} value={option}>
+                            {field.options.map((option) => (
 
-                              {option}
+                              <option key={option} value={option}>
 
-                            </option>
+                                {option}
 
-                          ))}
+                              </option>
 
-                        </select>
+                            ))}
 
-                      ) : (
+                          </select>
 
-                        <input
+                        ) : (
 
-                          type={field.type || "text"}
+                          <input
 
-                          placeholder={field.placeholder}
+                            type={field.type || "text"}
 
-                          required={!optional}
+                            inputMode={isPhoneField ? "numeric" : undefined}
 
-                          value={form[field.name] || ""}
+                            placeholder={field.placeholder}
 
-                          onChange={(e) =>
+                            required={!optional}
 
-                            setForm({ ...form, [field.name]: e.target.value })
+                            value={form[field.name] || ""}
 
-                          }
+                            onChange={(e) =>
 
-                          maxLength={["phone", "phone1", "phone2"].includes(field.name) ? 10 : undefined}
+                              setForm({ ...form, [field.name]: e.target.value })
 
-                          pattern={["phone", "phone1", "phone2"].includes(field.name) ? "[0-9]{10}" : undefined}
+                            }
 
-                        />
+                            maxLength={isPhoneField ? 10 : undefined}
 
-                      )}
+                            pattern={isPhoneField ? "[0-9]{10}" : undefined}
 
-                    </label>
+                          />
+
+                        )}
+
+                      </label>
 
                     </Fragment>
 
@@ -1157,7 +2335,8 @@ body {
               </div>
 
 
-              {["BGMI", "MOBILE_LEGENDS", "VALORANT", "RC"].includes(game) && (
+
+              {isPaymentGame && (
 
                 <>
 
@@ -1165,65 +2344,125 @@ body {
 
                   <section className="reg-review">
 
-                    <div className="reg-section-label"><span>02</span> REVIEW YOUR ENTRIES</div>
+                    <div className="reg-section-label">
 
-                    <p className="reg-payment-note">Please verify the details below before confirming your registration.</p>
+                      <span>02</span> REVIEW YOUR ENTRIES
+
+                    </div>
+
+                    <p className="reg-payment-note">
+
+                      Please verify the details below before confirming your registration.
+
+                    </p>
 
                     <div className="reg-review-grid">
 
-                      {(game === "RC" ? [
-                        ["TEAM NAME", form.teamName],
-                        ["PLAYER NAME", form.playerName],
-                        ["PLAYER UID", form.gameId],
-                        ["EMAIL ADDRESS", form.email],
-                        ["CONTACT NUMBER 1", form.phone],
-                        ["CONTACT NUMBER 2", form.phone2],
-                      ] : [
-                        ["TEAM NAME", form.teamName],
-                        ["PLAYER 1 / IGL NAME", form.iglName],
-                        ["PLAYER 1 / IGL IGN", form.iglIgn],
-                        ["PLAYER 2 NAME", form.player2Name],
-                        ["PLAYER 2 IGN", form.player2Ign],
-                        ["PLAYER 3 NAME", form.player3Name],
-                        ["PLAYER 3 IGN", form.player3Ign],
-                        ["PLAYER 4 NAME", form.player4Name],
-                        ["PLAYER 4 IGN", form.player4Ign],
-                        ...(["MOBILE_LEGENDS", "VALORANT"].includes(game) ? [["PLAYER 5 NAME", form.player5Name], ["PLAYER 5 IGN / RIOT ID", form.player5Ign]] : []),
-                        ["IGL EMAIL", form.iglEmail],
-                        ["CONTACT NUMBER 1", form.phone1],
-                        ["CONTACT NUMBER 2", form.phone2],
-                        ["SUBSTITUTE NAME", form.substituteName],
-                        ["SUBSTITUTE IGN", form.substituteIgn],
-                      ]).filter(([, value]) => String(value || "").trim()).map(([label, value]) => (
+                      {(game === "RC"
 
-                        <div className="reg-review-item" key={label}>
+                        ? [
 
-                          <small>{label}</small><strong>{value}</strong>
+                            ["TEAM NAME", form.teamName],
 
-                        </div>
+                            ["PLAYER NAME", form.playerName],
 
-                      ))}
+                            ["PLAYER UID", form.gameId],
+
+                            ["EMAIL ADDRESS", form.email],
+
+                            ["CONTACT NUMBER 1", form.phone],
+
+                            ["CONTACT NUMBER 2", form.phone2],
+
+                          ]
+
+                        : [
+
+                            ["TEAM NAME", form.teamName],
+
+                            ["PLAYER 1 / IGL NAME", form.iglName],
+
+                            ["PLAYER 1 / IGL IGN", form.iglIgn],
+
+                            ["PLAYER 2 NAME", form.player2Name],
+
+                            ["PLAYER 2 IGN", form.player2Ign],
+
+                            ["PLAYER 3 NAME", form.player3Name],
+
+                            ["PLAYER 3 IGN", form.player3Ign],
+
+                            ["PLAYER 4 NAME", form.player4Name],
+
+                            ["PLAYER 4 IGN", form.player4Ign],
+
+                            ...(["MOBILE_LEGENDS", "VALORANT"].includes(game)
+
+                              ? [
+
+                                  ["PLAYER 5 NAME", form.player5Name],
+
+                                  ["PLAYER 5 IGN / RIOT ID", form.player5Ign],
+
+                                ]
+
+                              : []),
+
+                            ["IGL EMAIL", form.iglEmail],
+
+                            ["CONTACT NUMBER 1", form.phone1],
+
+                            ["CONTACT NUMBER 2", form.phone2],
+
+                            ["SUBSTITUTE NAME", form.substituteName],
+
+                            ["SUBSTITUTE IGN", form.substituteIgn],
+
+                          ]
+
+                      )
+
+                        .filter(([, value]) => String(value || "").trim())
+
+                        .map(([label, value]) => (
+
+                          <div className="reg-review-item" key={label}>
+
+                            <small>{label}</small>
+
+                            <strong>{value}</strong>
+
+                          </div>
+
+                        ))}
 
                     </div>
 
                     <label className="reg-consent reg-review-consent">
 
-                      <input type="checkbox" checked={reviewConfirmed} onChange={(e) => setReviewConfirmed(e.target.checked)} />
+                      <input
 
-                      <span>I have reviewed the entries above and confirm that all information is correct. <b>\*</b></span>
+                        type="checkbox"
+
+                        checked={reviewConfirmed}
+
+                        onChange={(e) => setReviewConfirmed(e.target.checked)}
+
+                      />
+
+                      <span>
+
+                        I have reviewed the entries above and confirm that all information is correct.{" "}
+
+                        <b>*</b>
+
+                      </span>
 
                     </label>
 
                   </section>
 
-                </>
 
-              )}
-
-
-              {(game === "BGMI" || game === "MOBILE_LEGENDS" || game === "VALORANT" || game === "RC") && (
-
-                <>
 
                   <div className="reg-divider" />
 
@@ -1231,13 +2470,15 @@ body {
 
                     <div className="reg-section-label">
 
-                      <span>02</span> PAYMENT DETAILS
+                      <span>03</span> PAYMENT DETAILS
 
                     </div>
 
                     <p className="reg-payment-amount">
 
-                      REGISTRATION FEE: <strong>₹{game === "MOBILE_LEGENDS" ? 50 : 40} PER TEAM</strong>
+                      REGISTRATION FEE:{" "}
+
+                      <strong>₹{game === "MOBILE_LEGENDS" ? 50 : 40} PER TEAM</strong>
 
                     </p>
 
@@ -1253,7 +2494,17 @@ body {
 
                         <strong>PAYMENT QR — SLOT 1</strong>
 
-                        <img src={rampageQR} alt="Rampage payment QR code 1" />
+                        <img
+
+                          src={rampageQR}
+
+                          alt="Rampage payment QR code 1"
+
+                          loading="lazy"
+
+                          decoding="async"
+
+                        />
 
                         <span>Scan this QR to pay the registration fee.</span>
 
@@ -1263,7 +2514,17 @@ body {
 
                         <strong>PAYMENT QR — SLOT 2</strong>
 
-                        <img src={rampageQR} alt="Rampage payment QR code 2" />
+                        <img
+
+                          src={rampageQR}
+
+                          alt="Rampage payment QR code 2"
+
+                          loading="lazy"
+
+                          decoding="async"
+
+                        />
 
                         <span>Alternate payment QR.</span>
 
@@ -1273,7 +2534,11 @@ body {
 
                     <label className="reg-field reg-payment-upload">
 
-                      <span>PAYMENT SCREENSHOT <b>\*</b></span>
+                      <span>
+
+                        PAYMENT SCREENSHOT <b>*</b>
+
+                      </span>
 
                       <input
 
@@ -1302,14 +2567,21 @@ body {
               )}
 
 
+
               {formError && (
 
-                <div className="reg-form-error" role="alert">{formError}</div>
+                <div className="reg-form-error" role="alert">
+
+                  {formError}
+
+                </div>
 
               )}
 
 
+
               <div className="reg-divider" />
+
 
 
               <label className="reg-consent">
@@ -1325,11 +2597,13 @@ body {
               </label>
 
 
+
               <button className="reg-submit" type="submit" disabled={isSubmitting}>
 
                 {isSubmitting ? "SUBMITTING..." : "COMPLETE REGISTRATION"} <span>↗</span>
 
               </button>
+
 
 
               <p className="reg-footnote">
@@ -1345,9 +2619,10 @@ body {
         </section>
 
 
+
         <footer className="reg-footer">
 
-          <span>NITS ESPORTS</span>
+          <span>NITS ESPORTS · BATTLEBLAZE 2026</span>
 
           <span>PLAY FAIR. PLAY TO WIN.</span>
 
