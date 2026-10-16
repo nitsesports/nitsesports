@@ -29,6 +29,7 @@ const randomBetween = (min, max) => min + Math.random() * (max - min);
 
 export default function BattleblazeHero({ onSelectEvent }) {
   const sceneMount = useRef(null);
+  const islandFrontMount = useRef(null);
   const audioRef = useRef(null);
   const rootRef = useRef(null);
   const cursorRef = useRef(null);
@@ -41,49 +42,112 @@ export default function BattleblazeHero({ onSelectEvent }) {
   const [activeEvent, setActiveEvent] = useState("FIFA");
   const [hoverColor, setHoverColor] = useState("#9b7bff");
   const [hovered, setHovered] = useState(false);
-  const [muted, setMuted] = useState(false);
+  const [muted, setMuted] = useState(() => {
+    if (typeof window === "undefined") return false;
+    try {
+      return window.localStorage.getItem("bb-bgm-muted") === "true";
+    } catch {
+      return false;
+    }
+  });
 
   // ─────────────── BACKGROUND AUDIO ───────────────
   useEffect(() => {
     const audio = audioRef.current;
-    if (!audio) return;
+    if (!audio) return undefined;
+
+    let disposed = false;
+    let playbackStarted = false;
+
+    const removeUnlockListeners = () => {
+      document.removeEventListener("pointerdown", tryPlay, true);
+      document.removeEventListener("touchstart", tryPlay, true);
+      document.removeEventListener("touchend", tryPlay, true);
+      document.removeEventListener("click", tryPlay, true);
+      document.removeEventListener("keydown", tryPlay, true);
+      window.removeEventListener("pageshow", tryPlay);
+    };
+
+    const tryPlay = () => {
+      const currentAudio = audioRef.current;
+      if (!currentAudio || muted || disposed || playbackStarted) return;
+
+      currentAudio.loop = true;
+      currentAudio.volume = 1;
+      currentAudio.muted = false;
+      const playback = currentAudio.play();
+
+      if (playback && typeof playback.then === "function") {
+        playback.then(() => {
+          playbackStarted = true;
+          removeUnlockListeners();
+        }).catch(() => {});
+      } else {
+        playbackStarted = true;
+        removeUnlockListeners();
+      }
+    };
 
     audio.loop = true;
     audio.volume = 1;
     audio.muted = muted;
 
+    try {
+      window.localStorage.setItem("bb-bgm-muted", String(muted));
+    } catch {}
+
     if (muted) {
       audio.pause();
-      return;
+      removeUnlockListeners();
+      return () => {
+        disposed = true;
+        removeUnlockListeners();
+      };
     }
 
-    const tryPlay = () => {
-      const currentAudio = audioRef.current;
-      if (!currentAudio || muted) return;
-      currentAudio.loop = true;
-      currentAudio.volume = 1;
-      currentAudio.muted = false;
-      const playback = currentAudio.play();
-      if (playback && typeof playback.catch === "function") {
-        playback.catch(() => {});
-      }
-    };
-
     tryPlay();
-    window.addEventListener("pointerdown", tryPlay, { once: true, passive: true });
-    window.addEventListener("keydown", tryPlay, { once: true, passive: true });
+
+    document.addEventListener("pointerdown", tryPlay, true);
+    document.addEventListener("touchstart", tryPlay, { capture: true, passive: true });
+    document.addEventListener("touchend", tryPlay, { capture: true, passive: true });
+    document.addEventListener("click", tryPlay, true);
+    document.addEventListener("keydown", tryPlay, true);
+    window.addEventListener("pageshow", tryPlay);
 
     return () => {
-      window.removeEventListener("pointerdown", tryPlay);
-      window.removeEventListener("keydown", tryPlay);
+      disposed = true;
+      removeUnlockListeners();
     };
   }, [muted]);
+
+  const toggleAudio = () => {
+    const nextMuted = !muted;
+    const audio = audioRef.current;
+    setMuted(nextMuted);
+
+    try {
+      window.localStorage.setItem("bb-bgm-muted", String(nextMuted));
+    } catch {}
+
+    if (!audio) return;
+    audio.loop = true;
+    audio.volume = 1;
+    audio.muted = nextMuted;
+
+    if (nextMuted) {
+      audio.pause();
+    } else {
+      const playback = audio.play();
+      if (playback && typeof playback.catch === "function") playback.catch(() => {});
+    }
+  };
 
   // ─────────────── THREE.JS HERO SCENE ───────────────
   useEffect(() => {
     const host = sceneMount.current;
+    const foregroundHost = islandFrontMount.current;
     const hero = rootRef.current;
-    if (!host || !hero) return undefined;
+    if (!host || !foregroundHost || !hero) return undefined;
 
     let disposed = false;
     let raf = 0;
@@ -97,6 +161,7 @@ export default function BattleblazeHero({ onSelectEvent }) {
     const disposableTextures = [];
 
     const scene = new THREE.Scene();
+    const foregroundScene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(60, 1, 0.1, 1200);
     camera.position.z = 100;
 
@@ -106,9 +171,19 @@ export default function BattleblazeHero({ onSelectEvent }) {
       powerPreference: "high-performance",
     });
 
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.5));
+    const pixelRatio = Math.min(window.devicePixelRatio || 1, 1.5);
+    renderer.setPixelRatio(pixelRatio);
     renderer.setClearColor(0x000000, 0);
     host.appendChild(renderer.domElement);
+
+    const foregroundRenderer = new THREE.WebGLRenderer({
+      alpha: true,
+      antialias: true,
+      powerPreference: "high-performance",
+    });
+    foregroundRenderer.setPixelRatio(pixelRatio);
+    foregroundRenderer.setClearColor(0x000000, 0);
+    foregroundHost.appendChild(foregroundRenderer.domElement);
 
     const getVisibleWidth = () =>
       2 * camera.position.z * Math.tan(THREE.MathUtils.degToRad(camera.fov / 2)) * camera.aspect;
@@ -116,7 +191,6 @@ export default function BattleblazeHero({ onSelectEvent }) {
     const getVisibleHeight = () =>
       2 * camera.position.z * Math.tan(THREE.MathUtils.degToRad(camera.fov / 2));
 
-    // ─────────────── DYNAMIC SHOOTING STARS (METEOR STREAKS) ───────────────
     const createMeteorTexture = () => {
       const canvas = document.createElement("canvas");
       canvas.width = 256;
@@ -213,7 +287,6 @@ export default function BattleblazeHero({ onSelectEvent }) {
       });
     }
 
-    // ─────────────── STRAIGHT-MOVING SPACESHIPS (JET.PNG — NO FLOATING) ───────────────
     const textureLoader = new THREE.TextureLoader();
 
     textureLoader.load(
@@ -276,7 +349,6 @@ export default function BattleblazeHero({ onSelectEvent }) {
       (error) => console.error("Unable to load jet.png:", error)
     );
 
-    // ─────────────── FLOATING ISLANDS (VISIBLE FLOAT + MOUSE PARALLAX) ───────────────
     const makeWhiteBackgroundTransparent = (image) => {
       const canvas = document.createElement("canvas");
       const w = image.naturalWidth || image.width;
@@ -360,26 +432,26 @@ export default function BattleblazeHero({ onSelectEvent }) {
 
     const islandLayout = [
       {
-        asset: 2, // Island 3 — foreground astronaut cliff (left)
+        asset: 2,
         x: -0.28,
         y: -0.20,
         widthFrac: 0.72,
         z: 32,
         renderOrder: 10,
         phase: 0.4,
-        drift: 1.15, // Gentle visible float without exposing bottom edge
+        drift: 1.15,
         speed: 0.42,
         isStatic: false,
       },
       {
-        asset: 5, // Island 6 — right floating rock formation
+        asset: 5,
         x: 0.31,
         y: -0.28,
         widthFrac: 0.74,
         z: 30,
         renderOrder: 8,
         phase: Math.random() * Math.PI * 2,
-        drift: 2.8, // Clearly visible floating motion
+        drift: 2.8,
         speed: 0.55,
         isStatic: false,
       },
@@ -434,6 +506,8 @@ export default function BattleblazeHero({ onSelectEvent }) {
       const visibleWidth = getVisibleWidth();
       const visibleHeight = getVisibleHeight();
 
+      const islandScene = assetIndex === 2 ? foregroundScene : scene;
+
       islandLayout
         .filter((config) => config.asset === assetIndex)
         .forEach((config) => {
@@ -456,7 +530,7 @@ export default function BattleblazeHero({ onSelectEvent }) {
           shadow.scale.set(width * 0.82, Math.max(height * 0.19, 1.2), 1);
           shadow.position.set(islandX, islandY - height * 0.28, config.z - 0.35);
           shadow.renderOrder = config.renderOrder ? config.renderOrder - 1 : 0;
-          scene.add(shadow);
+          islandScene.add(shadow);
 
           const material = new THREE.SpriteMaterial({
             map: displayTexture,
@@ -471,11 +545,12 @@ export default function BattleblazeHero({ onSelectEvent }) {
           sprite.scale.set(width, height, 1);
           sprite.position.set(islandX, islandY, config.z);
           if (config.renderOrder) sprite.renderOrder = config.renderOrder;
-          scene.add(sprite);
+          islandScene.add(sprite);
 
           floatingIslands.push({
             sprite,
             shadow,
+            islandScene,
             shadowOffsetY: height * 0.28,
             xFrac: config.x,
             yFrac: config.y,
@@ -496,7 +571,6 @@ export default function BattleblazeHero({ onSelectEvent }) {
     textureLoader.load(island3Url, (tex) => addIslandTexture(tex, 2), undefined, (e) => console.error("island3:", e));
     textureLoader.load(island6Url, (tex) => addIslandTexture(tex, 5), undefined, (e) => console.error("island6:", e));
 
-    // ─────────────── RESPONSIVE CANVAS & MOBILE SCALING ───────────────
     const updateHeroBounds = () => {
       if (!hero) return;
       const rect = hero.getBoundingClientRect();
@@ -522,6 +596,7 @@ export default function BattleblazeHero({ onSelectEvent }) {
       camera.updateProjectionMatrix();
 
       renderer.setSize(width, height, false);
+      foregroundRenderer.setSize(width, height, false);
 
       const visibleWidth = getVisibleWidth();
       const visibleHeight = getVisibleHeight();
@@ -550,7 +625,6 @@ export default function BattleblazeHero({ onSelectEvent }) {
       });
     };
 
-    // ─────────────── SCROLL ZOOM-IN / ZOOM-OUT & DARKEN ───────────────
     const handleScrollZoom = () => {
       if (disposed || !hero) return;
       const rect = hero.getBoundingClientRect();
@@ -583,7 +657,6 @@ export default function BattleblazeHero({ onSelectEvent }) {
     const resizeObserver = new ResizeObserver(resize);
     resizeObserver.observe(host);
 
-    // Pause WebGL loop only when Hero is completely offscreen so Pages 2-4 scroll at 120fps
     const visibilityObserver = new IntersectionObserver(
       (entries) => {
         const entry = entries[0];
@@ -598,7 +671,6 @@ export default function BattleblazeHero({ onSelectEvent }) {
     );
     visibilityObserver.observe(hero);
 
-    // ─────────────── ANIMATION LOOP ───────────────
     const animate = (timestamp) => {
       if (disposed || !isHeroVisible) {
         raf = 0;
@@ -610,14 +682,14 @@ export default function BattleblazeHero({ onSelectEvent }) {
       previousTime = timestamp;
       const time = timestamp * 0.001;
 
-      // Mouse movement parallax on Three.js scene (moves islands with cursor)
       current.current.x += (target.current.x - current.current.x) * 0.05;
       current.current.y += (target.current.y - current.current.y) * 0.05;
 
       scene.position.x = -current.current.x * 4.5;
       scene.position.y = current.current.y * 2.6;
+      foregroundScene.position.x = scene.position.x;
+      foregroundScene.position.y = scene.position.y;
 
-      // Shooting stars update
       shootingStars.forEach((meteor) => {
         if (meteor.active) {
           meteor.life += delta;
@@ -641,7 +713,6 @@ export default function BattleblazeHero({ onSelectEvent }) {
 
       const halfWidth = getVisibleWidth() / 2;
 
-      // jet.png spaceships: strictly straight horizontal movement (NO vertical float)
       spaceshipFleet.forEach((ship) => {
         const { sprite, direction, speed, width } = ship;
         sprite.position.x += direction * speed * delta;
@@ -668,7 +739,6 @@ export default function BattleblazeHero({ onSelectEvent }) {
         }
       });
 
-      // Islands: clearly visible smooth floating movement
       floatingIslands.forEach((island) => {
         if (island.isStatic) {
           island.sprite.position.x = island.baseX;
@@ -700,6 +770,7 @@ export default function BattleblazeHero({ onSelectEvent }) {
       });
 
       renderer.render(scene, camera);
+      foregroundRenderer.render(foregroundScene, camera);
     };
 
     raf = requestAnimationFrame(animate);
@@ -716,11 +787,11 @@ export default function BattleblazeHero({ onSelectEvent }) {
         sprite.material.dispose();
       });
 
-      floatingIslands.forEach(({ sprite, shadow }) => {
-        scene.remove(sprite);
+      floatingIslands.forEach(({ sprite, shadow, islandScene }) => {
+        islandScene.remove(sprite);
         sprite.material.dispose();
         if (shadow) {
-          scene.remove(shadow);
+          islandScene.remove(shadow);
           shadow.material.dispose();
         }
       });
@@ -736,14 +807,17 @@ export default function BattleblazeHero({ onSelectEvent }) {
       if (shipTexture) shipTexture.dispose();
       disposableTextures.forEach((texture) => texture.dispose());
       renderer.dispose();
+      foregroundRenderer.dispose();
 
       if (renderer.domElement.parentNode === host) {
         host.removeChild(renderer.domElement);
       }
+      if (foregroundRenderer.domElement.parentNode === foregroundHost) {
+        foregroundHost.removeChild(foregroundRenderer.domElement);
+      }
     };
   }, []);
 
-  // ─────────────── CURSOR & PARALLAX MOVEMENT ───────────────
   const moveCursor = (event) => {
     const bounds = heroBoundsRef.current;
     const x = event.clientX - bounds.left;
@@ -760,7 +834,6 @@ export default function BattleblazeHero({ onSelectEvent }) {
     if (ringRef.current) ringRef.current.style.transform = transform;
   };
 
-  // ─────────────── SCROLL REVEAL FOR PAGES 2–4 ───────────────
   useEffect(() => {
     const revealTargets = document.querySelectorAll(
       ".bb-next-section .bb-overview-copy > *, .bb-modules-section .bb-modules-heading > *, .bb-module-card, .bb-team-section .bb-team-heading > *, .bb-team-card"
@@ -806,9 +879,11 @@ export default function BattleblazeHero({ onSelectEvent }) {
       <audio
         ref={audioRef}
         src={bgmUrl}
+        autoPlay
         loop
         preload="auto"
         playsInline
+        muted={muted}
         aria-label="Battleblaze background music"
       />
 
@@ -834,7 +909,6 @@ export default function BattleblazeHero({ onSelectEvent }) {
           style={{ backgroundImage: `url(${artworkUrl})` }}
         />
 
-        {/* Spacecraft (ss.png) — slow straight horizontal movement + scroll zoom */}
         <img
           className="bb-ss-art"
           src={ssUrl}
@@ -844,13 +918,13 @@ export default function BattleblazeHero({ onSelectEvent }) {
         />
 
         <div className="bb-match-stars" ref={sceneMount} aria-hidden="true" />
+        <div className="bb-match-island-front" ref={islandFrontMount} aria-hidden="true" />
         <div className="bb-match-vignette" aria-hidden="true" />
         <div className="bb-scroll-darken" aria-hidden="true" />
         <div className="bb-load-black-fade" aria-hidden="true" />
 
         <a className="bb-hotspot bb-hotspot-brand" href="#home" aria-label="Battleblaze home" />
 
-        {/* ─────────────── CENTER EVENT LOGO ─────────────── */}
         <div className="bb-hero-logo-box">
           <div className="bb-fire-backdrop" aria-hidden="true">
             <div className="bb-fire-glow-base" />
@@ -874,7 +948,6 @@ export default function BattleblazeHero({ onSelectEvent }) {
           </a>
         </div>
 
-        {/* Featured games bar near the bottom */}
         <img
           className="bb-fe-art"
           src={feUrl}
@@ -883,9 +956,24 @@ export default function BattleblazeHero({ onSelectEvent }) {
           draggable="false"
         />
 
+        {/* Bottom Center View Modules Button */}
+        <a
+          className="bb-hero-view-modules-btn"
+          href="#modules"
+          onClick={(e) => {
+            e.preventDefault();
+            document.querySelector(".bb-modules-section")?.scrollIntoView({ behavior: "smooth" });
+          }}
+          onMouseEnter={() => hover("#8b5cf6")}
+          onMouseLeave={resetHover}
+          aria-label="View Modules"
+        >
+          <span>VIEW MODULES</span>
+          <span aria-hidden="true">↗</span>
+        </a>
+
         <a className="bb-hotspot bb-hotspot-contact" href="#contact" aria-label="Contact" />
 
-        {/* ─────────────── EVENT SELECTION HOTSPOTS ─────────────── */}
         {EVENTS.map((event) => (
           <button
             key={event.id}
@@ -911,7 +999,7 @@ export default function BattleblazeHero({ onSelectEvent }) {
           aria-label={muted ? "Enable background music" : "Mute background music"}
           aria-pressed={!muted}
           title={muted ? "Turn background music on" : "Mute background music"}
-          onClick={() => setMuted((value) => !value)}
+          onClick={toggleAudio}
           onMouseEnter={() => hover("#8b5cf6")}
           onMouseLeave={resetHover}
         >
@@ -928,7 +1016,6 @@ export default function BattleblazeHero({ onSelectEvent }) {
           )}
         </button>
 
-        {/* ─────────────── CUSTOM CURSOR ─────────────── */}
         <div
           className={`bb-match-cursor ${hovered ? "is-hovered" : ""}`}
           ref={cursorRef}
@@ -952,7 +1039,6 @@ export default function BattleblazeHero({ onSelectEvent }) {
         <style>{`
           @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800&family=Rajdhani:wght@400;500;600;700&display=swap');
 
-          /* Initial black reveal */
           .bb-load-black-fade {
             position: fixed;
             inset: 0;
@@ -968,7 +1054,6 @@ export default function BattleblazeHero({ onSelectEvent }) {
             100% { opacity: 0; visibility: hidden; }
           }
 
-          /* Custom Scrollbar */
           html, body {
             scrollbar-width: thin;
             scrollbar-color: #7656e8 #100a2a;
@@ -990,7 +1075,6 @@ export default function BattleblazeHero({ onSelectEvent }) {
             background: linear-gradient(180deg, #c4b5fd 0%, #8b5cf6 48%, #00cfe8 100%);
           }
 
-          /* Global Typography & Page Root */
           .bb-page, .bb-page *, .bb-page *::before, .bb-page *::after {
             box-sizing: border-box;
             font-family: 'Orbitron', sans-serif !important;
@@ -1002,7 +1086,6 @@ export default function BattleblazeHero({ onSelectEvent }) {
             overflow-x: hidden;
           }
 
-          /* ─────────────── HERO SECTION (PAGE 1) ─────────────── */
           .bb-match {
             --bb-cursor: #00f0ff;
             --bb-scroll-scale: 1;
@@ -1018,7 +1101,6 @@ export default function BattleblazeHero({ onSelectEvent }) {
             cursor: none;
           }
 
-          /* Hero Background with Mouse Parallax & Scroll Zoom */
           .bb-match-art {
             position: absolute;
             inset: 0;
@@ -1038,17 +1120,16 @@ export default function BattleblazeHero({ onSelectEvent }) {
             will-change: transform;
           }
 
-          /* Spacecraft (ss.png) — Slow Straight Movement + Scroll Zoom (No Vertical Float) */
           .bb-ss-art {
             position: absolute;
             top: clamp(108px, 13vh, 144px);
             left: clamp(-76px, -4.5vw, -34px);
-            z-index: 1;
+            z-index: 3;
             display: block;
-            width: clamp(220px, 27vw, 390px);
+            width: clamp(190px, 22vw, 320px);
             height: auto;
-            max-width: 40vw;
-            max-height: 48vh;
+            max-width: 36vw;
+            max-height: 42vh;
             object-fit: contain;
             object-position: left top;
             pointer-events: none;
@@ -1057,14 +1138,17 @@ export default function BattleblazeHero({ onSelectEvent }) {
             transform: translate3d(0, 0, 0)
               scale(calc(var(--bb-scroll-scale, 1) * var(--bb-ship-zoom, 1)));
             transform-origin: left top;
-            animation: bb-ss-straight-glide 16s linear infinite alternate;
+            animation: bb-ss-float-glide 12s ease-in-out infinite alternate;
             will-change: transform, translate, opacity;
             filter: drop-shadow(0 6px 8px rgba(5, 3, 24, 0.22));
           }
 
-          @keyframes bb-ss-straight-glide {
-            from { translate: 0px 0px; }
-            to { translate: 28px 0px; }
+          @keyframes bb-ss-float-glide {
+            0% { translate: 0px 0px; }
+            25% { translate: 7px -10px; }
+            50% { translate: 14px 0px; }
+            75% { translate: 21px 10px; }
+            100% { translate: 28px 0px; }
           }
 
           .bb-match-stars {
@@ -1080,10 +1164,23 @@ export default function BattleblazeHero({ onSelectEvent }) {
             height: 100%;
           }
 
+          .bb-match-island-front {
+            position: absolute;
+            inset: 0;
+            z-index: 4;
+            overflow: hidden;
+            pointer-events: none;
+          }
+          .bb-match-island-front canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+          }
+
           .bb-match-vignette {
             position: absolute;
             inset: 0;
-            z-index: 3;
+            z-index: 5;
             pointer-events: none;
             background:
               linear-gradient(115deg, rgba(91, 70, 190, 0.28), transparent 50%, rgba(48, 83, 190, 0.22)),
@@ -1102,7 +1199,6 @@ export default function BattleblazeHero({ onSelectEvent }) {
             will-change: opacity;
           }
 
-          /* ─────────────── CENTER LOGO & SCROLL HEADING ZOOM ─────────────── */
           .bb-hero-logo-box {
             position: absolute;
             left: 50%;
@@ -1155,11 +1251,6 @@ export default function BattleblazeHero({ onSelectEvent }) {
             opacity: 0.75;
           }
 
-          .bb-fire-glow-flare,
-          .bb-fire-glow-ring {
-            display: none;
-          }
-
           .bb-logo-link {
             position: relative;
             z-index: 2;
@@ -1190,17 +1281,16 @@ export default function BattleblazeHero({ onSelectEvent }) {
             transition: filter 260ms ease;
           }
 
-          /* Featured bar (fe.png) */
           .bb-fe-art {
             position: absolute;
             left: 50%;
-            top: 73%;
+            top: 70%;
             transform: translateX(-50%);
             z-index: 7;
             display: block;
             width: clamp(300px, 32vw, 460px);
             max-width: 58vw;
-            max-height: 28vh;
+            max-height: 23vh;
             height: auto;
             object-fit: contain;
             pointer-events: none;
@@ -1211,7 +1301,42 @@ export default function BattleblazeHero({ onSelectEvent }) {
               drop-shadow(0 0 26px rgba(139, 92, 246, 0.28));
           }
 
-          /* ─────────────── HOTSPOTS (RECTANGULAR BOXES REMOVED) ─────────────── */
+          .bb-hero-view-modules-btn {
+            position: absolute;
+            left: 50%;
+            bottom: max(12px, calc(env(safe-area-inset-bottom) + 8px));
+            transform: translateX(-50%);
+            z-index: 15;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 8px 20px;
+            color: #fff;
+            text-decoration: none;
+            text-transform: uppercase;
+            font-family: 'Orbitron', sans-serif;
+            font-size: clamp(9px, 0.9vw, 11px);
+            line-height: 1.2;
+            font-weight: 800;
+            letter-spacing: 0.14em;
+            white-space: nowrap;
+            background: linear-gradient(135deg, rgba(20, 8, 42, 0.94) 0%, rgba(35, 12, 68, 0.94) 100%);
+            border: 1px solid #a855f7;
+            border-radius: 4px;
+            box-shadow: 0 0 16px rgba(168, 85, 247, 0.28), inset 0 0 10px rgba(168, 85, 247, 0.12);
+            cursor: pointer;
+            pointer-events: auto;
+            clip-path: polygon(8px 0%, 100% 0%, calc(100% - 8px) 100%, 0% 100%);
+            transition: background 250ms ease, border-color 250ms ease, box-shadow 250ms ease, transform 250ms ease;
+          }
+          .bb-hero-view-modules-btn:hover {
+            background: linear-gradient(135deg, rgba(35, 12, 68, 0.98) 0%, rgba(55, 18, 104, 0.98) 100%);
+            border-color: #00eaff;
+            box-shadow: 0 0 32px rgba(0, 234, 255, 0.5), inset 0 0 20px rgba(0, 234, 255, 0.25);
+            transform: translateX(-50%) translateY(-2px);
+          }
+
           .bb-hotspot {
             position: absolute;
             z-index: 5;
@@ -1284,7 +1409,6 @@ export default function BattleblazeHero({ onSelectEvent }) {
             pointer-events: none;
           }
 
-          /* ─────────────── CUSTOM CURSOR ─────────────── */
           .bb-match-cursor {
             position: absolute;
             top: 0;
@@ -1337,7 +1461,6 @@ export default function BattleblazeHero({ onSelectEvent }) {
             border-color: var(--bb-cursor);
           }
 
-          /* ─────────────── SHARED STYLING FOR PAGES 2, 3 & 4 ─────────────── */
           .bb-next-section,
           .bb-modules-section,
           .bb-team-section {
@@ -1355,7 +1478,6 @@ export default function BattleblazeHero({ onSelectEvent }) {
             overflow: hidden;
           }
 
-          /* Straight horizontal ships on scroll sections (NO vertical float) */
           .bb-scroll-ships {
             position: absolute;
             inset: 0;
@@ -1399,7 +1521,6 @@ export default function BattleblazeHero({ onSelectEvent }) {
             100% { transform: translate3d(-120vw, 0, 0) scaleX(-1); }
           }
 
-          /* Section Titles & Kickers */
           .bb-overview-title,
           .bb-modules-title,
           .bb-team-title {
@@ -1426,7 +1547,6 @@ export default function BattleblazeHero({ onSelectEvent }) {
             text-transform: uppercase;
           }
 
-          /* ─────────────── PAGE 2: OVERVIEW SECTION ─────────────── */
           .bb-next-section {
             padding: clamp(42px, 4.5vw, 68px) clamp(22px, 3.5vw, 54px) 72px;
           }
@@ -1443,14 +1563,15 @@ export default function BattleblazeHero({ onSelectEvent }) {
             object-fit: contain;
             z-index: 2;
             padding: 10px;
-            border: 2px solid rgba(139, 92, 246, 0.85);
-            border-radius: 18px;
-            background: rgba(15, 8, 28, 0.9);
+            border: 1.5px solid #a855f7;
+            border-radius: 4px;
+            background: linear-gradient(135deg, rgba(20, 8, 42, 0.94) 0%, rgba(35, 12, 68, 0.94) 100%);
             box-shadow:
-              0 0 24px rgba(139, 92, 246, 0.45),
+              0 0 24px rgba(168, 85, 247, 0.35),
               0 24px 60px rgba(0, 0, 0, 0.55);
             pointer-events: none;
             user-select: none;
+            clip-path: polygon(12px 0%, 100% 0%, calc(100% - 12px) 100%, 0% 100%);
           }
 
           .bb-next-layout {
@@ -1487,14 +1608,16 @@ export default function BattleblazeHero({ onSelectEvent }) {
             box-shadow: 0 0 12px rgba(139, 92, 246, 0.45);
           }
 
+          /* Unified Sci-Fi Card Styles matching View Modules button UI */
           .bb-overview-card {
             position: relative;
             padding: 20px 24px;
-            border: 1px solid rgba(139, 92, 246, 0.5);
-            border-radius: 4px 18px 4px 18px;
-            background: linear-gradient(145deg, rgba(139, 92, 246, 0.12), rgba(8, 4, 17, 0.95) 65%, rgba(59, 130, 246, 0.08));
-            box-shadow: 0 16px 38px rgba(0, 0, 0, 0.32);
+            border: 1.5px solid #a855f7;
+            border-radius: 4px;
+            background: linear-gradient(135deg, rgba(20, 8, 42, 0.94) 0%, rgba(35, 12, 68, 0.94) 100%);
+            box-shadow: 0 16px 38px rgba(0, 0, 0, 0.32), 0 0 20px rgba(168, 85, 247, 0.2);
             overflow: hidden;
+            clip-path: polygon(10px 0%, 100% 0%, calc(100% - 10px) 100%, 0% 100%);
           }
           .bb-overview-card::before {
             content: "";
@@ -1531,9 +1654,9 @@ export default function BattleblazeHero({ onSelectEvent }) {
           .bb-overview-tag {
             padding: 7px 10px;
             border: 1px solid rgba(196, 181, 253, 0.35);
-            border-radius: 3px 10px 3px 10px;
+            border-radius: 3px;
             color: #f5f3ff;
-            background: rgba(139, 92, 246, 0.12);
+            background: rgba(139, 92, 246, 0.16);
             font-size: 9px;
             font-weight: 700;
             letter-spacing: 0.09em;
@@ -1552,10 +1675,11 @@ export default function BattleblazeHero({ onSelectEvent }) {
             position: relative;
             min-height: 128px;
             padding: 14px 16px 13px;
-            border: 1px solid rgba(139, 92, 246, 0.45);
-            border-radius: 4px 14px 4px 14px;
-            background: linear-gradient(145deg, rgba(139, 92, 246, 0.12), rgba(8, 4, 17, 0.95) 64%, rgba(59, 130, 246, 0.08));
-            box-shadow: 0 14px 32px rgba(0, 0, 0, 0.3);
+            border: 1.5px solid #a855f7;
+            border-radius: 4px;
+            background: linear-gradient(135deg, rgba(20, 8, 42, 0.94) 0%, rgba(35, 12, 68, 0.94) 100%);
+            box-shadow: 0 14px 32px rgba(0, 0, 0, 0.3), 0 0 16px rgba(168, 85, 247, 0.15);
+            clip-path: polygon(10px 0%, 100% 0%, calc(100% - 10px) 100%, 0% 100%);
             transition: transform 220ms ease, border-color 220ms ease, box-shadow 220ms ease;
           }
           .bb-overview-event-card::after {
@@ -1569,8 +1693,8 @@ export default function BattleblazeHero({ onSelectEvent }) {
           }
           .bb-overview-event-card:hover {
             transform: translateY(-3px);
-            border-color: rgba(196, 181, 253, 0.75);
-            box-shadow: 0 18px 40px rgba(0, 0, 0, 0.38), 0 0 22px rgba(139, 92, 246, 0.18);
+            border-color: #00eaff;
+            box-shadow: 0 18px 40px rgba(0, 0, 0, 0.38), 0 0 28px rgba(0, 234, 255, 0.35);
           }
           .bb-overview-event-top {
             display: flex;
@@ -1615,7 +1739,6 @@ export default function BattleblazeHero({ onSelectEvent }) {
             font-weight: 800;
           }
 
-          /* ─────────────── PAGE 3: MODULES SECTION ─────────────── */
           .bb-modules-section {
             padding: clamp(70px, 8vw, 118px) clamp(20px, 5vw, 76px);
           }
@@ -1638,10 +1761,11 @@ export default function BattleblazeHero({ onSelectEvent }) {
             width: clamp(100px, 13vw, 152px);
             aspect-ratio: 1;
             margin-bottom: 14px;
-            border: 1px solid rgba(139, 92, 246, 0.5);
-            border-radius: 28px;
-            background: linear-gradient(110deg, rgba(139, 92, 246, 0.14), rgba(8, 12, 37, 0.65), rgba(0, 234, 255, 0.12));
-            box-shadow: 0 0 32px rgba(139, 92, 246, 0.14);
+            border: 1.5px solid #a855f7;
+            border-radius: 4px;
+            background: linear-gradient(135deg, rgba(20, 8, 42, 0.94) 0%, rgba(35, 12, 68, 0.94) 100%);
+            box-shadow: 0 0 32px rgba(168, 85, 247, 0.25);
+            clip-path: polygon(14px 0%, 100% 0%, calc(100% - 14px) 100%, 0% 100%);
           }
           .bb-modules-logo {
             display: block;
@@ -1662,19 +1786,21 @@ export default function BattleblazeHero({ onSelectEvent }) {
             grid-template-columns: repeat(4, minmax(0, 1fr));
             gap: clamp(18px, 2vw, 28px);
           }
+
           .bb-module-card {
             min-width: 0;
             padding: 10px;
-            border: 1px solid rgba(139, 92, 246, 0.45);
-            border-radius: 19px;
-            background: linear-gradient(145deg, rgba(139, 92, 246, 0.12), rgba(8, 4, 17, 0.95) 65%, rgba(59, 130, 246, 0.07));
-            box-shadow: 0 18px 42px rgba(0, 0, 0, 0.3);
+            border: 1.5px solid #a855f7;
+            border-radius: 4px;
+            background: linear-gradient(135deg, rgba(20, 8, 42, 0.94) 0%, rgba(35, 12, 68, 0.94) 100%);
+            box-shadow: 0 18px 42px rgba(0, 0, 0, 0.3), 0 0 20px rgba(168, 85, 247, 0.2);
+            clip-path: polygon(12px 0%, 100% 0%, calc(100% - 12px) 100%, 0% 100%);
             transition: transform 240ms ease, border-color 240ms ease, box-shadow 240ms ease;
           }
           .bb-module-card:hover {
             transform: translateY(-6px);
-            border-color: rgba(196, 181, 253, 0.72);
-            box-shadow: 0 22px 48px rgba(0, 0, 0, 0.38), 0 0 26px rgba(139, 92, 246, 0.18);
+            border-color: #00eaff;
+            box-shadow: 0 22px 48px rgba(0, 0, 0, 0.38), 0 0 32px rgba(0, 234, 255, 0.4);
           }
           .bb-module-poster {
             position: relative;
@@ -1684,7 +1810,7 @@ export default function BattleblazeHero({ onSelectEvent }) {
             overflow: hidden;
             aspect-ratio: 4 / 5;
             padding: clamp(15px, 1.5vw, 22px);
-            border-radius: 12px;
+            border-radius: 4px;
             border: 1px solid rgba(255, 255, 255, 0.14);
             background:
               radial-gradient(ellipse at 15% 10%, rgba(139, 92, 246, 0.28), transparent 48%),
@@ -1696,7 +1822,7 @@ export default function BattleblazeHero({ onSelectEvent }) {
             position: absolute;
             inset: 10px;
             border: 1px solid rgba(255, 255, 255, 0.12);
-            border-radius: 8px;
+            border-radius: 4px;
             pointer-events: none;
           }
           .bb-poster-top, .bb-poster-bottom { position: relative; z-index: 1; }
@@ -1722,7 +1848,7 @@ export default function BattleblazeHero({ onSelectEvent }) {
             height: 56px;
             margin: 18px 0 16px;
             border: 1px solid rgba(255, 255, 255, 0.3);
-            border-radius: 16px;
+            border-radius: 4px;
             color: #dffaff;
             font-size: 26px;
             background: linear-gradient(110deg, rgba(139, 92, 246, 0.15), rgba(0, 234, 255, 0.12));
@@ -1759,22 +1885,22 @@ export default function BattleblazeHero({ onSelectEvent }) {
             width: 100%;
             padding: 12px 13px;
             border: 1px solid rgba(196, 181, 253, 0.45);
-            border-radius: 10px;
+            border-radius: 4px;
             color: #fff;
             text-decoration: none;
             text-transform: uppercase;
             font-size: 10px;
             font-weight: 800;
             letter-spacing: 0.12em;
-            background: rgba(139, 92, 246, 0.16);
-            transition: border-color 200ms ease, background 200ms ease;
+            background: rgba(139, 92, 246, 0.2);
+            transition: border-color 200ms ease, background 200ms ease, box-shadow 200ms ease;
           }
           .bb-register-button:hover {
-            border-color: #fff;
-            background: rgba(139, 92, 246, 0.28);
+            border-color: #00eaff;
+            background: rgba(0, 234, 255, 0.25);
+            box-shadow: 0 0 16px rgba(0, 234, 255, 0.3);
           }
 
-          /* ─────────────── PAGE 4: TEAM SECTION ─────────────── */
           .bb-team-section {
             padding: clamp(76px, 8vw, 124px) clamp(20px, 5vw, 76px);
           }
@@ -1794,25 +1920,27 @@ export default function BattleblazeHero({ onSelectEvent }) {
             grid-template-columns: repeat(4, minmax(0, 1fr));
             gap: clamp(14px, 2vw, 26px);
           }
+
           .bb-team-card {
             min-width: 0;
             padding: 12px;
-            border: 1px solid rgba(139, 92, 246, 0.45);
-            border-radius: 20px;
-            background: linear-gradient(145deg, rgba(139, 92, 246, 0.12), rgba(8, 4, 17, 0.95) 65%, rgba(59, 130, 246, 0.07));
-            box-shadow: 0 18px 42px rgba(0, 0, 0, 0.3);
+            border: 1.5px solid #a855f7;
+            border-radius: 4px;
+            background: linear-gradient(135deg, rgba(20, 8, 42, 0.94) 0%, rgba(35, 12, 68, 0.94) 100%);
+            box-shadow: 0 18px 42px rgba(0, 0, 0, 0.3), 0 0 20px rgba(168, 85, 247, 0.2);
+            clip-path: polygon(12px 0%, 100% 0%, calc(100% - 12px) 100%, 0% 100%);
             transition: transform 240ms ease, border-color 240ms ease, box-shadow 240ms ease;
           }
           .bb-team-card:hover {
             transform: translateY(-6px);
-            border-color: rgba(196, 181, 253, 0.72);
-            box-shadow: 0 22px 48px rgba(0, 0, 0, 0.38), 0 0 26px rgba(139, 92, 246, 0.18);
+            border-color: #00eaff;
+            box-shadow: 0 22px 48px rgba(0, 0, 0, 0.38), 0 0 32px rgba(0, 234, 255, 0.4);
           }
           .bb-team-photo {
             position: relative;
             overflow: hidden;
             aspect-ratio: 4 / 5;
-            border-radius: 13px;
+            border-radius: 4px;
             border: 1px solid rgba(167, 139, 250, 0.35);
             background: linear-gradient(145deg, #120a20, #07040e);
           }
@@ -1858,7 +1986,6 @@ export default function BattleblazeHero({ onSelectEvent }) {
           }
           .bb-team-phone:hover { color: #c4b5fd; }
 
-          /* Scroll Reveal Animations */
           .bb-next-section .bb-overview-copy > *,
           .bb-modules-section .bb-modules-heading > *,
           .bb-module-card,
@@ -1877,7 +2004,6 @@ export default function BattleblazeHero({ onSelectEvent }) {
             transform: translate3d(0, 0, 0);
           }
 
-          /* ─────────────── RESPONSIVE BREAKPOINTS (PC, TABLET & MOBILE) ─────────────── */
           @media (hover: none), (pointer: coarse) {
             .bb-match { cursor: auto; }
             .bb-match-cursor, .bb-match-ring { display: none; }
@@ -1911,7 +2037,7 @@ export default function BattleblazeHero({ onSelectEvent }) {
           @media (max-width: 720px) {
             .bb-modules-section { padding: 70px 20px; }
             .bb-modules-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
-            .bb-module-card { padding: 7px; border-radius: 15px; }
+            .bb-module-card { padding: 7px; border-radius: 4px; }
             .bb-module-poster { padding: 14px; }
             .bb-poster-icon { width: 45px; height: 45px; font-size: 22px; margin: 15px 0 12px; }
             .bb-register-button { padding: 11px 9px; font-size: 9px; }
@@ -1921,9 +2047,9 @@ export default function BattleblazeHero({ onSelectEvent }) {
             .bb-ss-art {
               top: 96px;
               left: -36px;
-              width: clamp(190px, 48vw, 300px);
-              max-width: 54vw;
-              max-height: 34svh;
+              width: clamp(165px, 42vw, 260px);
+              max-width: 48vw;
+              max-height: 30svh;
             }
             .bb-hero-logo-box {
               top: 43%;
@@ -1940,10 +2066,17 @@ export default function BattleblazeHero({ onSelectEvent }) {
               margin: 0 auto;
             }
             .bb-fe-art {
-              top: 72%;
-              width: clamp(270px, 76vw, 390px);
-              max-width: 82vw;
-              max-height: 25svh;
+              top: 68%;
+              width: clamp(250px, 72vw, 370px);
+              max-width: 80vw;
+              max-height: 20svh;
+            }
+            .bb-hero-view-modules-btn {
+              bottom: max(12px, calc(env(safe-area-inset-bottom) + 8px));
+              padding: 7px 15px;
+              gap: 6px;
+              font-size: 9px;
+              letter-spacing: 0.12em;
             }
             .bb-hotspot-sound {
               right: max(14px, env(safe-area-inset-right));
@@ -1989,15 +2122,15 @@ export default function BattleblazeHero({ onSelectEvent }) {
           @media (max-width: 520px) {
             .bb-team-section { padding: 72px 17px; }
             .bb-team-grid { gap: 12px; }
-            .bb-team-card { padding: 8px; border-radius: 15px; }
+            .bb-team-card { padding: 8px; border-radius: 4px; }
           }
 
           @media (max-width: 420px) {
             .bb-ss-art {
               top: 94px;
               left: -20px;
-              width: 56vw;
-              max-width: 240px;
+              width: 49vw;
+              max-width: 210px;
             }
             .bb-event-logo {
               width: 92vw;
@@ -2005,9 +2138,10 @@ export default function BattleblazeHero({ onSelectEvent }) {
               max-height: 35svh;
             }
             .bb-fe-art {
-              top: 72%;
-              width: 74vw;
-              max-width: 310px;
+              top: 68%;
+              width: 70vw;
+              max-width: 290px;
+              max-height: 19svh;
             }
           }
 

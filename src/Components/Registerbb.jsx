@@ -4,19 +4,13 @@ import { useLocation } from "react-router-dom";
 
 import { createClient } from "@supabase/supabase-js";
 
-
-
 import logoUrl from "../assets/logoo2.png";
 
 import rampageQR from "../assets/rqr.png";
 
-
-
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 
 const SUPABASE_PUBLISHABLE_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
-
-
 
 const supabase =
 
@@ -26,13 +20,9 @@ const supabase =
 
     : null;
 
-
-
 const RAMPAGE_REGISTRATION_TABLE = "rampage_registrations";
 
 const RAMPAGE_PAYMENT_BUCKET = "rampage-payment-proofs";
-
-
 
 const tournaments = {
 
@@ -286,8 +276,6 @@ const tournaments = {
 
 };
 
-
-
 function getRequestedGame(search) {
 
   const query =
@@ -311,8 +299,6 @@ function getRequestedGame(search) {
     .toUpperCase()
 
     .replace(/[\s-]+/g, "_");
-
-
 
   const aliases = {
 
@@ -338,15 +324,11 @@ function getRequestedGame(search) {
 
   };
 
-
-
   const key = aliases[normalized] || normalized;
 
   return tournaments[key] ? key : "BGMI";
 
 }
-
-
 
 export default function Registerbb() {
 
@@ -365,8 +347,6 @@ export default function Registerbb() {
   const [formError, setFormError] = useState("");
 
   const [isSubmitting, setIsSubmitting] = useState(false);
-
-
 
   useEffect(() => {
 
@@ -390,13 +370,9 @@ export default function Registerbb() {
 
   }, [location.search]);
 
-
-
   const current = tournaments[game];
 
   const isPaymentGame = ["BGMI", "MOBILE_LEGENDS", "VALORANT", "RC"].includes(game);
-
-
 
   async function handleSubmit(e) {
 
@@ -404,13 +380,9 @@ export default function Registerbb() {
 
     setFormError("");
 
-
-
     if (isPaymentGame) {
 
       if (isSubmitting) return;
-
-
 
       const isRC = game === "RC";
 
@@ -427,8 +399,6 @@ export default function Registerbb() {
       const email = (isRC ? form.email : form.iglEmail || "").trim();
 
       const phone1 = isRC ? form.phone : form.phone1;
-
-
 
       if (!form.teamName?.trim()) {
 
@@ -462,8 +432,6 @@ export default function Registerbb() {
 
       }
 
-
-
       for (let i = 2; i <= playerCount; i += 1) {
 
         const name = (form[`player${i}Name`] || "").trim();
@@ -496,8 +464,6 @@ export default function Registerbb() {
 
       }
 
-
-
       const substituteName = (form.substituteName || "").trim();
 
       const substituteIgn = (form.substituteIgn || "").trim();
@@ -509,8 +475,6 @@ export default function Registerbb() {
         return;
 
       }
-
-
 
       if (!/^\d{10}$/.test(phone1 || "")) {
 
@@ -529,8 +493,6 @@ export default function Registerbb() {
         return;
 
       }
-
-
 
       if (!reviewConfirmed) {
 
@@ -556,8 +518,6 @@ export default function Registerbb() {
 
       }
 
-
-
       setIsSubmitting(true);
 
       let uploadedProofPath = "";
@@ -574,8 +534,6 @@ export default function Registerbb() {
 
         uploadedProofPath = `rampage-2026/${Date.now()}-${uniqueId}-${safeFileName}`;
 
-
-
         const { error: uploadError } = await supabase.storage
 
           .from(RAMPAGE_PAYMENT_BUCKET)
@@ -591,8 +549,6 @@ export default function Registerbb() {
           });
 
         if (uploadError) throw new Error(`PAYMENT PROOF UPLOAD FAILED: ${uploadError.message}`);
-
-
 
         const { error: insertError } = await supabase
 
@@ -698,13 +654,9 @@ export default function Registerbb() {
 
     }
 
-
-
     setSuccess(true);
 
   }
-
-
 
   function isOptional(field) {
 
@@ -756,17 +708,13 @@ export default function Registerbb() {
 
   }
 
-
-
   return (
 
     <main className="reg-page">
 
       <style>{`
 
-        @import url('https\://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800&display=swap');
-
-
+        @import url('https\\://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800&display=swap');
 
         /* BattleblazeHero.jsx Exact Page Scrollbar */
 
@@ -816,8 +764,6 @@ export default function Registerbb() {
 
         }
 
-
-
         /* Global Typography & BattleblazeHero.jsx Nebula Background */
 
         .reg-page, .reg-page *, .reg-page *::before, .reg-page *::after {
@@ -827,8 +773,6 @@ export default function Registerbb() {
           font-family: 'Orbitron', system-ui, sans-serif !important;
 
         }
-
-
 
         .reg-page {
 
@@ -862,8 +806,6 @@ export default function Registerbb() {
 
         }
 
-
-
         /* ─────────────── HEADER & LOGO SHELL ─────────────── */
 
         .reg-header {
@@ -871,6 +813,7 @@ export default function Registerbb() {
           max-width: 1120px;
 
           /* Move the complete presents + logo block below the navbar */
+
           margin: clamp(130px, 14vh, 170px) auto 0;
 
           display: flex;
@@ -924,8 +867,6 @@ export default function Registerbb() {
           text-transform: uppercase;
 
         }
-
-
 
         /* Matches .bb-modules-logo-shell from BattleblazeHero.jsx */
 
@@ -981,8 +922,6 @@ export default function Registerbb() {
 
         }
 
-
-
         .reg-header-label,
 
         .reg-eyebrow,
@@ -1015,8 +954,6 @@ export default function Registerbb() {
 
         }
 
-
-
         /* ─────────────── MAIN CONTAINER & BATTLEBLAZE HEADING ─────────────── */
 
         .reg-container {
@@ -1031,8 +968,6 @@ export default function Registerbb() {
 
         }
 
-
-
         .reg-heading {
 
           text-align: center;
@@ -1040,8 +975,6 @@ export default function Registerbb() {
           margin-bottom: clamp(24px, 3.5vw, 34px);
 
         }
-
-
 
         /* Exact Heading Color & Gradient from BattleblazeHero.jsx (.bb-overview-title / .bb-modules-title) */
 
@@ -1111,8 +1044,6 @@ export default function Registerbb() {
 
         }
 
-
-
         .reg-heading p,
 
         .reg-card-top p {
@@ -1126,8 +1057,6 @@ export default function Registerbb() {
           line-height: 1.55;
 
         }
-
-
 
         /* ─────────────── MAIN CARD (MATCHES BATTLEBLAZE CARDS) ─────────────── */
 
@@ -1183,8 +1112,6 @@ export default function Registerbb() {
 
         }
 
-
-
         .reg-card-top {
 
           display: flex;
@@ -1233,8 +1160,6 @@ export default function Registerbb() {
 
         }
 
-
-
         .reg-status {
 
           display: inline-flex;
@@ -1277,8 +1202,6 @@ export default function Registerbb() {
 
         }
 
-
-
         .reg-divider {
 
           height: 1px;
@@ -1290,8 +1213,6 @@ export default function Registerbb() {
           opacity: 0.75;
 
         }
-
-
 
         .reg-section-label {
 
@@ -1317,8 +1238,6 @@ export default function Registerbb() {
 
         }
 
-
-
         .reg-subsection-heading {
 
           grid-column: 1 / -1;
@@ -1332,8 +1251,6 @@ export default function Registerbb() {
           color: #f5f3ff;
 
         }
-
-
 
         /* ─────────────── FORM FIELDS ─────────────── */
 
@@ -1376,8 +1293,6 @@ export default function Registerbb() {
           color: #60a5fa;
 
         }
-
-
 
         .reg-field input,
 
@@ -1426,8 +1341,6 @@ export default function Registerbb() {
           box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.16), 0 0 14px rgba(139, 92, 246, 0.2);
 
         }
-
-
 
         /* ─────────────── REVIEW & PAYMENT PANELS ─────────────── */
 
@@ -1509,8 +1422,6 @@ export default function Registerbb() {
 
         }
 
-
-
         .reg-payment-amount {
 
           color: #fff;
@@ -1544,8 +1455,6 @@ export default function Registerbb() {
           margin: 0 0 16px;
 
         }
-
-
 
         .reg-qr-grid {
 
@@ -1621,8 +1530,6 @@ export default function Registerbb() {
 
         }
 
-
-
         .reg-payment-upload input {
 
           padding: 10px;
@@ -1634,8 +1541,6 @@ export default function Registerbb() {
           cursor: pointer;
 
         }
-
-
 
         /* ─────────────── CONSENT, SUBMIT & STATUS ─────────────── */
 
@@ -1677,8 +1582,6 @@ export default function Registerbb() {
 
         }
 
-
-
         .reg-form-error {
 
           margin-top: 16px;
@@ -1702,8 +1605,6 @@ export default function Registerbb() {
           letter-spacing: 0.05em;
 
         }
-
-
 
         /* Matches BattleblazeHero.jsx CTA Button Styling */
 
@@ -1765,8 +1666,6 @@ export default function Registerbb() {
 
         }
 
-
-
         .reg-footnote {
 
           text-align: center;
@@ -1778,8 +1677,6 @@ export default function Registerbb() {
           color: rgba(196, 181, 253, 0.72);
 
         }
-
-
 
         .reg-success {
 
@@ -1845,8 +1742,6 @@ export default function Registerbb() {
 
         }
 
-
-
         .reg-footer {
 
           max-width: 940px;
@@ -1863,8 +1758,6 @@ export default function Registerbb() {
 
         }
 
-
-
         /* ─────────────── MOBILE & TABLET OPTIMIZATION ─────────────── */
 
         @media (max-width: 680px) {
@@ -1878,6 +1771,7 @@ export default function Registerbb() {
           .reg-header {
 
             align-items: center;
+
           margin-top: 110px;
 
           }
@@ -1976,9 +1870,100 @@ export default function Registerbb() {
 
         }
 
-      `}</style>
+      
 
-
+          /* ─────────────── BATTLEBLAZE UI CONSISTENCY POLISH ─────────────── */
+          .reg-page {
+            background-color: #05030d;
+            background-image:
+              radial-gradient(ellipse at 14% 7%, rgba(109, 40, 217, 0.22), transparent 36%),
+              radial-gradient(ellipse at 88% 16%, rgba(0, 234, 255, 0.09), transparent 32%),
+              radial-gradient(ellipse at 50% 95%, rgba(59, 130, 246, 0.12), transparent 48%),
+              linear-gradient(135deg, #05030d 0%, #100821 48%, #050914 100%);
+          }
+          .reg-page::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            z-index: 0;
+            pointer-events: none;
+            opacity: 0.18;
+            background-image:
+              linear-gradient(rgba(139, 92, 246, 0.12) 1px, transparent 1px),
+              linear-gradient(90deg, rgba(0, 234, 255, 0.08) 1px, transparent 1px);
+            background-size: 48px 48px;
+            mask-image: linear-gradient(to bottom, #000 0%, rgba(0, 0, 0, 0.65) 62%, transparent 100%);
+          }
+          .reg-header,
+          .reg-container,
+          .reg-footer {
+            position: relative;
+            z-index: 1;
+          }
+          .reg-brand {
+            border-color: rgba(139, 92, 246, 0.58);
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.18), rgba(8, 12, 37, 0.78) 56%, rgba(0, 234, 255, 0.12));
+            box-shadow: 0 0 28px rgba(139, 92, 246, 0.17), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+          }
+          .reg-glass-card,
+          .reg-review,
+          .reg-payment-panel {
+            -webkit-backdrop-filter: blur(14px);
+            backdrop-filter: blur(14px);
+          }
+          .reg-glass-card {
+            border-color: rgba(139, 92, 246, 0.5);
+            background:
+              linear-gradient(145deg, rgba(139, 92, 246, 0.14), rgba(8, 4, 17, 0.94) 58%, rgba(0, 234, 255, 0.055));
+            box-shadow: 0 22px 52px rgba(0, 0, 0, 0.42), 0 0 30px rgba(109, 40, 217, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.065);
+          }
+          .reg-status {
+            border-color: rgba(96, 165, 250, 0.42);
+            background: linear-gradient(110deg, rgba(139, 92, 246, 0.14), rgba(59, 130, 246, 0.12));
+          }
+          .reg-field input,
+          .reg-field select {
+            border-color: rgba(139, 92, 246, 0.38);
+            background: rgba(4, 4, 15, 0.82);
+          }
+          .reg-field input:hover,
+          .reg-field select:hover {
+            border-color: rgba(167, 139, 250, 0.7);
+          }
+          .reg-field input:focus,
+          .reg-field select:focus {
+            border-color: #00eaff;
+            box-shadow: 0 0 0 3px rgba(0, 234, 255, 0.1), 0 0 18px rgba(139, 92, 246, 0.18);
+          }
+          .reg-submit {
+            min-height: 52px;
+            border-color: rgba(196, 181, 253, 0.62);
+            border-radius: 7px;
+            background: linear-gradient(105deg, #6d28d9 0%, #8b5cf6 48%, #2563eb 100%);
+            box-shadow: 0 10px 28px rgba(0, 0, 0, 0.34), 0 0 22px rgba(139, 92, 246, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.14);
+          }
+          .reg-submit:hover:not(:disabled) {
+            border-color: #00eaff;
+            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.38), 0 0 26px rgba(0, 234, 255, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.18);
+          }
+          .reg-success-icon {
+            border-color: rgba(0, 234, 255, 0.72);
+            color: #67e8f9;
+            box-shadow: 0 0 24px rgba(0, 234, 255, 0.2), 0 0 22px rgba(139, 92, 246, 0.16);
+          }
+          .reg-footer {
+            border-top: 1px solid rgba(139, 92, 246, 0.18);
+            padding-top: 16px;
+          }
+          @media (prefers-reduced-motion: reduce) {
+            .reg-brand,
+            .reg-submit,
+            .reg-field input,
+            .reg-field select {
+              transition: none !important;
+            }
+          }
+`}</style>
 
       <header className={`reg-header ${isPaymentGame ? "reg-header-bgmi" : ""}`}>
 
@@ -2006,8 +1991,6 @@ export default function Registerbb() {
 
       </header>
 
-
-
       <section className="reg-container">
 
         <div className="reg-heading">
@@ -2023,8 +2006,6 @@ export default function Registerbb() {
           <p>Complete the registration form for your selected tournament.</p>
 
         </div>
-
-
 
         <section className="reg-glass-card">
 
@@ -2058,11 +2039,7 @@ export default function Registerbb() {
 
           </div>
 
-
-
           <div className="reg-divider" />
-
-
 
           {success ? (
 
@@ -2110,8 +2087,6 @@ export default function Registerbb() {
 
               </div>
 
-
-
               {isPaymentGame && (
 
                 <p className="reg-payment-note">
@@ -2135,8 +2110,6 @@ export default function Registerbb() {
                 </p>
 
               )}
-
-
 
               <div className="reg-fields">
 
@@ -2196,8 +2169,6 @@ export default function Registerbb() {
 
                   const isPhoneField = ["phone", "phone1", "phone2"].includes(field.name);
 
-
-
                   const sectionHeading = isPaymentGame
 
                     ? {
@@ -2217,8 +2188,6 @@ export default function Registerbb() {
                       }[field.name]
 
                     : null;
-
-
 
                   return (
 
@@ -2263,8 +2232,6 @@ export default function Registerbb() {
                           {!optional && <b> *</b>}
 
                         </span>
-
-
 
                         {field.options ? (
 
@@ -2333,8 +2300,6 @@ export default function Registerbb() {
                 })}
 
               </div>
-
-
 
               {isPaymentGame && (
 
@@ -2462,8 +2427,6 @@ export default function Registerbb() {
 
                   </section>
 
-
-
                   <div className="reg-divider" />
 
                   <section className="reg-payment-panel">
@@ -2566,8 +2529,6 @@ export default function Registerbb() {
 
               )}
 
-
-
               {formError && (
 
                 <div className="reg-form-error" role="alert">
@@ -2578,11 +2539,7 @@ export default function Registerbb() {
 
               )}
 
-
-
               <div className="reg-divider" />
-
-
 
               <label className="reg-consent">
 
@@ -2596,15 +2553,11 @@ export default function Registerbb() {
 
               </label>
 
-
-
               <button className="reg-submit" type="submit" disabled={isSubmitting}>
 
                 {isSubmitting ? "SUBMITTING..." : "COMPLETE REGISTRATION"} <span>↗</span>
 
               </button>
-
-
 
               <p className="reg-footnote">
 
@@ -2617,8 +2570,6 @@ export default function Registerbb() {
           )}
 
         </section>
-
-
 
         <footer className="reg-footer">
 
