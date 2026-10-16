@@ -864,6 +864,13 @@ export default function BattleblazeHero({ onSelectEvent }) {
     if (typeof onSelectEvent === "function") onSelectEvent(id);
   };
 
+  // One shared destination for Register Now, overview cards, and module cards.
+  const goToRegistration = (game) => {
+    if (!game) return;
+    const registrationUrl = `/register?game=${encodeURIComponent(game)}`;
+    window.location.assign(registrationUrl);
+  };
+
   const resetHover = () => {
     setHovered(false);
     setHoverColor("#00f0ff");
@@ -1673,6 +1680,11 @@ export default function BattleblazeHero({ onSelectEvent }) {
 
           .bb-overview-event-card {
             position: relative;
+            display: block;
+            color: inherit;
+            text-decoration: none;
+            cursor: pointer;
+            -webkit-tap-highlight-color: transparent;
             min-height: 128px;
             padding: 14px 16px 13px;
             border: 1.5px solid #a855f7;
@@ -1691,10 +1703,12 @@ export default function BattleblazeHero({ onSelectEvent }) {
             height: 2px;
             background: linear-gradient(90deg, #6d28d9, #8b5cf6, #60a5fa);
           }
-          .bb-overview-event-card:hover {
+          .bb-overview-event-card:hover,
+          .bb-overview-event-card:focus-visible {
             transform: translateY(-3px);
             border-color: #00eaff;
             box-shadow: 0 18px 40px rgba(0, 0, 0, 0.38), 0 0 28px rgba(0, 234, 255, 0.35);
+            outline: none;
           }
           .bb-overview-event-top {
             display: flex;
@@ -1788,8 +1802,13 @@ export default function BattleblazeHero({ onSelectEvent }) {
           }
 
           .bb-module-card {
+            display: block;
+            color: inherit;
+            text-decoration: none;
             min-width: 0;
             padding: 10px;
+            cursor: pointer;
+            -webkit-tap-highlight-color: transparent;
             border: 1.5px solid #a855f7;
             border-radius: 4px;
             background: linear-gradient(135deg, rgba(20, 8, 42, 0.94) 0%, rgba(35, 12, 68, 0.94) 100%);
@@ -1797,10 +1816,12 @@ export default function BattleblazeHero({ onSelectEvent }) {
             clip-path: polygon(12px 0%, 100% 0%, calc(100% - 12px) 100%, 0% 100%);
             transition: transform 240ms ease, border-color 240ms ease, box-shadow 240ms ease;
           }
-          .bb-module-card:hover {
+          .bb-module-card:hover,
+          .bb-module-card:focus-visible {
             transform: translateY(-6px);
             border-color: #00eaff;
             box-shadow: 0 22px 48px rgba(0, 0, 0, 0.38), 0 0 32px rgba(0, 234, 255, 0.4);
+            outline: none;
           }
           .bb-module-poster {
             position: relative;
@@ -2199,15 +2220,25 @@ export default function BattleblazeHero({ onSelectEvent }) {
 
             <div className="bb-overview-events" aria-label="Battleblaze events">
               {[
-                { name: "FIFA", code: "ARENA 01 // FOOTBALL", color: "#45ffb0", icon: "⚽", prize: "₹5,000" },
-                { name: "VALORANT", code: "ARENA 02 // TACTICAL FPS", color: "#8b5cf6", icon: "◈", prize: "₹8,000" },
-                { name: "BGMI", code: "ARENA 03 // BATTLE ROYALE", color: "#ffb347", icon: "⌖", prize: "₹10,000" },
-                { name: "FF", code: "ARENA 04 // SURVIVAL", color: "#ff6b35", icon: "✦", prize: "₹6,000" },
-                { name: "PS5 RUSH", code: "ARENA 05 // CONSOLE", color: "#5c8dff", icon: "△", prize: "₹3,000" },
-                { name: "VRXPERIENCE", code: "ARENA 06 // IMMERSIVE", color: "#bf7bff", icon: "◎", prize: "₹2,500" },
-                { name: "RC", code: "ARENA 07 // RC RACING", color: "#00eaff", icon: "↗", prize: "₹2,000" },
+                { name: "FIFA", game: "FIFA", code: "ARENA 01 // FOOTBALL", color: "#45ffb0", icon: "⚽", prize: "₹5,000" },
+                { name: "VALORANT", game: "VALORANT", code: "ARENA 02 // TACTICAL FPS", color: "#8b5cf6", icon: "◈", prize: "₹8,000" },
+                { name: "BGMI", game: "BGMI", code: "ARENA 03 // BATTLE ROYALE", color: "#ffb347", icon: "⌖", prize: "₹10,000" },
+                { name: "FF", game: "FREE_FIRE", code: "ARENA 04 // SURVIVAL", color: "#ff6b35", icon: "✦", prize: "₹6,000" },
+                { name: "PS5 RUSH", game: "PS5_RUSH", code: "ARENA 05 // CONSOLE", color: "#5c8dff", icon: "△", prize: "₹3,000" },
+                { name: "VRXPERIENCE", game: "VR_EXPERIENCE", code: "ARENA 06 // IMMERSIVE", color: "#bf7bff", icon: "◎", prize: "₹2,500" },
+                { name: "RC", game: "RC", code: "ARENA 07 // RC RACING", color: "#00eaff", icon: "↗", prize: "₹2,000" },
               ].map((event) => (
-                <article className="bb-overview-event-card" key={event.name} style={{ "--event-accent": event.color }}>
+                <a
+                  className="bb-overview-event-card"
+                  key={event.name}
+                  href={`/register?game=${encodeURIComponent(event.game)}`}
+                  style={{ "--event-accent": event.color }}
+                  aria-label={`Register for ${event.name}`}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    goToRegistration(event.game);
+                  }}
+                >
                   <div className="bb-overview-event-top">
                     <span className="bb-overview-event-icon" aria-hidden="true">{event.icon}</span>
                     <span className="bb-overview-event-code">{event.code}</span>
@@ -2217,7 +2248,7 @@ export default function BattleblazeHero({ onSelectEvent }) {
                     <span>PRIZE POOL</span>
                     <strong>{event.prize}</strong>
                   </div>
-                </article>
+                </a>
               ))}
             </div>
           </div>
@@ -2252,7 +2283,16 @@ export default function BattleblazeHero({ onSelectEvent }) {
               { name: "PS5 RUSH", game: "PS5_RUSH", code: "07 // CONSOLE", icon: "△", description: "Grab a controller and challenge rivals." },
               { name: "RC", game: "RC", code: "08 // REAL CRICKET", icon: "🏏", description: "Represent your side and compete for the win." },
             ].map((module, index) => (
-              <article className="bb-module-card" key={module.name}>
+              <a
+                className="bb-module-card"
+                key={module.name}
+                href={`/register?game=${encodeURIComponent(module.game)}`}
+                aria-label={`Register for ${module.name}`}
+                onClick={(event) => {
+                  event.preventDefault();
+                  goToRegistration(module.game);
+                }}
+              >
                 <div className="bb-module-poster">
                   <div className="bb-poster-top">
                     <span className="bb-poster-index">BATTLEBLAZE / {String(index + 1).padStart(2, "0")}</span>
@@ -2266,21 +2306,11 @@ export default function BattleblazeHero({ onSelectEvent }) {
                 </div>
                 <div className="bb-module-card-copy">
                   <p className="bb-module-description">{module.description}</p>
-                  <a
-                    className="bb-register-button"
-                    href={`/register?game=${encodeURIComponent(module.game)}`}
-                    onClick={(event) => {
-                      event.preventDefault();
-                      const registrationUrl = `/register?game=${encodeURIComponent(module.game)}`;
-                      window.location.assign(registrationUrl);
-                    }}
-                    role="link"
-                    aria-label={`Register for ${module.name}`}
-                  >
+                  <span className="bb-register-button" aria-hidden="true">
                     <span>Register Now</span><span aria-hidden="true">↗</span>
-                  </a>
+                  </span>
                 </div>
-              </article>
+              </a>
             ))}
           </div>
         </div>
