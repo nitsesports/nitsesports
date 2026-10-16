@@ -10,9 +10,9 @@ import logoUrl from "../assets/logoo2.png";
 import overviewPosterUrl from "../assets/bgp.png";
 import feUrl from "../assets/fe.png";
 import ssUrl from "../assets/ss.png";
-import coordinator1Photo from "../assets/Members/member1.png";
-import moduleCoHeadPhoto from "../assets/Members/member2.png";
-import moduleHeadPhoto from "../assets/Members/member3.png";
+import coordinator1Photo from "../assets/bb3.png";
+import moduleCoHeadPhoto from "../assets/bb1.png";
+import moduleHeadPhoto from "../assets/bb2.png";
 import coordinator2Photo from "../assets/Members/member4.png";
 
 const EVENTS = [
