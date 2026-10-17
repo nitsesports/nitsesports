@@ -2509,7 +2509,7 @@ export default function Registerbb() {
 
 `}</style>
 
-      <header className={`reg-header ${isPaymentGame ? "reg-header-bgmi" : ""}`}>
+      <header className={`reg-header ${isPaymentGame || game === "PS5_RUSH" ? "reg-header-bgmi" : ""}`}>
 
         <div className="reg-header-branding">
 
@@ -2519,7 +2519,7 @@ export default function Registerbb() {
 
             href="/"
 
-            className={`reg-brand ${isPaymentGame ? "reg-logo-large" : ""}`}
+            className={`reg-brand ${isPaymentGame || game === "PS5_RUSH" ? "reg-logo-large" : ""}`}
 
             aria-label="NITS Esports home"
 

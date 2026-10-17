@@ -48,7 +48,9 @@ const LoadingScreen = ({
 
     currentPath.includes("register") ||
 
-    currentPath.includes("registerbb");
+    currentPath.includes("registerbb") ||
+    currentPath.includes("ps5-rush") ||
+    currentPath.includes("ps5rush");
 
 
 

@@ -33,6 +33,21 @@ const EVENTS = [
 
 const randomBetween = (min, max) => min + Math.random() * (max - min);
 
+// Shared launch time for both registrations: 19 October 2026, 5:00 PM IST.
+// This keeps the countdown consistent for every visitor and survives refreshes.
+const REGISTRATION_OPENS_AT = new Date("2026-10-19T17:00:00+05:30").getTime();
+const formatCountdown = (milliseconds) => {
+  const totalSeconds = Math.max(0, Math.floor(milliseconds / 1000));
+  const days = Math.floor(totalSeconds / 86400);
+  const hours = Math.floor((totalSeconds % 86400) / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  const seconds = totalSeconds % 60;
+  const hh = String(hours).padStart(2, "0");
+  const mm = String(minutes).padStart(2, "0");
+  const ss = String(seconds).padStart(2, "0");
+  return days > 0 ? `${days}D ${hh}:${mm}:${ss}` : `${hh}:${mm}:${ss}`;
+};
+
 export default function BattleblazeHero({ onSelectEvent }) {
   const sceneMount = useRef(null);
   const islandFrontMount = useRef(null);
@@ -46,8 +61,19 @@ export default function BattleblazeHero({ onSelectEvent }) {
   const heroBoundsRef = useRef({ left: 0, top: 0, width: 1, height: 1 });
 
   const [activeEvent, setActiveEvent] = useState("FIFA");
+  const [now, setNow] = useState(() => Date.now());
+  const registrationsOpen = now >= REGISTRATION_OPENS_AT;
+  const registrationCountdown = formatCountdown(REGISTRATION_OPENS_AT - now);
   const [hoverColor, setHoverColor] = useState("#9b7bff");
   const [hovered, setHovered] = useState(false);
+
+  useEffect(() => {
+    const updateClock = () => setNow(Date.now());
+    updateClock();
+    const timer = window.setInterval(updateClock, 1000);
+    return () => window.clearInterval(timer);
+  }, []);
+
   const [muted, setMuted] = useState(() => {
     if (typeof window === "undefined") return false;
     try {
@@ -899,12 +925,27 @@ export default function BattleblazeHero({ onSelectEvent }) {
   const chooseEvent = (id) => {
     setActiveEvent(id);
     if (typeof onSelectEvent === "function") onSelectEvent(id);
+
+    // The PS5 RUSH hero hotspot should open the public registration form,
+    // not the admin login panel.
+    if (String(id).trim().toUpperCase().replace(/[\s-]+/g, "_") === "PS5_RUSH") {
+      if (!registrationsOpen) return;
+      goToRegistration("PS5_RUSH");
+    }
   };
 
   // One shared destination for Register Now, overview cards, and module cards.
+  // PS5 RUSH must use Registerbb.jsx, just like the other Battleblaze games.
+  // Keep /admin/ps5-rush exclusively for the separate Admin Panel shortcut.
   const goToRegistration = (game) => {
     if (!game) return;
-    const registrationUrl = `/register?game=${encodeURIComponent(game)}`;
+
+    const normalizedGame = String(game).trim().toUpperCase().replace(/[\s-]+/g, "_");
+    const registrationUrl =
+      normalizedGame === "PS5_RUSH"
+        ? "/register?game=PS5_RUSH"
+        : `/register?game=${encodeURIComponent(game)}`;
+
     window.location.assign(registrationUrl);
   };
 
@@ -2139,6 +2180,19 @@ export default function BattleblazeHero({ onSelectEvent }) {
             letter-spacing: 0.07em;
             white-space: normal;
           }
+          .bb-coming-soon-countdown {
+            display: block;
+            margin-top: 5px;
+            color: #67e8f9;
+            font-size: clamp(9px, 0.78vw, 11px);
+            font-weight: 800;
+            letter-spacing: 0.1em;
+            font-variant-numeric: tabular-nums;
+            text-shadow: 0 0 10px rgba(0, 234, 255, 0.3);
+          }
+          .bb-overview-event-prize .bb-coming-soon-countdown {
+            margin-top: 7px;
+          }
 
           .bb-team-section {
             padding: clamp(76px, 8vw, 124px) clamp(20px, 5vw, 76px);
@@ -2513,8 +2567,8 @@ export default function BattleblazeHero({ onSelectEvent }) {
                 { name: "BGMI", game: "BGMI", code: "ARENA 03 // BATTLE ROYALE", color: "#ffb347", icon: "⌖", prize: "₹20,000" },
                 { name: "MOBILE LEGENDS", game: "MOBILE_LEGENDS", code: "ARENA 04 // MOBA", color: "#ff4fa3", icon: "⬡", prize: "₹5,000" },
                 { name: "RC", game: "RC", code: "ARENA 05 // RC RACING", color: "#00eaff", icon: "↗", prize: "₹5,000" },
-                { name: "PS5 RUSH", game: "PS5_RUSH", code: "ARENA 06 // CONSOLE", color: "#5c8dff", icon: "△", comingSoon: false },
-                { name: "VRXPERIENCE", game: "VR_EXPERIENCE", code: "ARENA 07 // IMMERSIVE", color: "#bf7bff", icon: "◎", comingSoon: true },
+                { name: "PS5 RUSH", game: "PS5_RUSH", code: "ARENA 06 // CONSOLE", color: "#5c8dff", icon: "△", comingSoon: !registrationsOpen },
+                { name: "VRXPERIENCE", game: "VR_EXPERIENCE", code: "ARENA 07 // IMMERSIVE", color: "#bf7bff", icon: "◎", comingSoon: !registrationsOpen },
               ].map((event) => (
                 <a
                   className={`bb-overview-event-card ${event.comingSoon ? "is-coming-soon" : ""}`}
@@ -2540,6 +2594,9 @@ export default function BattleblazeHero({ onSelectEvent }) {
                   <div className="bb-overview-event-prize">
                     <span>{event.comingSoon ? "REGISTRATION" : "PRIZE POOL"}</span>
                     <strong>{event.comingSoon ? "COMING SOON" : event.prize}</strong>
+                    {event.comingSoon && (
+                      <small className="bb-coming-soon-countdown">OPENS IN {registrationCountdown}</small>
+                    )}
                   </div>
                 </a>
               ))}
@@ -2572,8 +2629,8 @@ export default function BattleblazeHero({ onSelectEvent }) {
               { name: "FIFA", game: "FIFA", code: "03 // FOOTBALL", icon: "⚽", description: "Control the pitch and score the win.", prize: "₹5,000", posterImage: fifaPosterUrl },
               { name: "MOBILE LEGENDS", game: "MOBILE_LEGENDS", code: "04 // MOBA", icon: "⬡", description: "Pick your hero. Team up. Push to win.", prize: "₹5,000", posterImage: mlbbPosterUrl },
               { name: "RC", game: "RC", code: "05 // REAL CRICKET", icon: "🏏", description: "Represent your side and compete for the win.", prize: "₹5,000", posterImage: rcPosterUrl },
-              { name: "VR EXPERIENCE", game: "VR_EXPERIENCE", code: "06 // IMMERSIVE", icon: "◎", description: "Enter an immersive virtual world.", comingSoon: true, posterImage: vrPosterUrl },
-              { name: "PS5 RUSH", game: "PS5_RUSH", code: "07 // CONSOLE", icon: "△", description: "Grab a controller and challenge rivals.", comingSoon: false, posterImage: ps5PosterUrl },
+              { name: "VR EXPERIENCE", game: "VR_EXPERIENCE", code: "06 // IMMERSIVE", icon: "◎", description: "Enter an immersive virtual world.", comingSoon: !registrationsOpen, posterImage: vrPosterUrl },
+              { name: "PS5 RUSH", game: "PS5_RUSH", code: "07 // CONSOLE", icon: "△", description: "Grab a controller and challenge rivals.", comingSoon: !registrationsOpen, posterImage: ps5PosterUrl },
             ].map((module, index) => (
               <a
                 className={`bb-module-card ${module.comingSoon ? "is-coming-soon" : ""}`}
@@ -2623,7 +2680,10 @@ export default function BattleblazeHero({ onSelectEvent }) {
                   )}
                   <span className={`bb-register-button ${module.comingSoon ? "is-coming-soon" : ""}`} aria-hidden="true">
                     {module.comingSoon ? (
-                      <span className="bb-coming-soon-label">REGISTRATION COMING SOON</span>
+                      <span className="bb-coming-soon-label">
+                        REGISTRATION COMING SOON
+                        <small className="bb-coming-soon-countdown">OPENS IN {registrationCountdown}</small>
+                      </span>
                     ) : (
                       <><span>Register Now</span><span aria-hidden="true">↗</span></>
                     )}
