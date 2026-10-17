@@ -1017,6 +1017,18 @@ export default function BattleblazeHero({ onSelectEvent }) {
           <span aria-hidden="true">↗</span>
         </a>
 
+        {/* Admin Panel shortcut — opens the PS5 Rush admin route */}
+        <a
+          className="bb-hero-view-modules-btn bb-admin-panel-btn"
+          href="/admin/ps5-rush"
+          aria-label="Open PS5 Rush Admin Panel"
+          onMouseEnter={() => hover("#00eaff")}
+          onMouseLeave={resetHover}
+        >
+          <span>ADMIN PANEL</span>
+          <span aria-hidden="true">↗</span>
+        </a>
+
         <a className="bb-hotspot bb-hotspot-contact" href="#contact" aria-label="Contact" />
 
         {EVENTS.map((event) => (
@@ -1380,6 +1392,29 @@ export default function BattleblazeHero({ onSelectEvent }) {
             border-color: #00eaff;
             box-shadow: 0 0 32px rgba(0, 234, 255, 0.5), inset 0 0 20px rgba(0, 234, 255, 0.25);
             transform: translateX(-50%) translateY(-2px);
+          }
+
+          /* Admin shortcut uses the same visual language as the existing hero button. */
+          .bb-admin-panel-btn {
+            left: 22px;
+            right: auto;
+            bottom: max(12px, calc(env(safe-area-inset-bottom) + 8px));
+            transform: none;
+            z-index: 16;
+            border-color: rgba(0, 234, 255, 0.8);
+            box-shadow: 0 0 16px rgba(0, 234, 255, 0.2), inset 0 0 10px rgba(0, 234, 255, 0.08);
+          }
+          .bb-admin-panel-btn:hover {
+            transform: translateY(-2px);
+          }
+          @media (max-width: 600px) {
+            .bb-admin-panel-btn {
+              left: 10px;
+              bottom: max(12px, calc(env(safe-area-inset-bottom) + 8px));
+              padding: 8px 12px;
+              font-size: 8px;
+              letter-spacing: 0.08em;
+            }
           }
 
           .bb-hotspot {
@@ -2478,7 +2513,7 @@ export default function BattleblazeHero({ onSelectEvent }) {
                 { name: "BGMI", game: "BGMI", code: "ARENA 03 // BATTLE ROYALE", color: "#ffb347", icon: "⌖", prize: "₹20,000" },
                 { name: "MOBILE LEGENDS", game: "MOBILE_LEGENDS", code: "ARENA 04 // MOBA", color: "#ff4fa3", icon: "⬡", prize: "₹5,000" },
                 { name: "RC", game: "RC", code: "ARENA 05 // RC RACING", color: "#00eaff", icon: "↗", prize: "₹5,000" },
-                { name: "PS5 RUSH", game: "PS5_RUSH", code: "ARENA 06 // CONSOLE", color: "#5c8dff", icon: "△", comingSoon: true },
+                { name: "PS5 RUSH", game: "PS5_RUSH", code: "ARENA 06 // CONSOLE", color: "#5c8dff", icon: "△", comingSoon: false },
                 { name: "VRXPERIENCE", game: "VR_EXPERIENCE", code: "ARENA 07 // IMMERSIVE", color: "#bf7bff", icon: "◎", comingSoon: true },
               ].map((event) => (
                 <a
@@ -2538,7 +2573,7 @@ export default function BattleblazeHero({ onSelectEvent }) {
               { name: "MOBILE LEGENDS", game: "MOBILE_LEGENDS", code: "04 // MOBA", icon: "⬡", description: "Pick your hero. Team up. Push to win.", prize: "₹5,000", posterImage: mlbbPosterUrl },
               { name: "RC", game: "RC", code: "05 // REAL CRICKET", icon: "🏏", description: "Represent your side and compete for the win.", prize: "₹5,000", posterImage: rcPosterUrl },
               { name: "VR EXPERIENCE", game: "VR_EXPERIENCE", code: "06 // IMMERSIVE", icon: "◎", description: "Enter an immersive virtual world.", comingSoon: true, posterImage: vrPosterUrl },
-              { name: "PS5 RUSH", game: "PS5_RUSH", code: "07 // CONSOLE", icon: "△", description: "Grab a controller and challenge rivals.", comingSoon: true, posterImage: ps5PosterUrl },
+              { name: "PS5 RUSH", game: "PS5_RUSH", code: "07 // CONSOLE", icon: "△", description: "Grab a controller and challenge rivals.", comingSoon: false, posterImage: ps5PosterUrl },
             ].map((module, index) => (
               <a
                 className={`bb-module-card ${module.comingSoon ? "is-coming-soon" : ""}`}

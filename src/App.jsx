@@ -57,6 +57,7 @@ import Login from "./Components/Login";
 import Register from "./Components/Register";
 import Registerbb from "./Components/Registerbb";
 import BattleblazeHero from "./Components/BattleblazeHero";
+import PS5RushAdmin from "./Components/PS5RushAdmin";
 
 
 
@@ -341,6 +342,12 @@ function App() {
         <Route
           path="/battleblaze"
           element={<BattleblazeHero />}
+        />
+
+        {/* PS5 RUSH ADMIN PANEL */}
+        <Route
+          path="/admin/ps5-rush"
+          element={<PS5RushAdmin />}
         />
 
 
