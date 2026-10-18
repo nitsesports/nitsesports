@@ -26,7 +26,9 @@ const BATTLEBLAZE_REGISTRATION_TABLE = "battleblaze2026";
 
 const BATTLEBLAZE_PAYMENT_BUCKET = "battleblaze2026-payment-proofs";
 const PS5_SLOT_TABLE = "ps5_rush_slots";
+const VRX_SLOT_TABLE = "vrxperience_slots";
 const PS5_BOOKING_RPC = "book_ps5_rush_multi_day_slots";
+const VRX_BOOKING_RPC = "book_vrxperience_multi_day_slots";
 const PS5_DAYS = [1, 2, 3, 4];
 
 const BATTLEBLAZE_WHATSAPP_GROUPS = {
@@ -218,25 +220,14 @@ const tournaments = {
   },
 
   VR_EXPERIENCE: {
-
-    title: "VR EXPERIENCE",
-
-    subtitle: "IMMERSIVE VIRTUAL REALITY",
-
+    title: "VRXPERIENCE",
+    subtitle: "PS5 WITH VR · PS5 WITH STEERING WHEEL · FOUR-DAY SLOT BOOKING",
     fields: [
-
       { name: "playerName", label: "PLAYER NAME", placeholder: "Your full name" },
-
       { name: "email", label: "EMAIL ADDRESS", placeholder: "you@example.com", type: "email" },
-
-      { name: "phone", label: "CONTACT NUMBER", placeholder: "10-digit mobile number", type: "tel" },
-
-      { name: "slot", label: "PREFERRED SLOT", options: ["Morning", "Afternoon", "Evening"] },
-
-      { name: "experience", label: "VR EXPERIENCE", options: ["VR Gaming", "VR Simulation", "Any Available Experience"] },
-
+      { name: "phone", label: "CONTACT NUMBER 1", placeholder: "10-digit mobile number", type: "tel" },
+      { name: "phone2", label: "CONTACT NUMBER 2 (OPTIONAL)", placeholder: "10-digit mobile number", type: "tel" },
     ],
-
   },
 
   PS5_RUSH: {
@@ -254,10 +245,6 @@ const tournaments = {
       { name: "phone", label: "CONTACT NUMBER 1", placeholder: "10-digit mobile number", type: "tel" },
 
       { name: "phone2", label: "CONTACT NUMBER 2 (OPTIONAL)", placeholder: "10-digit mobile number", type: "tel" },
-
-      { name: "gameId", label: "GAMER TAG (OPTIONAL)", placeholder: "Your gamer tag" },
-
-      { name: "game", label: "PREFERRED GAME", options: ["EA Sports FC / FIFA", "Tekken", "Mortal Kombat", "Other"] },
 
     ],
 
@@ -361,8 +348,26 @@ export default function Registerbb() {
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [ps5Day, setPs5Day] = useState(1);
+  const [ps5BookingType, setPs5BookingType] = useState(() => getRequestedGame(location.search) === "VR_EXPERIENCE" ? "PS5_WITH_VR" : "SOLO");
   const [ps5Slots, setPs5Slots] = useState([]);
   const [ps5SelectedSlots, setPs5SelectedSlots] = useState({});
+  // PS5 RUSH: each selected slot stores its own SOLO/DUO choice.
+  // The top selector sets the type for the next slot; selected slots can be changed individually below.
+  const ps5SlotPrice = game === "VR_EXPERIENCE" ? (ps5BookingType === "PS5_WITH_VR" ? 200 : 150) : (ps5BookingType === "DUO" ? 150 : 100);
+  const ps5TotalSelectedSlots = Object.values(ps5SelectedSlots).reduce((sum, slots) => sum + slots.length, 0);
+  const getSelectedSlotPrice = (slot) => game === "VR_EXPERIENCE"
+    ? (slot.setup_type === "PS5_WITH_STEERING_WHEEL" ? 150 : 200)
+    : ((slot.booking_type || ps5BookingType) === "DUO" ? 150 : 100);
+  const setSelectedSlotBookingType = (dayNumber, slotId, bookingType) => {
+    setPs5SelectedSlots((old) => ({
+      ...old,
+      [dayNumber]: (old[dayNumber] || []).map((slot) =>
+        slot.id === slotId ? { ...slot, booking_type: bookingType } : slot
+      ),
+    }));
+    setFormError("");
+  };
+  const ps5TotalFee = Object.values(ps5SelectedSlots).flat().reduce((sum, slot) => sum + getSelectedSlotPrice(slot), 0);
   const [ps5SlotsLoading, setPs5SlotsLoading] = useState(false);
   const [ps5DayOpen, setPs5DayOpen] = useState(true);
 
@@ -389,13 +394,20 @@ export default function Registerbb() {
   }, [location.search]);
 
   useEffect(() => {
-    if (game !== "PS5_RUSH" || !supabase) return undefined;
+    if (!(game === "PS5_RUSH" || game === "VR_EXPERIENCE") || !supabase) return undefined;
     let active = true;
     const loadSlots = async () => {
       setPs5SlotsLoading(true);
+      const isVrxSlotsTable = game === "VR_EXPERIENCE";
+      // PS5 RUSH slots do not need setup_type. Selecting a column that is
+      // absent from ps5_rush_slots makes Supabase return an error and zero slots.
       const { data, error } = await supabase
-        .from(PS5_SLOT_TABLE)
-        .select("id, day_number, slot_number, start_time, end_time, is_booked, is_open")
+        .from(isVrxSlotsTable ? VRX_SLOT_TABLE : PS5_SLOT_TABLE)
+        .select(
+          isVrxSlotsTable
+            ? "id, day_number, slot_number, start_time, end_time, is_booked, is_open, setup_type"
+            : "id, day_number, slot_number, start_time, end_time, is_booked, is_open"
+        )
         .eq("day_number", ps5Day)
         .order("slot_number", { ascending: true });
       if (!active) return;
@@ -405,14 +417,14 @@ export default function Registerbb() {
         setPs5DayOpen(false);
       } else {
         setPs5Slots(data || []);
-        setPs5DayOpen((data || []).some((slot) => slot.is_open));
+        setPs5DayOpen((data || []).some((slot) => slot.is_open === true && slot.is_booked !== true));
       }
       setPs5SlotsLoading(false);
     };
     loadSlots();
     const channel = supabase
-      .channel(`ps5-rush-slots-day-${ps5Day}`)
-      .on("postgres_changes", { event: "*", schema: "public", table: PS5_SLOT_TABLE, filter: `day_number=eq.${ps5Day}` }, loadSlots)
+      .channel(`${game === "VR_EXPERIENCE" ? "vrxperience" : "ps5-rush"}-slots-day-${ps5Day}`)
+      .on("postgres_changes", { event: "*", schema: "public", table: game === "VR_EXPERIENCE" ? VRX_SLOT_TABLE : PS5_SLOT_TABLE, filter: `day_number=eq.${ps5Day}` }, loadSlots)
       .subscribe();
     return () => {
       active = false;
@@ -438,7 +450,7 @@ export default function Registerbb() {
 
     setFormError("");
 
-    if (game === "PS5_RUSH") {
+    if (game === "PS5_RUSH" || game === "VR_EXPERIENCE") {
       if (isSubmitting) return;
       const name = (form.playerName || "").trim();
       const email = (form.email || "").trim();
@@ -461,7 +473,12 @@ export default function Registerbb() {
         setFormError("SELECT AT LEAST ONE AVAILABLE SLOT FROM ANY OF THE FOUR DAYS."); return;
       }
       if (!reviewConfirmed) { setFormError("PLEASE REVIEW YOUR DETAILS AND CONFIRM THEM BEFORE SUBMITTING."); return; }
-      const totalPayment = totalSelectedSlots * 100;
+      const totalPayment = selectedByDay.reduce(
+        (sum, day) => sum + day.slots.reduce((daySum, slot) => daySum + getSelectedSlotPrice(slot), 0),
+        0
+      );
+      const selectedPs5Types = [...new Set(selectedByDay.flatMap((day) => day.slots.map((slot) => slot.booking_type || ps5BookingType)))];
+      const combinedPs5BookingType = selectedPs5Types.length > 1 ? "MIXED" : (selectedPs5Types[0] || ps5BookingType);
       if (!paymentProof) { setFormError(`PAYMENT SCREENSHOT IS REQUIRED FOR ₹${totalPayment}.`); return; }
       if (!supabase) { setFormError("SUPABASE IS NOT CONFIGURED. CHECK YOUR VITE SUPABASE ENVIRONMENT VARIABLES."); return; }
       setIsSubmitting(true);
@@ -469,29 +486,52 @@ export default function Registerbb() {
       try {
         const safeFileName = paymentProof.name.toLowerCase().replace(/[^a-z0-9._-]/g, "-");
         const uniqueId = globalThis.crypto?.randomUUID?.() || `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
-        uploadedProofPath = `ps5-rush/${Date.now()}-${uniqueId}-${safeFileName}`;
+        uploadedProofPath = `${game === "VR_EXPERIENCE" ? "vrxperience" : "ps5-rush"}/${Date.now()}-${uniqueId}-${safeFileName}`;
         const { error: uploadError } = await supabase.storage.from(BATTLEBLAZE_PAYMENT_BUCKET).upload(uploadedProofPath, paymentProof, {
           cacheControl: "3600", upsert: false, contentType: paymentProof.type || "application/octet-stream",
         });
         if (uploadError) throw new Error(`PAYMENT PROOF UPLOAD FAILED: ${uploadError.message}`);
-        const { error: bookingError } = await supabase.rpc(PS5_BOOKING_RPC, {
-          p_day_slots: selectedByDay.map((day) => ({
-            day_number: day.day_number,
-            slot_ids: day.slots.map((slot) => slot.id),
-          })),
+        const { error: bookingError } = await supabase.rpc(game === "VR_EXPERIENCE" ? VRX_BOOKING_RPC : PS5_BOOKING_RPC, {
+          // PS5 RUSH RPC: every slot carries its own SOLO/DUO type.
+          // Keep VRXperience's existing payload unchanged.
+          p_day_slots: selectedByDay.map((day) => game === "PS5_RUSH"
+            ? {
+                day_number: day.day_number,
+                slots: day.slots.map((slot) => ({
+                  slot_id: slot.id,
+                  booking_type: slot.booking_type || ps5BookingType,
+                })),
+              }
+            : {
+                day_number: day.day_number,
+                slot_ids: day.slots.map((slot) => slot.id),
+                slot_setups: day.slots.map((slot) => ({
+                  slot_id: slot.id,
+                  setup_type: slot.setup_type || "PS5_WITH_VR",
+                  slot_price: getSelectedSlotPrice(slot),
+                })),
+              }),
           p_player_name: name,
           p_email: email,
           p_phone1: phone,
           p_phone2: phone2 || null,
-          p_gamer_tag: (form.gameId || "").trim() || null,
-          p_preferred_game: form.game || null,
+          p_gamer_tag: null,
+          p_preferred_game: null,
           p_payment_proof_path: uploadedProofPath,
+          // The current PS5 booking RPC validates p_booking_type as SOLO or DUO;
+          // never send the unsupported value "MIXED". Per-slot choices and prices
+          // remain included in p_day_slots.slots and p_total_fee.
+          p_booking_type: game === "VR_EXPERIENCE"
+            ? (selectedByDay.flatMap((day) => day.slots)[0]?.setup_type || "PS5_WITH_VR")
+            : (selectedPs5Types[0] || "SOLO"),
+          p_slot_price: game === "VR_EXPERIENCE" ? 200 : ((selectedPs5Types[0] || "SOLO") === "DUO" ? 150 : 100),
+          p_total_fee: totalPayment,
         });
         if (bookingError) throw new Error(`BOOKING FAILED: ${bookingError.message}`);
         setSuccess(true);
       } catch (error) {
         if (uploadedProofPath) await supabase.storage.from(BATTLEBLAZE_PAYMENT_BUCKET).remove([uploadedProofPath]).catch(() => {});
-        setFormError(error?.message || "PS5 RUSH REGISTRATION FAILED. PLEASE TRY AGAIN.");
+        setFormError(error?.message || (game === "VR_EXPERIENCE" ? "VRXPERIENCE REGISTRATION FAILED. PLEASE TRY AGAIN." : "PS5 RUSH REGISTRATION FAILED. PLEASE TRY AGAIN."));
       } finally { setIsSubmitting(false); }
       return;
     }
@@ -833,6 +873,240 @@ export default function Registerbb() {
 
     );
 
+  }
+
+  async function downloadBookingReceipt() {
+    if (!(game === "PS5_RUSH" || game === "VR_EXPERIENCE")) return;
+
+    const isVR = game === "VR_EXPERIENCE";
+    const receiptTitle = isVR ? "VRXPERIENCE" : "PS5 RUSH";
+    const receiptName = (form.playerName || "").trim() || "Registered Player";
+    const receiptEmail = (form.email || "").trim() || "—";
+    const receiptPhone = (form.phone || "").trim() || "—";
+    const bookedDays = PS5_DAYS
+      .map((day) => ({
+        day,
+        slots: [...(ps5SelectedSlots[day] || [])].sort(
+          (a, b) => Number(a.slot_number) - Number(b.slot_number)
+        ),
+      }))
+      .filter((entry) => entry.slots.length > 0);
+
+    const rows = bookedDays.flatMap(({ day, slots }) => slots.map((slot) => ({
+      day,
+      slotNumber: slot.slot_number ?? "—",
+      setup: isVR
+        ? (slot.setup_type === "PS5_WITH_STEERING_WHEEL" ? "PS5 WITH STEERING WHEEL" : "PS5 WITH VR")
+        : ((slot.booking_type || ps5BookingType) === "DUO" ? "DUO BOOKING · 2 PLAYERS" : "SOLO BOOKING · 1 PLAYER"),
+      start: slot.start_time,
+      end: slot.end_time,
+      price: getSelectedSlotPrice(slot),
+    })));
+
+    const generatedAt = new Date().toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short" });
+    // Load the NITS Esports logo before drawing so it is embedded in the downloaded PNG.
+    let receiptLogo = null;
+    try {
+      receiptLogo = await new Promise((resolve) => {
+        const image = new Image();
+        image.onload = () => resolve(image);
+        image.onerror = () => resolve(null);
+        image.src = logoUrl;
+      });
+    } catch {
+      receiptLogo = null;
+    }
+
+    // Wait for Orbitron before drawing; canvas PNGs do not inherit the page CSS font automatically.
+    try {
+      if (document.fonts?.load) {
+        await Promise.all([
+          document.fonts.load("500 16px Orbitron"),
+          document.fonts.load("700 16px Orbitron"),
+          document.fonts.load("800 32px Orbitron"),
+        ]);
+      }
+    } catch (fontError) {
+      console.warn("Orbitron font could not be loaded; receipt will use the fallback font.", fontError);
+    }
+    const canvas = document.createElement("canvas");
+    const scale = 2;
+    const width = 1200;
+    const margin = 64;
+    const rowHeight = 76;
+    const tableTop = 670; // Keep the DAY-WISE SLOT BREAKDOWN safely below the contact/detail cards.
+    const footerHeight = 170;
+    const height = Math.max(1050, tableTop + 66 + rows.length * rowHeight + 160 + footerHeight);
+    canvas.width = width * scale;
+    canvas.height = height * scale;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) {
+      setFormError("COULD NOT GENERATE RECEIPT IMAGE. PLEASE TRY AGAIN.");
+      return;
+    }
+    ctx.scale(scale, scale);
+
+    const roundedRect = (x, y, w, h, r, fill, stroke = null) => {
+      ctx.beginPath();
+      ctx.moveTo(x + r, y);
+      ctx.arcTo(x + w, y, x + w, y + h, r);
+      ctx.arcTo(x + w, y + h, x, y + h, r);
+      ctx.arcTo(x, y + h, x, y, r);
+      ctx.arcTo(x, y, x + w, y, r);
+      ctx.closePath();
+      if (fill) { ctx.fillStyle = fill; ctx.fill(); }
+      if (stroke) { ctx.strokeStyle = stroke; ctx.lineWidth = 1.5; ctx.stroke(); }
+    };
+    const text = (value, x, y, size = 18, color = "#f5f3ff", weight = 400, align = "left") => {
+      ctx.font = `${weight} ${size}px Orbitron, Arial, Helvetica, sans-serif`;
+      ctx.fillStyle = color;
+      ctx.textAlign = align;
+      ctx.fillText(String(value ?? "—"), x, y);
+    };
+    const formatTime = (value) => {
+      if (!value) return "Time unavailable";
+      const parts = String(value).split(":");
+      const hours = Number(parts[0]);
+      const minutes = String(parts[1] || "00").slice(0, 2).padStart(2, "0");
+      if (!Number.isFinite(hours)) return String(value);
+      return `${hours % 12 || 12}:${minutes} ${hours >= 12 ? "PM" : "AM"}`;
+    };
+
+    // Premium BattleBlaze receipt: deep purple/blue gradient, neon accents, and Orbitron typography.
+    const pageGradient = ctx.createLinearGradient(0, 0, width, height);
+    pageGradient.addColorStop(0, "#070516");
+    pageGradient.addColorStop(0.48, "#120a2b");
+    pageGradient.addColorStop(1, "#07152d");
+    ctx.fillStyle = pageGradient;
+    ctx.fillRect(0, 0, width, height);
+    roundedRect(24, 24, width - 48, height - 48, 22, "#0b091b", "#4c3286");
+
+    const headerGradient = ctx.createLinearGradient(24, 24, width - 24, 264);
+    headerGradient.addColorStop(0, "#6d28d9");
+    headerGradient.addColorStop(0.52, "#4338ca");
+    headerGradient.addColorStop(1, "#0369a1");
+    roundedRect(24, 24, width - 48, 240, 20, headerGradient);
+
+    // Required receipt header: NITS ESPORTS PRESENTS, then logoo2.png underneath.
+    text("NITS ESPORTS PRESENTS", width / 2, 66, 20, "#f3e8ff", 800, "center");
+    if (receiptLogo) {
+      const maxLogoWidth = 116;
+      const maxLogoHeight = 104;
+      const ratio = Math.min(maxLogoWidth / receiptLogo.width, maxLogoHeight / receiptLogo.height);
+      const logoWidth = receiptLogo.width * ratio;
+      const logoHeight = receiptLogo.height * ratio;
+      ctx.save();
+      ctx.shadowColor = "rgba(255,255,255,0.25)";
+      ctx.shadowBlur = 12;
+      ctx.drawImage(receiptLogo, (width - logoWidth) / 2, 78, logoWidth, logoHeight);
+      ctx.restore();
+    } else {
+      // Keep the layout intact if the bundled logo asset fails to load.
+      text("NITS ESPORTS", width / 2, 132, 15, "#ffffff", 800, "center");
+    }
+    text(`${receiptTitle} - REGISTRATION RECEIPT`, width / 2, 204, 26, "#ffffff", 800, "center");
+    text(`Registration submitted  |  Generated ${generatedAt}`, width / 2, 238, 12, "#e0e7ff", 500, "center");
+
+    const accentGradient = ctx.createLinearGradient(24, 0, width - 24, 0);
+    accentGradient.addColorStop(0, "#c084fc");
+    accentGradient.addColorStop(0.5, "#818cf8");
+    accentGradient.addColorStop(1, "#67e8f9");
+    ctx.fillStyle = accentGradient;
+    ctx.fillRect(24, 260, width - 48, 7);
+
+    roundedRect(margin, 288, 300, 42, 10, "#102d3a", "#22d3ee");
+    text("REGISTRATION SUBMITTED", margin + 16, 314, 13, "#67e8f9", 700);
+
+    roundedRect(margin, 348, width - margin * 2, 92, 14, "#17102e", "#7656e8");
+    text("EVENT VENUE", margin + 22, 379, 13, "#c4b5fd", 700);
+    text("NEW GALLERY G301", margin + 22, 415, 25, "#ffffff", 800);
+
+    const detailY = 464;
+    const detailW = (width - margin * 2 - 18) / 2;
+    const detailCards = [
+      ["PLAYER NAME", receiptName],
+      ["EMAIL ADDRESS", receiptEmail],
+      ["CONTACT NUMBER", receiptPhone],
+      ["BOOKING SUMMARY", `${rows.length} slot(s) across ${bookedDays.length} day(s)`],
+    ];
+    detailCards.forEach(([label, value], index) => {
+      const col = index % 2;
+      const row = Math.floor(index / 2);
+      const x = margin + col * (detailW + 18);
+      const y = detailY + row * 76;
+      roundedRect(x, y, detailW, 62, 10, "#120e25", "#35245e");
+      text(label, x + 14, y + 22, 10, "#b9a6ff", 700);
+      let shown = String(value);
+      ctx.font = "700 14px Orbitron, Arial, Helvetica, sans-serif";
+      while (shown.length > 4 && ctx.measureText(shown).width > detailW - 28) shown = `${shown.slice(0, -4)}…`;
+      text(shown, x + 14, y + 46, 14, "#f5f3ff", 700);
+    });
+
+    if (!isVR) {
+      const soloCount = rows.filter((row) => row.setup.startsWith("SOLO")).length;
+      const duoCount = rows.filter((row) => row.setup.startsWith("DUO")).length;
+      text(`BOOKING TYPES: ${soloCount} SOLO × INR 100  |  ${duoCount} DUO × INR 150`, margin, 630, 13, "#67e8f9", 700);
+    }
+
+    const titleY = tableTop - 22;
+    text("DAY-WISE SLOT BREAKDOWN", margin, titleY, 19, "#c4b5fd", 800);
+    const tableX = margin;
+    const tableW = width - margin * 2;
+    const headerY = tableTop;
+    const colWidths = [100, 110, 300, 270, tableW - 780];
+    const colX = [tableX];
+    for (let i = 0; i < colWidths.length - 1; i++) colX.push(colX[i] + colWidths[i]);
+    roundedRect(tableX, headerY, tableW, 48, 8, "#211443", "#4c3286");
+    ["DAY", "SLOT", "SETUP / TYPE", "TIME", "PRICE"].forEach((label, i) => {
+      text(label, colX[i] + 12, headerY + 30, 11, "#ddd6fe", 700, i === 4 ? "right" : "left");
+    });
+
+    rows.forEach((row, index) => {
+      const y = headerY + 48 + index * rowHeight;
+      if (index % 2 === 0) ctx.fillStyle = "#100d21"; else ctx.fillStyle = "#0d1226";
+      ctx.fillRect(tableX, y, tableW, rowHeight);
+      ctx.strokeStyle = "#30244f";
+      ctx.beginPath(); ctx.moveTo(tableX, y + rowHeight); ctx.lineTo(tableX + tableW, y + rowHeight); ctx.stroke();
+      const values = [
+        `Day ${row.day}`,
+        `Slot ${row.slotNumber}`,
+        row.setup,
+        `${formatTime(row.start)} - ${formatTime(row.end)}`,
+        `INR ${row.price}`,
+      ];
+      values.forEach((value, i) => {
+        let shown = String(value);
+        ctx.font = `${i === 4 ? 700 : 500} 11px Orbitron, Arial, Helvetica, sans-serif`;
+        const maxWidth = colWidths[i] - 20;
+        while (shown.length > 5 && ctx.measureText(shown).width > maxWidth) shown = `${shown.slice(0, -4)}…`;
+        text(shown, i === 4 ? colX[i] + colWidths[i] - 12 : colX[i] + 12, y + 43, 11, i === 4 ? "#6ee7b7" : "#e9e5ff", i === 4 ? 700 : 500, i === 4 ? "right" : "left");
+      });
+    });
+
+    const totalY = headerY + 48 + rows.length * rowHeight + 26;
+    ctx.strokeStyle = "#8b5cf6";
+    ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.moveTo(margin, totalY); ctx.lineTo(width - margin, totalY); ctx.stroke();
+    text("TOTAL BOOKING FEE", margin, totalY + 42, 17, "#e9d5ff", 700);
+    text(`INR ${ps5TotalFee}`, width - margin, totalY + 44, 26, "#6ee7b7", 800, "right");
+    const footY = totalY + 92;
+    roundedRect(margin, footY, width - margin * 2, 82, 10, "#111027", "#3c2a68");
+    text("Keep this receipt for your reference.", margin + 16, footY + 29, 12, "#c4b5fd", 700);
+    text("Booking submitted successfully. Payment verification may be completed separately by the event team.", margin + 16, footY + 54, 10, "#b9b5d0", 500);
+
+    const blob = await new Promise((resolve) => canvas.toBlob(resolve, "image/png"));
+    if (!blob) {
+      setFormError("COULD NOT EXPORT RECEIPT PNG. PLEASE TRY AGAIN.");
+      return;
+    }
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `${isVR ? "VRXperience" : "PS5-Rush"}-Receipt-${Date.now()}.png`;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    window.setTimeout(() => URL.revokeObjectURL(url), 2000);
   }
 
   return (
@@ -1539,16 +1813,46 @@ export default function Registerbb() {
         }
 
         .reg-review-item strong {
-
           display: block;
-
           color: #fff;
-
           font-size: 12px;
-
           overflow-wrap: anywhere;
-
         }
+        .reg-selected-slots {
+          grid-column: 1 / -1;
+          padding: 14px;
+          border: 1px solid rgba(96, 165, 250, 0.34);
+          border-radius: 12px;
+          background: linear-gradient(135deg, rgba(96, 165, 250, 0.08), rgba(139, 92, 246, 0.08));
+        }
+        .reg-selected-slots-heading {
+          display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px;
+          margin-bottom: 12px; color: #e9e4ff; font-size: 11px; font-weight: 800; letter-spacing: .08em;
+        }
+        .reg-selected-slots-count {
+          border: 1px solid rgba(96, 165, 250, .4); border-radius: 999px; padding: 5px 9px;
+          color: #bfdbfe; background: rgba(59, 130, 246, .1); font-size: 9px; white-space: nowrap;
+        }
+        .reg-selected-day { margin-top: 10px; padding: 11px; border: 1px solid rgba(139, 92, 246, .22); border-radius: 9px; background: rgba(5, 3, 13, .55); }
+        .reg-selected-day-title { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 6px; margin-bottom: 9px; color: #c4b5fd; font-size: 10px; font-weight: 800; letter-spacing: .08em; }
+        .reg-selected-slot-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 210px), 1fr)); gap: 8px; }
+        .reg-selected-slot-chip {
+          display: flex; flex-direction: column; align-items: flex-start; gap: 7px;
+          min-width: 0; padding: 13px; border: 1px solid rgba(96, 165, 250, .34);
+          border-radius: 10px; background: linear-gradient(145deg, rgba(19, 25, 52, .96), rgba(13, 10, 31, .98));
+          box-shadow: inset 0 1px 0 rgba(255,255,255,.04);
+        }
+        .reg-selected-slot-chip b { display: block; margin: 0; color: #ffffff !important; font-size: 11px; font-weight: 800; letter-spacing: .06em; }
+        .reg-selected-slot-chip span { display: block; color: #dbeafe !important; font-size: 12px; font-weight: 600; line-height: 1.5; }
+        .reg-selected-slot-chip .reg-slot-setup {
+          display: inline-flex; align-items: center; width: fit-content; max-width: 100%;
+          padding: 6px 9px; border: 1px solid rgba(167,139,250,.42); border-radius: 7px;
+          background: rgba(124,58,237,.18); color: #e9d5ff !important;
+          font-size: 10px; font-style: normal; font-weight: 800; line-height: 1.45;
+          letter-spacing: .035em; overflow-wrap: anywhere;
+        }
+        .reg-selected-slot-chip .reg-slot-price { color: #67e8f9 !important; font-size: 12px; font-weight: 800; }
+        .reg-selected-empty { color: rgba(255,255,255,.62); font-size: 11px; line-height: 1.6; }
 
         .reg-payment-amount {
 
@@ -2032,6 +2336,30 @@ export default function Registerbb() {
           overflow-wrap: anywhere;
         }
 
+        .bb-success-venue {
+          max-width: 470px;
+          margin: -10px auto 22px;
+          padding: 13px 16px;
+          border: 1px solid rgba(196, 181, 253, 0.48);
+          border-radius: 12px;
+          background: linear-gradient(110deg, rgba(139, 92, 246, 0.17), rgba(96, 165, 250, 0.08));
+          text-align: left;
+        }
+        .bb-success-venue span {
+          display: block;
+          margin-bottom: 6px;
+          color: #c4b5fd;
+          font-size: 9px;
+          font-weight: 800;
+          letter-spacing: .18em;
+        }
+        .bb-success-venue strong {
+          display: block;
+          color: #fff;
+          font-size: clamp(14px, 2.5vw, 18px);
+          letter-spacing: .04em;
+        }
+
         .bb-ps5-booking-summary {
           width: 100%;
           max-width: 560px;
@@ -2080,8 +2408,24 @@ export default function Registerbb() {
           display: block;
           overflow-wrap: anywhere;
         }
-        .bb-ps5-slot-item strong { color: #fff; font-size: 10px; margin-bottom: 4px; }
-        .bb-ps5-slot-item span { color: rgba(255,255,255,.72); font-size: 9px; line-height: 1.5; }
+        .bb-ps5-slot-item strong { color: #fff !important; font-size: 10px; margin-bottom: 5px; }
+        /* Explicitly style the setup label in the success popup; browser default em text is black. */
+        .bb-success-modal .bb-ps5-slot-item em {
+          display: block;
+          margin: 3px 0 5px;
+          color: #67e8f9 !important;
+          -webkit-text-fill-color: #67e8f9 !important;
+          font-size: 11px;
+          font-style: normal !important;
+          font-weight: 800;
+          line-height: 1.5;
+          letter-spacing: .035em;
+          overflow-wrap: anywhere;
+          text-shadow: 0 0 10px rgba(103, 232, 249, .14);
+        }
+        .bb-ps5-slot-item span { color: #e2e8f0 !important; font-size: 10px; line-height: 1.6; }
+        .bb-success-modal .bb-ps5-slot-item,
+        .bb-success-modal .bb-ps5-slot-item * { opacity: 1; }
         .bb-ps5-total-row {
           display: flex;
           align-items: center;
@@ -2108,6 +2452,10 @@ export default function Registerbb() {
         }
 
         .bb-success-action {
+          appearance: none;
+          width: 100%;
+          font-family: inherit;
+          cursor: pointer;
           min-height: 92px;
           display: flex;
           flex-direction: column;
@@ -2149,6 +2497,12 @@ export default function Registerbb() {
 
         .bb-success-action-whatsapp .bb-success-action-icon { color: #86efac; }
         .bb-success-action-whatsapp:hover { border-color: #86efac; }
+        .bb-success-action-receipt {
+          border-color: rgba(103, 232, 249, .55);
+          background: linear-gradient(145deg, rgba(8, 145, 178, .18), rgba(4, 6, 21, .86));
+        }
+        .bb-success-action-receipt .bb-success-action-icon { color: #67e8f9; }
+        .bb-success-action-receipt:hover { border-color: #67e8f9; }
 
         .bb-success-action-disabled {
           opacity: 0.48;
@@ -2480,13 +2834,30 @@ export default function Registerbb() {
           .ps5-day-tabs { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:10px; margin:16px 0; }
           .ps5-day-tab { min-height:44px; border:1px solid rgba(139,92,246,.45); border-radius:9px; color:#e9e4ff; background:rgba(139,92,246,.08); cursor:pointer; font-size:11px; font-weight:800; letter-spacing:.08em; }
           .ps5-day-tab.active { color:#fff; border-color:#00eaff; background:linear-gradient(105deg,rgba(109,40,217,.72),rgba(37,99,235,.55)); box-shadow:0 0 18px rgba(0,234,255,.12); }
+          /* VRX setup labels are a legend, not selectable/active buttons. */
+          .vrx-setup-legend { grid-template-columns:repeat(2,minmax(0,1fr)); }
+          .vrx-setup-legend .vrx-setup-label { display:flex; align-items:center; gap:9px; min-height:44px; padding:10px 12px; border:1px solid rgba(139,92,246,.38); border-radius:9px; background:rgba(139,92,246,.07); color:#e9e4ff; font-size:10px; font-weight:800; letter-spacing:.04em; line-height:1.45; }
+          .vrx-setup-legend .vrx-setup-dot { flex:0 0 8px; width:8px; height:8px; border-radius:50%; }
+          .vrx-setup-legend .vrx-setup-dot.vr { background:#a78bfa; box-shadow:0 0 8px rgba(167,139,250,.55); }
+          .vrx-setup-legend .vrx-setup-dot.steering { background:#60a5fa; box-shadow:0 0 8px rgba(96,165,250,.55); }
+          @media (max-width:620px) { .vrx-setup-legend .vrx-setup-label { font-size:9px; padding:8px; } }
           .ps5-slot-status { margin:10px 0 14px; color:#c4b5fd; font-size:10px; font-weight:800; letter-spacing:.08em; }
           .ps5-slot-grid { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:10px; }
-          .ps5-slot { display:flex; flex-direction:column; gap:6px; min-width:0; padding:12px 8px; border:1px solid rgba(139,92,246,.42); border-radius:10px; background:rgba(7,5,18,.88); color:#fff; cursor:pointer; text-align:center; }
+          .ps5-slot { display:flex; flex-direction:column; gap:7px; min-width:0; min-height:112px; padding:13px 9px; border:1px solid rgba(139,92,246,.32); border-radius:12px; background:rgba(7,5,18,.9); color:#fff; cursor:pointer; text-align:center; transition:border-color .18s ease, background .18s ease, box-shadow .18s ease, transform .18s ease; }
           .ps5-slot strong { font-size:10px; }
-          .ps5-slot span { font-size:9px; line-height:1.4; color:#ddd6fe; }
-          .ps5-slot small { font-size:8px; font-weight:800; color:#86efac; letter-spacing:.06em; }
-          .ps5-slot.selected { border-color:#00eaff; background:rgba(8,145,178,.19); box-shadow:0 0 16px rgba(0,234,255,.12); }
+          .ps5-slot span { font-size:9px; line-height:1.45; color:#e5e7eb; }
+          .ps5-slot small { font-size:8px; font-weight:800; color:#86efac; letter-spacing:.05em; line-height:1.45; }
+          /* Separate setup identities: purple = VR, blue = Steering Wheel */
+          .ps5-slot.vrx-vr { border-color:rgba(167,139,250,.72); background:linear-gradient(145deg,rgba(109,40,217,.16),rgba(7,5,18,.94) 70%); }
+          .ps5-slot.vrx-vr > strong { color:#d8b4fe; }
+          .ps5-slot.vrx-vr > small:first-of-type { color:#c4b5fd; }
+          .ps5-slot.vrx-steering { border-color:rgba(96,165,250,.72); background:linear-gradient(145deg,rgba(37,99,235,.17),rgba(7,5,18,.94) 70%); }
+          .ps5-slot.vrx-steering > strong { color:#93c5fd; }
+          .ps5-slot.vrx-steering > small:first-of-type { color:#7dd3fc; }
+          .ps5-slot.vrx-vr.selected { border:2px solid #c084fc; padding:12px 8px; background:linear-gradient(145deg,rgba(126,34,206,.42),rgba(7,5,18,.96)); box-shadow:0 0 18px rgba(192,132,252,.22); }
+          .ps5-slot.vrx-steering.selected { border:2px solid #38bdf8; padding:12px 8px; background:linear-gradient(145deg,rgba(3,105,161,.42),rgba(7,5,18,.96)); box-shadow:0 0 18px rgba(56,189,248,.22); }
+          .ps5-slot:not(.unavailable):hover { transform:translateY(-2px); }
+          .ps5-slot.selected:not(.vrx-vr):not(.vrx-steering) { border-color:#00eaff; background:rgba(8,145,178,.19); box-shadow:0 0 16px rgba(0,234,255,.12); }
           .ps5-slot.unavailable { opacity:.42; cursor:not-allowed; border-color:rgba(248,113,113,.22); }
           .ps5-slot.unavailable small { color:#fca5a5; }
           @media (max-width: 620px) { .ps5-slot-grid { grid-template-columns:repeat(2,minmax(0,1fr)); } .ps5-day-tabs { gap:6px; } .ps5-day-tab { font-size:9px; } }
@@ -2509,7 +2880,7 @@ export default function Registerbb() {
 
 `}</style>
 
-      <header className={`reg-header ${isPaymentGame || game === "PS5_RUSH" ? "reg-header-bgmi" : ""}`}>
+      <header className={`reg-header ${isPaymentGame || game === "PS5_RUSH" || game === "VR_EXPERIENCE" ? "reg-header-bgmi" : ""}`}>
 
         <div className="reg-header-branding">
 
@@ -2519,7 +2890,7 @@ export default function Registerbb() {
 
             href="/"
 
-            className={`reg-brand ${isPaymentGame || game === "PS5_RUSH" ? "reg-logo-large" : ""}`}
+            className={`reg-brand ${isPaymentGame || game === "PS5_RUSH" || game === "VR_EXPERIENCE" ? "reg-logo-large" : ""}`}
 
             aria-label="NITS Esports home"
 
@@ -2857,16 +3228,23 @@ export default function Registerbb() {
 
               </div>
 
-              {game === "PS5_RUSH" && (
+              {(game === "PS5_RUSH" || game === "VR_EXPERIENCE") && (
                 <>
                   <div className="reg-divider" />
                   <section className="reg-payment-panel">
                     <div className="reg-section-label"><span>02</span> SELECT DAY & TIME SLOTS</div>
-                    <p className="reg-payment-note">Each slot lasts 30 minutes, from 10:00 AM to 8:00 PM. Book any number of available slots across any/all four days. Each slot costs ₹100. Your selections stay saved as you switch days, and booked slots update for everyone.</p>
+                    <p className="reg-payment-note">Each day has 40 bookable slots: 20 PS5 with VR slots and 20 PS5 with Steering Wheel slots. Each slot lasts 30 minutes from 10:00 AM to 8:00 PM. Select any available slots from either setup across Days 1–4; all selected slots are combined into one booking with one total payment and one screenshot.</p>
+                    {game === "VR_EXPERIENCE" ? <div className="ps5-day-tabs vrx-setup-legend" aria-label="VRXperience setup price legend">
+                      <div className="vrx-setup-label"><span className="vrx-setup-dot vr" aria-hidden="true" />VR SLOTS · ₹200 EACH</div>
+                      <div className="vrx-setup-label"><span className="vrx-setup-dot steering" aria-hidden="true" />STEERING WHEEL · ₹150 EACH</div>
+                    </div> : <div className="ps5-day-tabs" role="group" aria-label="Choose PS5 Rush booking type">
+                      <button type="button" className={`ps5-day-tab ${ps5BookingType === "SOLO" ? "active" : ""}`} onClick={() => { setPs5BookingType("SOLO"); setFormError(""); }}>SOLO · ₹100 / SLOT</button>
+                      <button type="button" className={`ps5-day-tab ${ps5BookingType === "DUO" ? "active" : ""}`} onClick={() => { setPs5BookingType("DUO"); setFormError(""); }}>DUO · ₹150 / SLOT</button>
+                    </div>}
                     <div className="ps5-day-tabs">
                       {PS5_DAYS.map((day) => <button key={day} type="button" className={`ps5-day-tab ${ps5Day === day ? "active" : ""}`} onClick={() => { setPs5Day(day); setFormError(""); }}>DAY {day}</button>)}
                     </div>
-                    <div className="ps5-slot-status">{ps5SlotsLoading ? "LOADING LIVE AVAILABILITY…" : ps5DayOpen ? `DAY ${ps5Day} — ${(ps5SelectedSlots[ps5Day] || []).length} SELECTED · ₹${(ps5SelectedSlots[ps5Day] || []).length * 100} · TOTAL ${Object.values(ps5SelectedSlots).reduce((sum, slots) => sum + slots.length, 0)} SLOTS` : `DAY ${ps5Day} IS CLOSED`}</div>
+                    <div className="ps5-slot-status">{ps5SlotsLoading ? "LOADING LIVE AVAILABILITY…" : ps5Slots.length === 0 ? `NO SLOTS FOUND FOR DAY ${ps5Day} — CHECK SLOT TABLE DATA` : ps5DayOpen ? `DAY ${ps5Day} — ${(ps5SelectedSlots[ps5Day] || []).length} SELECTED · ₹${(ps5SelectedSlots[ps5Day] || []).reduce((sum, slot) => sum + getSelectedSlotPrice(slot), 0)} · TOTAL ${Object.values(ps5SelectedSlots).reduce((sum, slots) => sum + slots.length, 0)} SLOTS` : `DAY ${ps5Day} IS CLOSED — ENABLE SLOTS IN SUPABASE`}</div>
                     <div className="ps5-slot-grid">
                       {ps5Slots.map((slot) => {
                         const selectedForDay = ps5SelectedSlots[ps5Day] || [];
@@ -2877,31 +3255,80 @@ export default function Registerbb() {
                           const hour = hh % 12 || 12;
                           return `${hour}:${String(mm).padStart(2, "0")} ${hh >= 12 ? "PM" : "AM"}`;
                         };
-                        return <button key={slot.id} type="button" className={`ps5-slot ${selected ? "selected" : ""} ${unavailable ? "unavailable" : ""}`} disabled={unavailable || ps5SlotsLoading} onClick={() => { setPs5SelectedSlots((old) => { const currentDaySlots = old[ps5Day] || []; const nextDaySlots = selected ? currentDaySlots.filter((item) => item.id !== slot.id) : [...currentDaySlots, { id: slot.id, day_number: ps5Day, slot_number: slot.slot_number, start_time: slot.start_time, end_time: slot.end_time }]; return { ...old, [ps5Day]: nextDaySlots }; }); setFormError(""); }}>
-                          <strong>SLOT {slot.slot_number}</strong><span>{timeLabel(slot.start_time)} – {timeLabel(slot.end_time)}</span><small>{!slot.is_open ? "CLOSED" : slot.is_booked ? "BOOKED" : selected ? "SELECTED" : "AVAILABLE"}</small>
+                        const isVrx = game === "VR_EXPERIENCE";
+                        const setupType = slot.setup_type || "PS5_WITH_VR";
+                        const isSteering = setupType === "PS5_WITH_STEERING_WHEEL";
+                        const setupClass = isVrx ? (isSteering ? "vrx-steering" : "vrx-vr") : "";
+                        return <button key={slot.id} type="button" className={`ps5-slot ${setupClass} ${selected ? "selected" : ""} ${unavailable ? "unavailable" : ""}`} disabled={unavailable || ps5SlotsLoading} onClick={() => { setPs5SelectedSlots((old) => { const currentDaySlots = old[ps5Day] || []; const nextDaySlots = selected ? currentDaySlots.filter((item) => item.id !== slot.id) : [...currentDaySlots, { id: slot.id, day_number: ps5Day, slot_number: slot.slot_number, start_time: slot.start_time, end_time: slot.end_time, ...(isVrx ? { setup_type: setupType } : { booking_type: ps5BookingType }) }]; return { ...old, [ps5Day]: nextDaySlots }; }); setFormError(""); }}>
+                          <strong>{isVrx ? (isSteering ? "STEERING · SLOT " : "VR · SLOT ") : "SLOT "}{slot.slot_number}</strong><span>{timeLabel(slot.start_time)} – {timeLabel(slot.end_time)}</span>{isVrx && <small>{isSteering ? "STEERING WHEEL · ₹150" : "PS5 WITH VR · ₹200"}</small>}<small>{!slot.is_open ? "CLOSED" : slot.is_booked ? "BOOKED" : selected ? (isVrx ? "✓ SELECTED" : `✓ SELECTED · ${(selectedForDay.find((item) => item.id === slot.id)?.booking_type || ps5BookingType)} ₹${getSelectedSlotPrice(selectedForDay.find((item) => item.id === slot.id) || { booking_type: ps5BookingType })}`) : "AVAILABLE"}</small>
                         </button>;
                       })}
                     </div>
                     <div className="reg-divider" />
                     <div className="reg-section-label"><span>03</span> REVIEW YOUR BOOKING</div>
+                    {game === "VR_EXPERIENCE" && <div className="reg-review-item"><small>SETUP BREAKDOWN</small><strong>{Object.values(ps5SelectedSlots).flat().filter((slot) => (slot.setup_type || "PS5_WITH_VR") === "PS5_WITH_VR").length} VR slots · {Object.values(ps5SelectedSlots).flat().filter((slot) => slot.setup_type === "PS5_WITH_STEERING_WHEEL").length} steering-wheel slots</strong></div>}
+                    {game === "PS5_RUSH" && <div className="reg-review-item"><small>SELECT TYPE FOR THE NEXT SLOT</small><strong>SOLO · ₹100 / SLOT &nbsp; | &nbsp; DUO · ₹150 / SLOT</strong><small>Choose SOLO or DUO above before selecting each slot. You can mix SOLO and DUO slots across any day, and change the type of an already-selected slot below.</small></div>}
                     <div className="reg-review-grid">
                       <div className="reg-review-item"><small>PLAYER NAME</small><strong>{form.playerName || "—"}</strong></div>
                       <div className="reg-review-item"><small>EMAIL ADDRESS</small><strong>{form.email || "—"}</strong></div>
                       <div className="reg-review-item"><small>CONTACT NUMBER 1</small><strong>{form.phone || "—"}</strong></div>
                       <div className="reg-review-item"><small>CONTACT NUMBER 2</small><strong>{form.phone2 || "Not provided"}</strong></div>
                       <div className="reg-review-item"><small>BOOKING DAYS</small><strong>{PS5_DAYS.filter((day) => (ps5SelectedSlots[day] || []).length).map((day) => `DAY ${day} (${ps5SelectedSlots[day].length} slots)`).join(", ") || "No days selected"}</strong></div>
-                      <div className="reg-review-item"><small>ALL SELECTED SLOTS</small><strong>{PS5_DAYS.flatMap((day) => (ps5SelectedSlots[day] || []).map((slot) => `Day ${day} · Slot ${slot.slot_number} (${slot.start_time}–${slot.end_time})`)).join(" | ") || "No slots selected"}</strong></div>
-                      <div className="reg-review-item"><small>TOTAL SLOT FEE</small><strong>₹{Object.values(ps5SelectedSlots).reduce((sum, slots) => sum + slots.length, 0) * 100} ({Object.values(ps5SelectedSlots).reduce((sum, slots) => sum + slots.length, 0)} × ₹100)</strong></div>
+                      <div className="reg-selected-slots">
+                        <div className="reg-selected-slots-heading">
+                          <span>YOUR SELECTED SLOT SCHEDULE</span>
+                          <span className="reg-selected-slots-count">{ps5TotalSelectedSlots} SLOT{ps5TotalSelectedSlots === 1 ? "" : "S"} SELECTED</span>
+                        </div>
+                        {PS5_DAYS.filter((day) => (ps5SelectedSlots[day] || []).length > 0).length ? (
+                          PS5_DAYS.filter((day) => (ps5SelectedSlots[day] || []).length > 0).map((day) => {
+                            const daySlots = [...(ps5SelectedSlots[day] || [])].sort((a, b) => a.slot_number - b.slot_number);
+                            const formatTime = (value) => { const [hh, mm] = String(value).split(":").map(Number); const hour = hh % 12 || 12; return `${hour}:${String(mm).padStart(2, "0")} ${hh >= 12 ? "PM" : "AM"}`; };
+                            return (
+                              <div className="reg-selected-day" key={day}>
+                                <div className="reg-selected-day-title"><span>DAY {day}</span><span>{daySlots.length} SLOT{daySlots.length === 1 ? "" : "S"}</span></div>
+                                <div className="reg-selected-slot-list">
+                                  {daySlots.map((slot) => (
+                                    <div className="reg-selected-slot-chip" key={slot.id}>
+                                      <b>DAY {day} · SLOT {slot.slot_number}</b>
+                                      <span>{formatTime(slot.start_time)} – {formatTime(slot.end_time)}</span>
+                                      {game === "VR_EXPERIENCE" ? (
+                                        <>
+                                          <small className="reg-slot-setup">
+                                            {(slot.setup_type || "PS5_WITH_VR") === "PS5_WITH_VR" ? "PS5 WITH VR" : "PS5 WITH STEERING WHEEL"}
+                                          </small>
+                                          <strong className="reg-slot-price">₹{getSelectedSlotPrice(slot)} / 30 MIN</strong>
+                                        </>
+                                      ) : (
+                                        <>
+                                          <small className="reg-slot-setup">
+                                            {(slot.booking_type || ps5BookingType) === "DUO" ? "DUO BOOKING · 2 PLAYERS" : "SOLO BOOKING · 1 PLAYER"}
+                                          </small>
+                                          <div style={{ display: "flex", gap: 6, marginTop: 6, flexWrap: "wrap" }}>
+                                            <button type="button" className={`ps5-day-tab ${(slot.booking_type || ps5BookingType) === "SOLO" ? "active" : ""}`} onClick={() => setSelectedSlotBookingType(day, slot.id, "SOLO")}>SOLO ₹100</button>
+                                            <button type="button" className={`ps5-day-tab ${(slot.booking_type || ps5BookingType) === "DUO" ? "active" : ""}`} onClick={() => setSelectedSlotBookingType(day, slot.id, "DUO")}>DUO ₹150</button>
+                                          </div>
+                                          <strong className="reg-slot-price">₹{getSelectedSlotPrice(slot)} / SLOT</strong>
+                                        </>
+                                      )}
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            );
+                          })
+                        ) : <div className="reg-selected-empty">No slots selected yet. Choose one or more available slots above. Your selected slots will appear here, grouped by day.</div>}
+                      </div>
+                      <div className="reg-review-item"><small>TOTAL SLOT FEE</small><strong>₹{ps5TotalFee} ({ps5TotalSelectedSlots} slots{game === "VR_EXPERIENCE" ? "; setup-wise pricing" : ` · ${Object.values(ps5SelectedSlots).flat().filter((slot) => (slot.booking_type || ps5BookingType) === "SOLO").length} SOLO × ₹100 + ${Object.values(ps5SelectedSlots).flat().filter((slot) => (slot.booking_type || ps5BookingType) === "DUO").length} DUO × ₹150`})</strong></div>
                     </div>
                     <label className="reg-consent reg-review-consent"><input type="checkbox" checked={reviewConfirmed} onChange={(e) => setReviewConfirmed(e.target.checked)} /><span>I have reviewed my details and selected slot times and confirm they are correct. <b>*</b></span></label>
                   </section>
                   <div className="reg-divider" />
                   <section className="reg-payment-panel">
                     <div className="reg-section-label"><span>04</span> PAYMENT DETAILS</div>
-                    <p className="reg-payment-amount">TOTAL REGISTRATION FEE: <strong>₹{Object.values(ps5SelectedSlots).reduce((sum, slots) => sum + slots.length, 0) * 100}</strong></p>
-                    <p className="reg-payment-note">Each selected 30-minute slot costs ₹100. Pay for every selected slot, then upload one payment screenshot. Accepted formats: JPG, PNG or WEBP.</p>
+                    <p className="reg-payment-amount">TOTAL REGISTRATION FEE: <strong>₹{ps5TotalFee}</strong></p>
+                    <p className="reg-payment-note">{game === "VR_EXPERIENCE" ? "VR slots cost ₹200 each and steering-wheel slots cost ₹150 each." : `SOLO slots cost ₹100 each and DUO slots cost ₹150 each. The total above includes the price of every selected slot.`} Pay once for all selected days and setups, then upload one payment screenshot. Accepted formats: JPG, PNG or WEBP.</p>
                     <div className="reg-qr-grid">
-                      <div className="reg-qr-slot"><strong>PAYMENT QR</strong><img src={rampageQR} alt="PS5 Rush payment QR" loading="lazy" /><span>Pay ₹100 per selected slot.</span></div>
+                      <div className="reg-qr-slot"><strong>PAYMENT QR</strong><img src={rampageQR} alt={game === "VR_EXPERIENCE" ? "VRXperience payment QR" : "PS5 Rush payment QR"} loading="lazy" /><span>{game === "VR_EXPERIENCE" ? "Pay the combined total shown above." : `SOLO ₹100 / slot · DUO ₹150 / slot. Pay the combined total shown above.`}</span></div>
                       <div className="reg-qr-slot"><strong>ALTERNATE PAYMENT QR</strong><img src={rampageQR2} alt="Alternate payment QR" loading="lazy" /><span>Use either QR code.</span></div>
                     </div>
                     <label className="reg-field reg-payment-upload"><span>PAYMENT SCREENSHOT <b>*</b></span><input type="file" accept="image/png,image/jpeg,image/webp" required onChange={(e) => { setPaymentProof(e.target.files?.[0] || null); setFormError(""); }} /></label>
@@ -3205,8 +3632,8 @@ export default function Registerbb() {
           <span className="bb-success-kicker">BATTLEBLAZE 2026 · REGISTRATION CONFIRMED</span>
           <h2 className="bb-success-title" id="bb-success-title">REGISTRATION SUCCESSFUL</h2>
           <p className="bb-success-message" id="bb-success-message">
-            {game === "PS5_RUSH"
-              ? `Your PS5 Rush booking has been submitted for ${Object.values(ps5SelectedSlots).reduce((sum, slots) => sum + slots.length, 0)} slot(s). Each slot costs ₹100, and the day-wise slot details are saved in your booking record. Welcome to the arena!`
+            {(game === "PS5_RUSH" || game === "VR_EXPERIENCE")
+              ? `Your ${game === "VR_EXPERIENCE" ? "VRXperience" : "PS5 Rush"} booking has been submitted for ${Object.values(ps5SelectedSlots).reduce((sum, slots) => sum + slots.length, 0)} slot(s). ${game === "VR_EXPERIENCE" ? `Setup breakdown: ${Object.values(ps5SelectedSlots).flat().filter((slot) => (slot.setup_type || "PS5_WITH_VR") === "PS5_WITH_VR").length} VR slot(s), ${Object.values(ps5SelectedSlots).flat().filter((slot) => slot.setup_type === "PS5_WITH_STEERING_WHEEL").length} steering-wheel slot(s).` : `Booking types: ${[...new Set(Object.values(ps5SelectedSlots).flat().map((slot) => slot.booking_type || ps5BookingType))].join(" + ")}.`} Total fee: ₹${ps5TotalFee}. Welcome to the arena!`
               : `Your ${current.title} registration has been submitted successfully. Welcome to the arena!`}
           </p>
           <div className="bb-success-name-card">
@@ -3214,16 +3641,23 @@ export default function Registerbb() {
             <strong>{successDisplayName}</strong>
           </div>
 
-          {game === "PS5_RUSH" && (() => {
+          {(game === "PS5_RUSH" || game === "VR_EXPERIENCE") && (
+            <div className="bb-success-venue">
+              <span>EVENT VENUE</span>
+              <strong>NEW GALLERY G301</strong>
+            </div>
+          )}
+
+          {(game === "PS5_RUSH" || game === "VR_EXPERIENCE") && (() => {
             const bookedDays = PS5_DAYS
               .map((day) => ({ day, slots: [...(ps5SelectedSlots[day] || [])].sort((a, b) => a.slot_number - b.slot_number) }))
               .filter((entry) => entry.slots.length > 0);
             const totalSlots = bookedDays.reduce((sum, entry) => sum + entry.slots.length, 0);
             return (
-              <section className="bb-ps5-booking-summary" aria-label="Confirmed PS5 Rush slots">
+              <section className="bb-ps5-booking-summary" aria-label={game === "VR_EXPERIENCE" ? "Confirmed VRXperience slots" : "Confirmed PS5 Rush slots"}>
                 <div className="bb-ps5-booking-heading">
-                  <span>YOUR CONFIRMED PS5 RUSH SLOTS</span>
-                  <span>{totalSlots} SLOT{totalSlots === 1 ? "" : "S"}</span>
+                  <span>{game === "VR_EXPERIENCE" ? "YOUR CONFIRMED VRXPERIENCE SLOTS" : "YOUR CONFIRMED PS5 RUSH SLOTS"}</span>
+                  <span>{game === "VR_EXPERIENCE" ? `${Object.values(ps5SelectedSlots).flat().filter((slot) => (slot.setup_type || "PS5_WITH_VR") === "PS5_WITH_VR").length} VR · ${Object.values(ps5SelectedSlots).flat().filter((slot) => slot.setup_type === "PS5_WITH_STEERING_WHEEL").length} STEERING` : `${Object.values(ps5SelectedSlots).flat().filter((slot) => (slot.booking_type || ps5BookingType) === "SOLO").length} SOLO · ${Object.values(ps5SelectedSlots).flat().filter((slot) => (slot.booking_type || ps5BookingType) === "DUO").length} DUO`} · {totalSlots} SLOT{totalSlots === 1 ? "" : "S"}</span>
                 </div>
                 {bookedDays.map(({ day, slots }) => (
                   <div className="bb-ps5-day-booking" key={day}>
@@ -3235,18 +3669,34 @@ export default function Registerbb() {
                           return `${hh % 12 || 12}:${String(mm).padStart(2, "0")} ${hh >= 12 ? "PM" : "AM"}`;
                         };
                         return <div className="bb-ps5-slot-item" key={slot.id}>
-                          <strong>SLOT {slot.slot_number} · ₹100</strong>
+                          <strong>SLOT {slot.slot_number} · ₹{getSelectedSlotPrice(slot)}</strong>
+                          {game === "VR_EXPERIENCE" ? (
+                            <em>{(slot.setup_type || "PS5_WITH_VR") === "PS5_WITH_VR" ? "PS5 WITH VR" : "PS5 WITH STEERING WHEEL"}</em>
+                          ) : (
+                            <em>{(slot.booking_type || ps5BookingType) === "DUO" ? "DUO BOOKING · 2 PLAYERS · ₹150" : "SOLO BOOKING · 1 PLAYER · ₹100"}</em>
+                          )}
                           <span>{timeLabel(slot.start_time)} – {timeLabel(slot.end_time)}</span>
                         </div>;
                       })}
                     </div>
                   </div>
                 ))}
-                <div className="bb-ps5-total-row"><span>TOTAL BOOKING FEE</span><strong>₹{totalSlots * 100}</strong></div>
+                <div className="bb-ps5-total-row"><span>TOTAL BOOKING FEE</span><strong>₹{ps5TotalFee}</strong></div>
               </section>
             );
           })()}
           <div className="bb-success-actions">
+            {(game === "PS5_RUSH" || game === "VR_EXPERIENCE") && (
+              <button
+                className="bb-success-action bb-success-action-receipt"
+                type="button"
+                onClick={downloadBookingReceipt}
+                title="Download your booking receipt as a PNG image"
+              >
+                <span className="bb-success-action-icon" aria-hidden="true">⇩</span>
+                <span>DOWNLOAD RECEIPT (PNG)</span>
+              </button>
+            )}
             <a
               className={`bb-success-action bb-success-action-whatsapp ${whatsappGroupUrl ? "" : "bb-success-action-disabled"}`}
               href={whatsappGroupUrl || undefined}
@@ -3267,6 +3717,28 @@ export default function Registerbb() {
               <span>EXPLORE BATTLEBLAZE</span>
             </a>
           </div>
+
+          {(game === "PS5_RUSH" || game === "VR_EXPERIENCE") && (
+            <p
+              className="bb-success-receipt-note"
+              role="note"
+              style={{
+                margin: "18px 0 0",
+                padding: "14px 16px",
+                border: "1px solid rgba(96, 165, 250, 0.42)",
+                borderRadius: "12px",
+                background: "linear-gradient(110deg, rgba(109,40,217,0.18), rgba(3,105,161,0.16))",
+                color: "#dbeafe",
+                fontSize: "12px",
+                lineHeight: 1.7,
+                textAlign: "center",
+                letterSpacing: "0.04em",
+              }}
+            >
+              <strong style={{ color: "#a5f3fc" }}>IMPORTANT NOTE:</strong>{" "}
+              Please download and save your receipt. You must show the downloaded receipt at the venue for verification for both PS5 RUSH and VRXPERIENCE.
+            </p>
+          )}
         </section>
       </div>,
       document.body

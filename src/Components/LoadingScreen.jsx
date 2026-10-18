@@ -8,8 +8,6 @@ import defaultLogo from "../assets/logoo.png";
 
 import battleblazeLogo from "../assets/logoo2.png";
 
-
-
 /**
 
  * NITS Esports — Dynamic Cyber Loading Screen (Supports Standard & BattleBlaze modes)
@@ -36,27 +34,27 @@ const LoadingScreen = ({
 
   const location = useLocation();
 
-
-
-  // Detect if user is entering BattleBlaze or Registration pages
-
+  // Use the BattleBlaze loading screen on BattleBlaze, registration, PS5 Rush,
+  // and all common Admin Panel routes.
   const currentPath = location.pathname.replace(/\/+$/, "").toLowerCase() || "/";
 
+  const isAdminPanelMode =
+    currentPath === "/admin" ||
+    currentPath.startsWith("/admin/") ||
+    currentPath === "/adminpanel" ||
+    currentPath.startsWith("/adminpanel/") ||
+    currentPath === "/admin-panel" ||
+    currentPath.startsWith("/admin-panel/") ||
+    currentPath === "/admin/panel";
+
   const isBattleblazeMode =
-
     currentPath.includes("battleblaze") ||
-
     currentPath.includes("register") ||
-
-    currentPath.includes("registerbb") ||
     currentPath.includes("ps5-rush") ||
-    currentPath.includes("ps5rush");
-
-
+    currentPath.includes("ps5rush") ||
+    isAdminPanelMode;
 
   const logoSrc = isBattleblazeMode ? battleblazeLogo : defaultLogo;
-
-
 
   const statusMessages = isBattleblazeMode
 
@@ -90,8 +88,6 @@ const LoadingScreen = ({
 
       ];
 
-
-
   // =========================================================
 
   // BUTTERY SMOOTH 60FPS PROGRESS ENGINE
@@ -104,15 +100,11 @@ const LoadingScreen = ({
 
     const startTime = performance.now();
 
-
-
     const update = (now) => {
 
       const elapsed = now - startTime;
 
       const raw = Math.min(1, elapsed / minDuration);
-
-
 
       let eased;
 
@@ -134,13 +126,9 @@ const LoadingScreen = ({
 
       }
 
-
-
       const currentVal = Math.min(100, eased);
 
       setProgress(currentVal);
-
-
 
       if (raw < 1) {
 
@@ -168,15 +156,11 @@ const LoadingScreen = ({
 
     };
 
-
-
     animId = requestAnimationFrame(update);
 
     return () => cancelAnimationFrame(animId);
 
   }, [minDuration, onComplete, onLoadingComplete]);
-
-
 
   // Update status messages according to progress percentage
 
@@ -196,8 +180,6 @@ const LoadingScreen = ({
 
   }, [progress, statusMessages.length]);
 
-
-
   // =========================================================
 
   // SUBTLE AMBIENT PARTICLES (CANVAS)
@@ -214,8 +196,6 @@ const LoadingScreen = ({
 
     let animationFrame;
 
-
-
     const resize = () => {
 
       canvas.width = window.innerWidth;
@@ -227,8 +207,6 @@ const LoadingScreen = ({
     resize();
 
     window.addEventListener("resize", resize);
-
-
 
     const particles = Array.from({ length: 55 }, () => ({
 
@@ -246,15 +224,11 @@ const LoadingScreen = ({
 
     }));
 
-
-
     const render = () => {
 
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
       ctx.fillStyle = isBattleblazeMode ? "#c4b5fd" : "#ffffff";
-
-
 
       particles.forEach((p) => {
 
@@ -268,8 +242,6 @@ const LoadingScreen = ({
 
         if (p.x > canvas.width) p.x = 0;
 
-
-
         ctx.globalAlpha = p.alpha;
 
         ctx.beginPath();
@@ -280,15 +252,11 @@ const LoadingScreen = ({
 
       });
 
-
-
       animationFrame = requestAnimationFrame(render);
 
     };
 
     render();
-
-
 
     return () => {
 
@@ -299,8 +267,6 @@ const LoadingScreen = ({
     };
 
   }, [isBattleblazeMode]);
-
-
 
   return (
 
@@ -334,9 +300,7 @@ const LoadingScreen = ({
 
         @import url('https://fonts.cdnfonts.com/css/the-last-shuriken');
 
-        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;800&family=Inter:wght@400;600;700&display=swap');
-
-
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght\@400;600;700;800&family=Inter:wght\@400;600;700&display=swap');
 
         .loader-samurai {
 
@@ -355,8 +319,6 @@ const LoadingScreen = ({
           font-family: 'Inter', sans-serif;
 
         }
-
-
 
         /* Standard Portal Spin */
 
@@ -382,8 +344,6 @@ const LoadingScreen = ({
 
         .portal-spin-cw-slow { animation: portalSpinCW 26s linear infinite; will-change: transform; }
 
-
-
         /* BattleBlaze Border Moving Purple/Blue Line Animation */
 
         @keyframes borderLineRotate {
@@ -408,56 +368,91 @@ const LoadingScreen = ({
 
         }
 
-
-
         .battleblaze-logo-frame {
+
           position: relative;
+
           padding: 0 !important;
+
           border: 0 !important;
+
           border-radius: 0 !important;
+
           background: transparent !important;
+
           box-shadow: none !important;
+
           isolation: isolate;
+
         }
 
         /* Neon corners only — no rectangular outline behind logoo2.png. */
+
         .battleblaze-logo-frame::before {
+
           content: "";
+
           position: absolute;
+
           inset: -8px;
+
           z-index: 30;
+
           pointer-events: none;
+
           background:
+
             linear-gradient(90deg, #a855f7, #60a5fa) left top / 30px 2px no-repeat,
+
             linear-gradient(180deg, #a855f7, #60a5fa) left top / 2px 30px no-repeat,
+
             linear-gradient(90deg, #60a5fa, #a855f7) right top / 30px 2px no-repeat,
+
             linear-gradient(180deg, #60a5fa, #a855f7) right top / 2px 30px no-repeat,
+
             linear-gradient(90deg, #a855f7, #60a5fa) left bottom / 30px 2px no-repeat,
+
             linear-gradient(180deg, #60a5fa, #a855f7) left bottom / 2px 30px no-repeat,
+
             linear-gradient(90deg, #60a5fa, #a855f7) right bottom / 30px 2px no-repeat,
+
             linear-gradient(180deg, #a855f7, #60a5fa) right bottom / 2px 30px no-repeat;
+
           filter:
+
             drop-shadow(0 0 4px rgba(168, 85, 247, 0.9))
+
             drop-shadow(0 0 8px rgba(59, 130, 246, 0.7));
+
           animation: battleblazeCornerGlow 1.8s ease-in-out infinite;
+
         }
 
         @keyframes battleblazeCornerGlow {
+
           0%, 100% {
+
             opacity: 0.65;
+
             filter: drop-shadow(0 0 3px rgba(168, 85, 247, 0.75)) drop-shadow(0 0 5px rgba(59, 130, 246, 0.55));
+
           }
+
           50% {
+
             opacity: 1;
+
             filter: drop-shadow(0 0 5px rgba(192, 132, 252, 1)) drop-shadow(0 0 11px rgba(59, 130, 246, 0.95));
+
           }
+
         }
 
         @media (prefers-reduced-motion: reduce) {
+
           .battleblaze-logo-frame::before { animation: none; }
+
         }
-
-
 
         /* Diagonal Shine Sweep */
 
@@ -489,8 +484,6 @@ const LoadingScreen = ({
 
         }
 
-
-
         .shine-logo-clone {
 
           filter: brightness(3.2) drop-shadow(0 0 12px rgba(255, 255, 255, 0.95));
@@ -509,8 +502,6 @@ const LoadingScreen = ({
 
         }
 
-
-
         @keyframes logoPulse {
 
           0%, 100% { transform: scale(1); filter: drop-shadow(0 0 22px rgba(255, 255, 255, 0.20)); }
@@ -521,8 +512,6 @@ const LoadingScreen = ({
 
         .logo-pulse-box { animation: logoPulse 3.2s ease-in-out infinite; }
 
-
-
         .scanlines {
 
           background: repeating-linear-gradient(to bottom, transparent 0, transparent 3px, rgba(255, 255, 255, 0.02) 4px);
@@ -530,8 +519,6 @@ const LoadingScreen = ({
         }
 
       `}</style>
-
-
 
       {/* AMBIENT BACKGROUND LAYERS */}
 
@@ -541,13 +528,9 @@ const LoadingScreen = ({
 
       <div className="scanlines pointer-events-none absolute inset-0 z-0" />
 
-
-
       {/* PERSPECTIVE CYBER GRID */}
 
       <div className="pointer-events-none absolute inset-0 z-0 opacity-[0.06] [background-image:linear-gradient(rgba(255,255,255,0.12)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.08)_1px,transparent_1px)] [background-size:60px_60px]" />
-
-
 
       {/* TOP HUD TELEMETRY */}
 
@@ -569,8 +552,6 @@ const LoadingScreen = ({
 
       </div>
 
-
-
       {/* =====================================================
 
           MAIN CENTRAL CONTENT
@@ -579,13 +560,9 @@ const LoadingScreen = ({
 
       <div className="relative z-10 flex flex-col items-center justify-center px-4 w-full">
 
-
-
         {/* LOGO CONTAINER */}
 
         <div className="relative flex items-center justify-center">
-
-
 
           {!isBattleblazeMode && (
 
@@ -612,8 +589,6 @@ const LoadingScreen = ({
             </div>
 
           )}
-
-
 
           {/* Logo Pulse Wrapper */}
 
@@ -657,8 +632,6 @@ const LoadingScreen = ({
 
         </div>
 
-
-
         {/* =====================================================
 
             LOADING TEXT & PROGRESS BAR
@@ -666,8 +639,6 @@ const LoadingScreen = ({
            ===================================================== */}
 
         <div className="mt-5 sm:mt-6 flex flex-col items-center text-center">
-
-
 
           <div className={`${isBattleblazeMode ? "loader-orbitron font-extrabold tracking-[0.28em] text-[#f5f3ff]" : "loader-samurai font-bold tracking-[0.25em] text-white"} flex items-center gap-3 text-lg sm:text-xl md:text-2xl`}>
 
@@ -683,8 +654,6 @@ const LoadingScreen = ({
 
           </div>
 
-
-
           <div className="loader-sans mt-2 h-4 flex items-center justify-center gap-2 text-[9px] sm:text-[10px] uppercase tracking-[0.35em] text-white/60">
 
             <span className={`inline-block h-1 w-1 rounded-full ${isBattleblazeMode ? "bg-[#c4b5fd]" : "bg-white/70"} animate-pulse`} />
@@ -692,8 +661,6 @@ const LoadingScreen = ({
             <span>{statusMessages[statusIndex]}</span>
 
           </div>
-
-
 
           <div className="mt-4 sm:mt-5 w-[280px] sm:w-[340px] md:w-[400px]">
 
@@ -708,8 +675,6 @@ const LoadingScreen = ({
               </span>
 
             </div>
-
-
 
             <div className={`relative h-2.5 w-full rounded-sm border ${isBattleblazeMode ? "border-[#8b5cf6]/40 bg-black/70 shadow-[0_0_20px_rgba(139,92,246,0.25)]" : "border-white/20 bg-black/60 shadow-[0_0_15px_rgba(0,0,0,0.8)]"} p-[2px]`}>
 
@@ -741,8 +706,6 @@ const LoadingScreen = ({
 
             </div>
 
-
-
             <div className="mt-1 flex justify-between px-0.5 opacity-35">
 
               {Array.from({ length: 14 }).map((_, i) => (
@@ -767,17 +730,11 @@ const LoadingScreen = ({
 
             </div>
 
-
-
           </div>
 
         </div>
 
-
-
       </div>
-
-
 
       {/* BOTTOM FOOTER TELEMETRY */}
 
@@ -792,7 +749,5 @@ const LoadingScreen = ({
   );
 
 };
-
-
 
 export default LoadingScreen;

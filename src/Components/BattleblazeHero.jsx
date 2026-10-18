@@ -926,11 +926,13 @@ export default function BattleblazeHero({ onSelectEvent }) {
     setActiveEvent(id);
     if (typeof onSelectEvent === "function") onSelectEvent(id);
 
-    // The PS5 RUSH hero hotspot should open the public registration form,
-    // not the admin login panel.
-    if (String(id).trim().toUpperCase().replace(/[\s-]+/g, "_") === "PS5_RUSH") {
+    // PS5 RUSH and VRXPERIENCE hero hotspots open their public registration forms.
+    const normalizedId = String(id).trim().toUpperCase().replace(/[\s-]+/g, "_");
+    if (normalizedId === "PS5_RUSH") {
       if (!registrationsOpen) return;
       goToRegistration("PS5_RUSH");
+    } else if (normalizedId === "VRXPERIENCE" || normalizedId === "VR_EXPERIENCE") {
+      goToRegistration("VR_EXPERIENCE");
     }
   };
 
@@ -1061,8 +1063,8 @@ export default function BattleblazeHero({ onSelectEvent }) {
         {/* Admin Panel shortcut — opens the PS5 Rush admin route */}
         <a
           className="bb-hero-view-modules-btn bb-admin-panel-btn"
-          href="/admin/ps5-rush"
-          aria-label="Open PS5 Rush Admin Panel"
+          href="/admin"
+          aria-label="Open Admin Panel"
           onMouseEnter={() => hover("#00eaff")}
           onMouseLeave={resetHover}
         >
@@ -1889,6 +1891,30 @@ export default function BattleblazeHero({ onSelectEvent }) {
             font-weight: 800;
           }
 
+          .bb-overview-booking-info {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 7px;
+            padding-top: 9px;
+            border-top: 1px solid rgba(255, 255, 255, 0.2);
+          }
+          .bb-overview-booking-cta {
+            color: var(--event-accent, #c4b5fd);
+            font-size: 10px;
+            font-weight: 900;
+            letter-spacing: 0.12em;
+            line-height: 1.3;
+            text-shadow: 0 0 12px color-mix(in srgb, var(--event-accent, #a855f7) 45%, transparent);
+          }
+          .bb-overview-starting-price {
+            color: #fff;
+            font-size: clamp(10px, 0.9vw, 12px);
+            font-weight: 800;
+            letter-spacing: 0.045em;
+            line-height: 1.35;
+          }
+
           .bb-modules-section {
             padding: clamp(70px, 8vw, 118px) clamp(20px, 5vw, 76px);
           }
@@ -2132,6 +2158,18 @@ export default function BattleblazeHero({ onSelectEvent }) {
             font-size: clamp(12px, 1vw, 15px);
             white-space: nowrap;
             text-shadow: 0 0 12px rgba(0, 234, 255, 0.25);
+          }
+          .bb-limited-slots-tagline {
+            margin: 10px 0 8px;
+            color: #f5d0fe;
+            font-family: 'Orbitron', sans-serif;
+            font-size: clamp(8px, 0.78vw, 10px);
+            font-weight: 800;
+            line-height: 1.5;
+            letter-spacing: 0.075em;
+            text-align: center;
+            text-transform: uppercase;
+            text-shadow: 0 0 10px rgba(192, 132, 252, 0.42);
           }
           .bb-register-button {
             display: flex;
@@ -2566,9 +2604,9 @@ export default function BattleblazeHero({ onSelectEvent }) {
                 { name: "VALORANT", game: "VALORANT", code: "ARENA 02 // TACTICAL FPS", color: "#8b5cf6", icon: "◈", prize: "₹5,000" },
                 { name: "BGMI", game: "BGMI", code: "ARENA 03 // BATTLE ROYALE", color: "#ffb347", icon: "⌖", prize: "₹20,000" },
                 { name: "MOBILE LEGENDS", game: "MOBILE_LEGENDS", code: "ARENA 04 // MOBA", color: "#ff4fa3", icon: "⬡", prize: "₹5,000" },
-                { name: "RC", game: "RC", code: "ARENA 05 // RC RACING", color: "#00eaff", icon: "↗", prize: "₹5,000" },
-                { name: "PS5 RUSH", game: "PS5_RUSH", code: "ARENA 06 // CONSOLE", color: "#5c8dff", icon: "△", comingSoon: !registrationsOpen },
-                { name: "VRXPERIENCE", game: "VR_EXPERIENCE", code: "ARENA 07 // IMMERSIVE", color: "#bf7bff", icon: "◎", comingSoon: !registrationsOpen },
+                { name: "RC", game: "RC", code: "ARENA 05 // REAL CRICKET", color: "#00eaff", icon: "↗", prize: "₹5,000" },
+                { name: "PS5 RUSH", game: "PS5_RUSH", code: "ARENA 06 // CONSOLE", color: "#5c8dff", icon: "△" },
+                { name: "VRXPERIENCE", game: "VR_EXPERIENCE", code: "ARENA 07 // IMMERSIVE", color: "#bf7bff", icon: "◎" },
               ].map((event) => (
                 <a
                   className={`bb-overview-event-card ${event.comingSoon ? "is-coming-soon" : ""}`}
@@ -2591,13 +2629,22 @@ export default function BattleblazeHero({ onSelectEvent }) {
                     <span className="bb-overview-event-code">{event.code}</span>
                   </div>
                   <h3>{event.name}</h3>
-                  <div className="bb-overview-event-prize">
-                    <span>{event.comingSoon ? "REGISTRATION" : "PRIZE POOL"}</span>
-                    <strong>{event.comingSoon ? "COMING SOON" : event.prize}</strong>
-                    {event.comingSoon && (
-                      <small className="bb-coming-soon-countdown">OPENS IN {registrationCountdown}</small>
-                    )}
-                  </div>
+                  {(event.game === "PS5_RUSH" || event.game === "VR_EXPERIENCE") ? (
+                    <div className="bb-overview-booking-info">
+                      <span className="bb-overview-booking-cta">BOOK YOUR SLOTS</span>
+                      <strong className="bb-overview-starting-price">
+                        STARTING FROM {event.game === "PS5_RUSH" ? "₹100" : "₹150"}
+                      </strong>
+                    </div>
+                  ) : (
+                    <div className="bb-overview-event-prize">
+                      <span>{event.comingSoon ? "REGISTRATION" : "PRIZE POOL"}</span>
+                      <strong>{event.comingSoon ? "COMING SOON" : event.prize}</strong>
+                      {event.comingSoon && (
+                        <small className="bb-coming-soon-countdown">OPENS IN {registrationCountdown}</small>
+                      )}
+                    </div>
+                  )}
                 </a>
               ))}
             </div>
@@ -2629,8 +2676,8 @@ export default function BattleblazeHero({ onSelectEvent }) {
               { name: "FIFA", game: "FIFA", code: "03 // FOOTBALL", icon: "⚽", description: "Control the pitch and score the win.", prize: "₹5,000", posterImage: fifaPosterUrl },
               { name: "MOBILE LEGENDS", game: "MOBILE_LEGENDS", code: "04 // MOBA", icon: "⬡", description: "Pick your hero. Team up. Push to win.", prize: "₹5,000", posterImage: mlbbPosterUrl },
               { name: "RC", game: "RC", code: "05 // REAL CRICKET", icon: "🏏", description: "Represent your side and compete for the win.", prize: "₹5,000", posterImage: rcPosterUrl },
-              { name: "VR EXPERIENCE", game: "VR_EXPERIENCE", code: "06 // IMMERSIVE", icon: "◎", description: "Enter an immersive virtual world.", comingSoon: !registrationsOpen, posterImage: vrPosterUrl },
-              { name: "PS5 RUSH", game: "PS5_RUSH", code: "07 // CONSOLE", icon: "△", description: "Grab a controller and challenge rivals.", comingSoon: !registrationsOpen, posterImage: ps5PosterUrl },
+              { name: "VR EXPERIENCE", game: "VR_EXPERIENCE", code: "06 // IMMERSIVE", icon: "◎", description: "Enter an immersive virtual world.", posterImage: vrPosterUrl },
+              { name: "PS5 RUSH", game: "PS5_RUSH", code: "07 // CONSOLE", icon: "△", description: "Grab a controller and challenge rivals.", posterImage: ps5PosterUrl },
             ].map((module, index) => (
               <a
                 className={`bb-module-card ${module.comingSoon ? "is-coming-soon" : ""}`}
@@ -2677,6 +2724,11 @@ export default function BattleblazeHero({ onSelectEvent }) {
                       <span>PRIZE POOL</span>
                       <strong>{module.prize}</strong>
                     </div>
+                  )}
+                  {(module.game === "PS5_RUSH" || module.game === "VR_EXPERIENCE") && !module.comingSoon && (
+                    <p className="bb-limited-slots-tagline">
+                      LIMITED SLOTS AVAILABLE — BOOK YOUR SLOTS NOW!
+                    </p>
                   )}
                   <span className={`bb-register-button ${module.comingSoon ? "is-coming-soon" : ""}`} aria-hidden="true">
                     {module.comingSoon ? (

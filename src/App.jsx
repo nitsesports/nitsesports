@@ -6,13 +6,13 @@ import "./App.css";
 
 import {
 
-  BrowserRouter,
+  BrowserRouter,
 
-  Routes,
+  Routes,
 
-  Route,
+  Route,
 
-  useLocation,
+  useLocation,
 
 } from "react-router-dom";
 
@@ -58,12 +58,13 @@ import Register from "./Components/Register";
 import Registerbb from "./Components/Registerbb";
 import BattleblazeHero from "./Components/BattleblazeHero";
 import PS5RushAdmin from "./Components/PS5RushAdmin";
+import AdminPanel from "./Components/AdminPanel";
 
 
 
 /* =====================================================
 
-   APP
+   APP
 
 \===================================================== */
 
@@ -71,277 +72,283 @@ import PS5RushAdmin from "./Components/PS5RushAdmin";
 
 function App() {
 
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(true);
 
-  const [shattering, setShattering] = useState(false);
+  const [shattering, setShattering] = useState(false);
 
 
 
-  // Loading screen chalte waqt background scroll lock rahega
+  // Loading screen chalte waqt background scroll lock rahega
 
-  useEffect(() => {
+  useEffect(() => {
 
-    if (loading || shattering) {
+    if (loading || shattering) {
 
-      document.body.style.overflow = "hidden";
+      document.body.style.overflow = "hidden";
 
-      window.scrollTo(0, 0);
+      window.scrollTo(0, 0);
 
-    } else {
+    } else {
 
-      document.body.style.overflow = "auto";
+      document.body.style.overflow = "auto";
 
-    }
+    }
 
 
 
-    return () => {
+    return () => {
 
-      document.body.style.overflow = "auto";
+      document.body.style.overflow = "auto";
 
-    };
+    };
 
-  }, [loading, shattering]);
+  }, [loading, shattering]);
 
 
 
-  /* =====================================================
+  /* =====================================================
 
-     LOADING COMPLETE
+     LOADING COMPLETE
 
-     Nayi LoadingScreen 100% hone par ye trigger hoga
+     Nayi LoadingScreen 100% hone par ye trigger hoga
 
-  ===================================================== */
+  ===================================================== */
 
-  const handleLoadingComplete = () => {
+  const handleLoadingComplete = () => {
 
-    // OPTION A (Default): Loading ke turant baad sidha Landing Page open hoga
+    // OPTION A (Default): Loading ke turant baad sidha Landing Page open hoga
 
-    setLoading(false);
+    setLoading(false);
 
-    setShattering(false);
+    setShattering(false);
 
 
 
-    // OPTION B: Agar aapko beech me ShatterTransition bhi chahiye,
+    // OPTION B: Agar aapko beech me ShatterTransition bhi chahiye,
 
-    // toh upar ki 2 lines hata kar niche wali line uncomment kar lein:
+    // toh upar ki 2 lines hata kar niche wali line uncomment kar lein:
 
-    // setShattering(true);
+    // setShattering(true);
 
-  };
+  };
 
 
 
-  /* =====================================================
+  /* =====================================================
 
-     SHATTER COMPLETE (Agar ShatterTransition use karein)
+     SHATTER COMPLETE (Agar ShatterTransition use karein)
 
-  ===================================================== */
+  ===================================================== */
 
-  const handleShatterComplete = () => {
+  const handleShatterComplete = () => {
 
-    setLoading(false);
+    setLoading(false);
 
-    setShattering(false);
+    setShattering(false);
 
-  };
+  };
 
 
 
-  /* =====================================================
+  /* =====================================================
 
-     WEBSITE READY
+     WEBSITE READY
 
-  ===================================================== */
+  ===================================================== */
 
-  const websiteReady = !loading && !shattering;
+  const websiteReady = !loading && !shattering;
 
 
 
-  return (
+  return (
 
-    <BrowserRouter>
+    <BrowserRouter>
 
 
 
-      {/* =================================================
+      {/* =================================================
 
-          SCROLL TO TOP
+          SCROLL TO TOP
 
-      ================================================= */}
+      ================================================= */}
 
-      <ScrollToTop />
+      <ScrollToTop />
 
 
 
-      {/* =================================================
+      {/* =================================================
 
-          ROUTES
+          ROUTES
 
-      ================================================= */}
+      ================================================= */}
 
-      <Routes>
+      <Routes>
 
 
 
-        {/* HOME */}
+        {/* HOME */}
 
-        <Route
+        <Route
 
-          path="/"
+          path="/"
 
-          element={
+          element={
 
-            <Home
+            <Home
 
-              websiteReady={websiteReady}
+              websiteReady={websiteReady}
 
-            />
+            />
 
-          }
+          }
 
-        />
+        />
 
 
 
-        {/* TEAM */}
+        {/* TEAM */}
 
-        <Route
+        <Route
 
-          path="/team"
+          path="/team"
 
-          element={
+          element={
 
-            <TeamPage
+            <TeamPage
 
-              websiteReady={websiteReady}
+              websiteReady={websiteReady}
 
-            />
+            />
 
-          }
+          }
 
-        />
+        />
 
 
 
-        {/* EVENTS */}
+        {/* EVENTS */}
 
-        <Route
+        <Route
 
-          path="/events"
+          path="/events"
 
-          element={
+          element={
 
-            <EventsPage
+            <EventsPage
 
-              websiteReady={websiteReady}
+              websiteReady={websiteReady}
 
-            />
+            />
 
-          }
+          }
 
-        />
+        />
 
 
 
-        {/* ABOUT */}
+        {/* ABOUT */}
 
-        <Route
+        <Route
 
-          path="/about"
+          path="/about"
 
-          element={
+          element={
 
-            <AboutPage
+            <AboutPage
 
-              websiteReady={websiteReady}
+              websiteReady={websiteReady}
 
-            />
+            />
 
-          }
+          }
 
-        />
+        />
 
 
 
-        {/* MERCHANDISE */}
+        {/* MERCHANDISE */}
 
-        <Route
+        <Route
 
-          path="/merchandise"
+          path="/merchandise"
 
-          element={
+          element={
 
-            <MerchandisePage
+            <MerchandisePage
 
-              websiteReady={websiteReady}
+              websiteReady={websiteReady}
 
-            />
+            />
 
-          }
+          }
 
-        />
+        />
 
 
 
-        {/* SCHEDULE */}
+        {/* SCHEDULE */}
 
-        <Route
+        <Route
 
-          path="/schedule"
+          path="/schedule"
 
-          element={
+          element={
 
-            <SchedulePage
+            <SchedulePage
 
-              websiteReady={websiteReady}
+              websiteReady={websiteReady}
 
-            />
+            />
 
-          }
+          }
 
-        />
+        />
 
 
 
-        {/* LOGIN */}
+        {/* LOGIN */}
 
-        <Route
+        <Route
 
-          path="/login"
+          path="/login"
 
-          element={<Login />}
+          element={<Login />}
 
-        />
+        />
 
 
 
-        {/* REGISTER */}
+        {/* REGISTER */}
 
-        <Route
+        <Route
 
-          path="/register"
+          path="/register"
 
-          element={<Registerbb />}
+          element={<Registerbb />}
 
-        />
+        />
 
 
 
-        {/* REGISTER-TEST */}
+        {/* REGISTER-TEST */}
 
-        <Route
+        <Route
 
-          path="/register-test"
+          path="/register-test"
 
-          element={<Register />}
+          element={<Register />}
 
-        />
+        />
         {/* BATTLEBLAZE HERO */}
         <Route
           path="/battleblaze"
           element={<BattleblazeHero />}
+        />
+
+        {/* MAIN ADMIN PANEL */}
+        <Route
+          path="/admin"
+          element={<AdminPanel />}
         />
 
         {/* PS5 RUSH ADMIN PANEL */}
@@ -354,83 +361,83 @@ function App() {
 
 
 
-        {/* FALLBACK */}
+        {/* FALLBACK */}
 
-        <Route
+        <Route
 
-          path="*"
+          path="*"
 
-          element={
+          element={
 
-            <Home
+            <Home
 
-              websiteReady={websiteReady}
+              websiteReady={websiteReady}
 
-            />
+            />
 
-          }
+          }
 
-        />
-
-
-
-      </Routes>
+        />
 
 
 
-      {/* =================================================
-
-          NAVBAR
-
-      ================================================= */}
-
-      {websiteReady && <NavbarController />}
+      </Routes>
 
 
 
-      {/* =================================================
+      {/* =================================================
 
-          NEW CYBER LOADING SCREEN
+          NAVBAR
 
-      ================================================= */}
+      ================================================= */}
 
-      {loading && !shattering && (
-
-        <LoadingScreen
-
-          minDuration={3200} // 3.2 seconds loading animation
-
-          onComplete={handleLoadingComplete}
-
-          onLoadingComplete={handleLoadingComplete}
-
-        />
-
-      )}
+      {websiteReady && <NavbarController />}
 
 
 
-      {/* =================================================
+      {/* =================================================
 
-          SHATTER TRANSITION (Agar Option B enable karein)
+          NEW CYBER LOADING SCREEN
 
-      ================================================= */}
+      ================================================= */}
 
-      {shattering && (
+      {loading && !shattering && (
 
-        <ShatterTransition
+        <LoadingScreen
 
-          onComplete={handleShatterComplete}
+          minDuration={3200} // 3.2 seconds loading animation
 
-        />
+          onComplete={handleLoadingComplete}
 
-      )}
+          onLoadingComplete={handleLoadingComplete}
+
+        />
+
+      )}
 
 
 
-    </BrowserRouter>
+      {/* =================================================
 
-  );
+          SHATTER TRANSITION (Agar Option B enable karein)
+
+      ================================================= */}
+
+      {shattering && (
+
+        <ShatterTransition
+
+          onComplete={handleShatterComplete}
+
+        />
+
+      )}
+
+
+
+    </BrowserRouter>
+
+  );
 
 }
 
@@ -438,13 +445,13 @@ function App() {
 
 /* =====================================================
 
-   NAVBAR CONTROLLER
+   NAVBAR CONTROLLER
 
 \===================================================== */
 
 function NavbarController() {
 
-  return <Navbar />;
+  return <Navbar />;
 
 }
 
@@ -452,33 +459,33 @@ function NavbarController() {
 
 /* =====================================================
 
-   SCROLL TO TOP
+   SCROLL TO TOP
 
 \===================================================== */
 
 function ScrollToTop() {
 
-  const { pathname } = useLocation();
+  const { pathname } = useLocation();
 
 
 
-  useEffect(() => {
+  useEffect(() => {
 
-    window.scrollTo({
+    window.scrollTo({
 
-      top: 0,
+      top: 0,
 
-      left: 0,
+      left: 0,
 
-      behavior: "instant",
+      behavior: "instant",
 
-    });
+    });
 
-  }, [pathname]);
+  }, [pathname]);
 
 
 
-  return null;
+  return null;
 
 }
 
@@ -486,259 +493,259 @@ function ScrollToTop() {
 
 /* =====================================================
 
-   HOME PAGE
+   HOME PAGE
 
 \===================================================== */
 
 function Home({ websiteReady }) {
 
-  return (
+  return (
 
-    <main
+    <main
 
-      className="
+      className="
 
-        relative
+        relative
 
-        w-full
+        w-full
 
-        overflow-x-hidden
+        overflow-x-hidden
 
-        bg-black
+        bg-black
 
-      "
+      "
 
-    >
+    >
 
 
 
-      {/* =================================================
+      {/* =================================================
 
-          HERO
+          HERO
 
-      ================================================= */}
+      ================================================= */}
 
-      <section
+      <section
 
-        id="home"
+        id="home"
 
-        className="
+        className="
 
-          relative
+          relative
 
-          h-screen
+          h-screen
 
-          w-full
+          w-full
 
-          overflow-hidden
+          overflow-hidden
 
-          bg-black
+          bg-black
 
-        "
+        "
 
-      >
+      >
 
-        {websiteReady && (
+        {websiteReady && (
 
-          <div
+          <div
 
-            className="
+            className="
 
-              relative
+              relative
 
-              z-[2]
+              z-[2]
 
-              h-full
+              h-full
 
-              w-full
+              w-full
 
-            "
+            "
 
-          >
+          >
 
-            <Hero />
+            <Hero />
 
-          </div>
+          </div>
 
-        )}
+        )}
 
-      </section>
+      </section>
 
 
 
-      {/* =================================================
+      {/* =================================================
 
-          SECTION 1
+          SECTION 1
 
-      ================================================= */}
+      ================================================= */}
 
-      {websiteReady && (
+      {websiteReady && (
 
-        <section
+        <section
 
-          id="scroll-section"
+          id="scroll-section"
 
-          className="
+          className="
 
-            relative
+            relative
 
-            min-h-screen
+            min-h-screen
 
-            w-full
+            w-full
 
-            bg-black
+            bg-black
 
-          "
+          "
 
-        >
+        >
 
-          <ScrollSection />
+          <ScrollSection />
 
-        </section>
+        </section>
 
-      )}
+      )}
 
 
 
-      {/* =================================================
+      {/* =================================================
 
-          SECTION 2
+          SECTION 2
 
-      ================================================= */}
+      ================================================= */}
 
-      {websiteReady && (
+      {websiteReady && (
 
-        <section
+        <section
 
-          id="scroll-section-2"
+          id="scroll-section-2"
 
-          className="
+          className="
 
-            relative
+            relative
 
-            min-h-screen
+            min-h-screen
 
-            w-full
+            w-full
 
-            bg-black
+            bg-black
 
-          "
+          "
 
-        >
+        >
 
-          <ScrollSection2 />
+          <ScrollSection2 />
 
-        </section>
+        </section>
 
-      )}
+      )}
 
 
 
-      {/* =================================================
+      {/* =================================================
 
-          SECTION 3
+          SECTION 3
 
-      ================================================= */}
+      ================================================= */}
 
-      {websiteReady && (
+      {websiteReady && (
 
-        <section
+        <section
 
-          id="scroll-section-3"
+          id="scroll-section-3"
 
-          className="
+          className="
 
-            relative
+            relative
 
-            min-h-screen
+            min-h-screen
 
-            w-full
+            w-full
 
-            bg-black
+            bg-black
 
-          "
+          "
 
-        >
+        >
 
-          <ScrollSection3 />
+          <ScrollSection3 />
 
-        </section>
+        </section>
 
-      )}
+      )}
 
 
 
-      {/* =================================================
+      {/* =================================================
 
-          SECTION 4 (The Experience)
+          SECTION 4 (The Experience)
 
-      ================================================= */}
+      ================================================= */}
 
-      {websiteReady && (
+      {websiteReady && (
 
-        <section
+        <section
 
-          id="scroll-section-4"
+          id="scroll-section-4"
 
-          className="
+          className="
 
-            relative
+            relative
 
-            min-h-screen
+            min-h-screen
 
-            w-full
+            w-full
 
-            bg-black
+            bg-black
 
-          "
+          "
 
-        >
+        >
 
-          <ScrollSection4 />
+          <ScrollSection4 />
 
-        </section>
+        </section>
 
-      )}
+      )}
 
 
 
-      {/* =================================================
+      {/* =================================================
 
-          SECTION 5
+          SECTION 5
 
-      ================================================= */}
+      ================================================= */}
 
-      {websiteReady && (
+      {websiteReady && (
 
-        <section
+        <section
 
-          id="scroll-section-5"
+          id="scroll-section-5"
 
-          className="
+          className="
 
-            relative
+            relative
 
-            min-h-screen
+            min-h-screen
 
-            w-full
+            w-full
 
-            bg-black
+            bg-black
 
-          "
+          "
 
-        >
+        >
 
-          <ScrollSection5 />
+          <ScrollSection5 />
 
-        </section>
+        </section>
 
-      )}
+      )}
 
 
 
-    </main>
+    </main>
 
-  );
+  );
 
 }
 
@@ -746,37 +753,37 @@ function Home({ websiteReady }) {
 
 /* =====================================================
 
-   TEAM PAGE
+   TEAM PAGE
 
 \===================================================== */
 
 function TeamPage({ websiteReady }) {
 
-  return (
+  return (
 
-    <main
+    <main
 
-      className="
+      className="
 
-        relative
+        relative
 
-        min-h-screen
+        min-h-screen
 
-        w-full
+        w-full
 
-        overflow-x-hidden
+        overflow-x-hidden
 
-        bg-black
+        bg-black
 
-      "
+      "
 
-    >
+    >
 
-      {websiteReady && <Team />}
+      {websiteReady && <Team />}
 
-    </main>
+    </main>
 
-  );
+  );
 
 }
 
@@ -784,37 +791,37 @@ function TeamPage({ websiteReady }) {
 
 /* =====================================================
 
-   EVENTS PAGE
+   EVENTS PAGE
 
 \===================================================== */
 
 function EventsPage({ websiteReady }) {
 
-  return (
+  return (
 
-    <main
+    <main
 
-      className="
+      className="
 
-        relative
+        relative
 
-        min-h-screen
+        min-h-screen
 
-        w-full
+        w-full
 
-        overflow-x-hidden
+        overflow-x-hidden
 
-        bg-black
+        bg-black
 
-      "
+      "
 
-    >
+    >
 
-      {websiteReady && <Events />}
+      {websiteReady && <Events />}
 
-    </main>
+    </main>
 
-  );
+  );
 
 }
 
@@ -822,37 +829,37 @@ function EventsPage({ websiteReady }) {
 
 /* =====================================================
 
-   ABOUT PAGE
+   ABOUT PAGE
 
 \===================================================== */
 
 function AboutPage({ websiteReady }) {
 
-  return (
+  return (
 
-    <main
+    <main
 
-      className="
+      className="
 
-        relative
+        relative
 
-        min-h-screen
+        min-h-screen
 
-        w-full
+        w-full
 
-        overflow-x-hidden
+        overflow-x-hidden
 
-        bg-black
+        bg-black
 
-      "
+      "
 
-    >
+    >
 
-      {websiteReady && <About />}
+      {websiteReady && <About />}
 
-    </main>
+    </main>
 
-  );
+  );
 
 }
 
@@ -860,37 +867,37 @@ function AboutPage({ websiteReady }) {
 
 /* =====================================================
 
-   MERCHANDISE PAGE
+   MERCHANDISE PAGE
 
 \===================================================== */
 
 function MerchandisePage({ websiteReady }) {
 
-  return (
+  return (
 
-    <main
+    <main
 
-      className="
+      className="
 
-        relative
+        relative
 
-        min-h-screen
+        min-h-screen
 
-        w-full
+        w-full
 
-        overflow-x-hidden
+        overflow-x-hidden
 
-        bg-black
+        bg-black
 
-      "
+      "
 
-    >
+    >
 
-      {websiteReady && <Merchandise />}
+      {websiteReady && <Merchandise />}
 
-    </main>
+    </main>
 
-  );
+  );
 
 }
 
@@ -898,37 +905,37 @@ function MerchandisePage({ websiteReady }) {
 
 /* =====================================================
 
-   SCHEDULE PAGE
+   SCHEDULE PAGE
 
 \===================================================== */
 
 function SchedulePage({ websiteReady }) {
 
-  return (
+  return (
 
-    <main
+    <main
 
-      className="
+      className="
 
-        relative
+        relative
 
-        min-h-screen
+        min-h-screen
 
-        w-full
+        w-full
 
-        overflow-x-hidden
+        overflow-x-hidden
 
-        bg-black
+        bg-black
 
-      "
+      "
 
-    >
+    >
 
-      {websiteReady && <Schedule />}
+      {websiteReady && <Schedule />}
 
-    </main>
+    </main>
 
-  );
+  );
 
 }
 
