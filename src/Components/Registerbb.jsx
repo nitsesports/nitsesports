@@ -3736,7 +3736,7 @@ export default function Registerbb() {
               }}
             >
               <strong style={{ color: "#a5f3fc" }}>IMPORTANT NOTE:</strong>{" "}
-              Please download and save your receipt. You must show the downloaded receipt at the venue for verification for both PS5 RUSH and VRXPERIENCE.
+              Please download and save your receipt. If downloading the receipt is not available, you can take a screenshot of this popup and show it at the venue for verification. This applies to both PS5 RUSH and VRXPERIENCE.
             </p>
           )}
         </section>
