@@ -3233,7 +3233,7 @@ export default function Registerbb() {
                   <div className="reg-divider" />
                   <section className="reg-payment-panel">
                     <div className="reg-section-label"><span>02</span> SELECT DAY & TIME SLOTS</div>
-                    <p className="reg-payment-note">Each day has 40 bookable slots: 20 PS5 with VR slots and 20 PS5 with Steering Wheel slots. Each slot lasts 30 minutes from 10:00 AM to 8:00 PM. Select any available slots from either setup across Days 1–4; all selected slots are combined into one booking with one total payment and one screenshot.</p>
+                    <p className="reg-payment-note">{game === "PS5_RUSH" ? "Choose SOLO or DUO, then select multiple available 30-minute slots across Days 1–4 (10:00 AM–8:00 PM). You can book slots day-wise in one registration; all selected slots are combined into one booking with one total payment and one payment screenshot." : "Each day has 40 bookable slots: 20 PS5 with VR slots and 20 PS5 with Steering Wheel slots. Each slot lasts 30 minutes from 10:00 AM to 8:00 PM. Select any available slots from either setup across Days 1–4; all selected slots are combined into one booking with one total payment and one screenshot."}</p>
                     {game === "VR_EXPERIENCE" ? <div className="ps5-day-tabs vrx-setup-legend" aria-label="VRXperience setup price legend">
                       <div className="vrx-setup-label"><span className="vrx-setup-dot vr" aria-hidden="true" />VR SLOTS · ₹200 EACH</div>
                       <div className="vrx-setup-label"><span className="vrx-setup-dot steering" aria-hidden="true" />STEERING WHEEL · ₹150 EACH</div>
