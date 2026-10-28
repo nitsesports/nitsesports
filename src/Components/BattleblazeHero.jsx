@@ -899,7 +899,7 @@ export default function BattleblazeHero({ onSelectEvent }) {
 
   useEffect(() => {
     const revealTargets = document.querySelectorAll(
-      ".bb-next-section .bb-overview-copy > *, .bb-modules-section .bb-modules-heading > *, .bb-module-card, .bb-team-section .bb-team-heading > *, .bb-team-card"
+      ".bb-next-section .bb-overview-copy > *, .bb-modules-section .bb-modules-heading > *, .bb-module-card, .bb-results-section .bb-results-heading > *, .bb-results-card, .bb-team-section .bb-team-heading > *, .bb-team-card"
     );
     if (!("IntersectionObserver" in window) || !revealTargets.length) {
       revealTargets.forEach((el) => el.classList.add("bb-scroll-revealed"));
@@ -1174,6 +1174,11 @@ export default function BattleblazeHero({ onSelectEvent }) {
           html::-webkit-scrollbar-thumb:hover, body::-webkit-scrollbar-thumb:hover, *::-webkit-scrollbar-thumb:hover {
             background: linear-gradient(180deg, #c4b5fd 0%, #8b5cf6 48%, #00cfe8 100%);
           }
+
+          .bb-module-card[aria-disabled="true"] { cursor: default; }
+          .bb-module-card[aria-disabled="true"] .bb-register-button { cursor: default; }
+          .bb-register-button .bb-coming-soon-label { display: flex; flex-direction: column; gap: 6px; align-items: center; text-align: center; }
+          .bb-register-button .bb-coming-soon-label small { font-size: 9px; line-height: 1.5; letter-spacing: .08em; }
 
           .bb-page, .bb-page *, .bb-page *::before, .bb-page *::after {
             box-sizing: border-box;
@@ -1587,12 +1592,155 @@ export default function BattleblazeHero({ onSelectEvent }) {
           #home,
           #overview,
           #modules,
+          #results-schedule,
           #team {
             scroll-margin-top: 12px;
           }
 
-          .bb-next-section,
-          .bb-modules-section,
+          /* Results & Schedule section — shares the Modules card language and artwork. */
+          .bb-results-section {
+            padding: clamp(70px, 8vw, 118px) clamp(20px, 5vw, 76px);
+          }
+          .bb-results-inner {
+            position: relative;
+            z-index: 2;
+            width: min(1500px, 100%);
+            margin: 0 auto;
+          }
+          .bb-results-heading {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            margin: 0 auto clamp(38px, 5vw, 64px);
+          }
+          .bb-results-kicker {
+            margin: 0 0 12px;
+            color: #c4b5fd;
+            font-size: 10px;
+            font-weight: 800;
+            letter-spacing: 0.22em;
+            text-transform: uppercase;
+          }
+          .bb-results-title {
+            margin: 0;
+            font-size: clamp(2rem, 4vw, 3.2rem);
+            line-height: 1.12;
+            font-weight: 800;
+            letter-spacing: 0.025em;
+            color: #fff;
+            background: linear-gradient(100deg, #fff 8%, #ddd6fe 48%, #bfdbfe 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            filter: drop-shadow(0 0 18px rgba(139, 92, 246, 0.22));
+          }
+          .bb-results-subtitle {
+            max-width: 620px;
+            margin: 16px auto 0;
+            color: rgba(255, 255, 255, 0.78);
+            font-size: clamp(11px, 0.95vw, 13px);
+            line-height: 1.5;
+          }
+          .bb-results-grid {
+            display: grid;
+            grid-template-columns: repeat(5, minmax(0, 1fr));
+            align-items: stretch;
+            gap: clamp(14px, 1.7vw, 24px);
+          }
+          .bb-results-card {
+            display: flex;
+            flex-direction: column;
+            min-width: 0;
+            overflow: hidden;
+            border: 1.5px solid #a855f7;
+            border-radius: 4px;
+            background: linear-gradient(135deg, rgba(20, 8, 42, 0.94) 0%, rgba(35, 12, 68, 0.94) 100%);
+            box-shadow: 0 18px 42px rgba(0, 0, 0, 0.3), 0 0 20px rgba(168, 85, 247, 0.2);
+            transition: transform 240ms ease, border-color 240ms ease, box-shadow 240ms ease;
+          }
+          .bb-results-card:hover,
+          .bb-results-card:focus-within {
+            transform: translateY(-6px);
+            border-color: #00eaff;
+            box-shadow: 0 22px 48px rgba(0, 0, 0, 0.38), 0 0 32px rgba(0, 234, 255, 0.4);
+          }
+          .bb-results-poster {
+            display: block;
+            width: 100%;
+            aspect-ratio: 4 / 5;
+            object-fit: contain;
+            object-position: center;
+            background: rgba(5, 3, 13, 0.45);
+          }
+          .bb-results-card-content {
+            display: flex;
+            flex: 1 1 auto;
+            flex-direction: column;
+            gap: 13px;
+            padding: 14px 12px 13px;
+          }
+          .bb-results-game-name {
+            margin: 0;
+            min-height: 2.5em;
+            color: #f5f3ff;
+            font-size: clamp(11px, 1vw, 14px);
+            font-weight: 800;
+            letter-spacing: 0.045em;
+            line-height: 1.35;
+            text-align: center;
+          }
+          .bb-results-actions {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 8px;
+            margin-top: auto;
+          }
+          .bb-results-button {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            width: 100%;
+            min-height: 38px;
+            padding: 10px 8px;
+            border: 1px solid #a855f7;
+            border-radius: 3px;
+            color: #fff;
+            background: linear-gradient(135deg, rgba(109, 40, 217, 0.25), rgba(35, 12, 68, 0.96));
+            font-size: clamp(8px, 0.72vw, 10px);
+            font-weight: 800;
+            letter-spacing: 0.06em;
+            line-height: 1.25;
+            text-align: center;
+            text-decoration: none;
+            cursor: pointer;
+            transition: border-color 200ms ease, background 200ms ease, box-shadow 200ms ease, transform 200ms ease;
+          }
+          .bb-results-button:hover,
+          .bb-results-button:focus-visible {
+            border-color: #00eaff;
+            background: linear-gradient(135deg, rgba(0, 234, 255, 0.18), rgba(109, 40, 217, 0.35));
+            box-shadow: 0 0 18px rgba(0, 234, 255, 0.2);
+            transform: translateY(-1px);
+            outline: none;
+          }
+          .bb-results-button.is-result {
+            border-color: rgba(96, 165, 250, 0.8);
+          }
+          @media (max-width: 1100px) {
+            .bb-results-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+          }
+          @media (max-width: 720px) {
+            .bb-results-section { padding: 70px 20px; }
+            .bb-results-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+            .bb-results-card-content { padding: 9px 8px 10px; gap: 9px; }
+            .bb-results-button { min-height: 35px; padding: 9px 5px; font-size: 8px; }
+          }
+          @media (max-width: 380px) {
+            .bb-results-grid { grid-template-columns: 1fr; max-width: 330px; margin: 0 auto; }
+          }
+
           .bb-team-section {
             position: relative;
             isolation: isolate;
@@ -1678,6 +1826,12 @@ export default function BattleblazeHero({ onSelectEvent }) {
           }
 
           .bb-next-section {
+            /* Keep the Event Overview poster positioned inside this section,
+               never relative to the hero/main landing section. */
+            position: relative;
+            isolation: isolate;
+            overflow: hidden;
+            min-height: 620px;
             padding: clamp(42px, 4.5vw, 68px) clamp(22px, 3.5vw, 54px) 72px;
           }
 
@@ -2320,6 +2474,8 @@ export default function BattleblazeHero({ onSelectEvent }) {
           .bb-next-section .bb-overview-copy > *,
           .bb-modules-section .bb-modules-heading > *,
           .bb-module-card,
+          .bb-results-section .bb-results-heading > *,
+          .bb-results-card,
           .bb-team-section .bb-team-heading > *,
           .bb-team-card {
             opacity: 0;
@@ -2329,6 +2485,8 @@ export default function BattleblazeHero({ onSelectEvent }) {
           .bb-next-section .bb-overview-copy > *.bb-scroll-revealed,
           .bb-modules-section .bb-modules-heading > *.bb-scroll-revealed,
           .bb-module-card.bb-scroll-revealed,
+          .bb-results-section .bb-results-heading > *.bb-scroll-revealed,
+          .bb-results-card.bb-scroll-revealed,
           .bb-team-section .bb-team-heading > *.bb-scroll-revealed,
           .bb-team-card.bb-scroll-revealed {
             opacity: 1;
@@ -2493,6 +2651,8 @@ export default function BattleblazeHero({ onSelectEvent }) {
             .bb-next-section .bb-overview-copy > *,
             .bb-modules-section .bb-modules-heading > *,
             .bb-module-card,
+            .bb-results-section .bb-results-heading > *,
+            .bb-results-card,
             .bb-team-section .bb-team-heading > *,
             .bb-team-card {
               opacity: 1;
@@ -2602,7 +2762,7 @@ export default function BattleblazeHero({ onSelectEvent }) {
               {[
                 { name: "FIFA", game: "FIFA", code: "ARENA 01 // FOOTBALL", color: "#45ffb0", icon: "⚽", prize: "₹5,000" },
                 { name: "VALORANT", game: "VALORANT", code: "ARENA 02 // TACTICAL FPS", color: "#8b5cf6", icon: "◈", prize: "₹5,000" },
-                { name: "BGMI", game: "BGMI", code: "ARENA 03 // BATTLE ROYALE", color: "#ffb347", icon: "⌖", prize: "₹20,000" },
+                { name: "BGMI", game: "BGMI", code: "ARENA 03 // BATTLE ROYALE", color: "#ffb347", icon: "⌖", prize: "₹20,000", registrationClosed: true },
                 { name: "MOBILE LEGENDS", game: "MOBILE_LEGENDS", code: "ARENA 04 // MOBA", color: "#ff4fa3", icon: "⬡", prize: "₹5,000" },
                 { name: "RC", game: "RC", code: "ARENA 05 // REAL CRICKET", color: "#00eaff", icon: "↗", prize: "₹5,000" },
                 { name: "PS5 RUSH", game: "PS5_RUSH", code: "ARENA 06 // CONSOLE", color: "#5c8dff", icon: "△" },
@@ -2611,12 +2771,12 @@ export default function BattleblazeHero({ onSelectEvent }) {
                 <a
                   className={`bb-overview-event-card ${event.comingSoon ? "is-coming-soon" : ""}`}
                   key={event.name}
-                  href={event.comingSoon ? undefined : `/register?game=${encodeURIComponent(event.game)}`}
+                  href={event.comingSoon || event.registrationClosed ? undefined : `/register?game=${encodeURIComponent(event.game)}`}
                   style={{ "--event-accent": event.color }}
-                  aria-label={event.comingSoon ? `${event.name} registration coming soon` : `Register for ${event.name}`}
-                  aria-disabled={event.comingSoon ? "true" : undefined}
+                  aria-label={event.registrationClosed ? `${event.name} registration closed. Further details will be shared soon.` : event.comingSoon ? `${event.name} registration coming soon` : `Register for ${event.name}`}
+                  aria-disabled={event.comingSoon || event.registrationClosed ? "true" : undefined}
                   onClick={(e) => {
-                    if (event.comingSoon) {
+                    if (event.comingSoon || event.registrationClosed) {
                       e.preventDefault();
                       return;
                     }
@@ -2671,7 +2831,7 @@ export default function BattleblazeHero({ onSelectEvent }) {
 
           <div className="bb-modules-grid">
             {[
-              { name: "BGMI", game: "BGMI", code: "01 // BATTLE ROYALE", icon: "⌖", description: "Squad up and fight for the final zone.", prize: "₹20,000", posterImage: bgmiPosterUrl },
+              { name: "BGMI", game: "BGMI", code: "01 // BATTLE ROYALE", icon: "⌖", description: "Squad up and fight for the final zone.", prize: "₹20,000", posterImage: bgmiPosterUrl, registrationClosed: true },
               { name: "VALORANT", game: "VALORANT", code: "02 // TACTICAL FPS", icon: "◈", description: "Teamwork win every round.", prize: "₹5,000", posterImage: valoPosterUrl },
               { name: "FIFA", game: "FIFA", code: "03 // FOOTBALL", icon: "⚽", description: "Control the pitch and score the win.", prize: "₹5,000", posterImage: fifaPosterUrl },
               { name: "MOBILE LEGENDS", game: "MOBILE_LEGENDS", code: "04 // MOBA", icon: "⬡", description: "Pick your hero. Team up. Push to win.", prize: "₹5,000", posterImage: mlbbPosterUrl },
@@ -2682,11 +2842,11 @@ export default function BattleblazeHero({ onSelectEvent }) {
               <a
                 className={`bb-module-card ${module.comingSoon ? "is-coming-soon" : ""}`}
                 key={module.name}
-                href={module.comingSoon ? undefined : `/register?game=${encodeURIComponent(module.game)}`}
-                aria-label={module.comingSoon ? `${module.name} registration coming soon` : `Register for ${module.name}`}
-                aria-disabled={module.comingSoon ? "true" : undefined}
+                href={module.comingSoon || module.registrationClosed ? undefined : `/register?game=${encodeURIComponent(module.game)}`}
+                aria-label={module.registrationClosed ? `${module.name} registration closed. Further details will be shared soon.` : module.comingSoon ? `${module.name} registration coming soon` : `Register for ${module.name}`}
+                aria-disabled={module.comingSoon || module.registrationClosed ? "true" : undefined}
                 onClick={(event) => {
-                  if (module.comingSoon) {
+                  if (module.comingSoon || module.registrationClosed) {
                     event.preventDefault();
                     return;
                   }
@@ -2731,7 +2891,12 @@ export default function BattleblazeHero({ onSelectEvent }) {
                     </p>
                   )}
                   <span className={`bb-register-button ${module.comingSoon ? "is-coming-soon" : ""}`} aria-hidden="true">
-                    {module.comingSoon ? (
+                    {module.registrationClosed ? (
+                      <span className="bb-coming-soon-label">
+                        REGISTRATION CLOSED
+                        <small>FURTHER DETAILS WILL BE SHARED SOON</small>
+                      </span>
+                    ) : module.comingSoon ? (
                       <span className="bb-coming-soon-label">
                         REGISTRATION COMING SOON
                         <small className="bb-coming-soon-countdown">OPENS IN {registrationCountdown}</small>
@@ -2742,6 +2907,71 @@ export default function BattleblazeHero({ onSelectEvent }) {
                   </span>
                 </div>
               </a>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section id="results-schedule" className="bb-results-section" aria-label="Game schedules and results">
+        <div className="bb-scroll-ships bb-scroll-ships-team" style={{ "--bb-jet-url": `url(${jetUrl})` }} aria-hidden="true">
+          <span className="bb-scroll-ship bb-scroll-ship-one" />
+          <span className="bb-scroll-ship bb-scroll-ship-two" />
+        </div>
+        <div className="bb-results-inner">
+          <header className="bb-results-heading">
+            <div className="bb-modules-logo-shell">
+              <img className="bb-modules-logo" src={logoUrl} alt="Battleblaze logo" draggable="false" />
+            </div>
+            <p className="bb-results-kicker">Battleblaze // 2026</p>
+            <h2 className="bb-results-title">RESULTS &amp; SCHEDULE</h2>
+            <p className="bb-results-subtitle">
+              Check fixtures, match timings, and tournament results for your game.
+            </p>
+          </header>
+
+          <div className="bb-results-grid">
+            {[
+              { name: "BGMI", game: "BGMI", posterImage: bgmiPosterUrl },
+              { name: "VALORANT", game: "VALORANT", posterImage: valoPosterUrl },
+              { name: "FIFA", game: "FIFA", posterImage: fifaPosterUrl },
+              { name: "MOBILE LEGENDS", game: "MOBILE_LEGENDS", posterImage: mlbbPosterUrl },
+              { name: "RC", game: "RC", posterImage: rcPosterUrl },
+            ].map((item) => (
+              <article className="bb-results-card" key={item.game}>
+                <img
+                  className="bb-results-poster"
+                  src={item.posterImage}
+                  alt={`${item.name} Battleblaze module poster`}
+                  loading="lazy"
+                  decoding="async"
+                />
+                <div className="bb-results-card-content">
+                  <h3 className="bb-results-game-name">{item.name}</h3>
+                  <div className="bb-results-actions">
+                    <a
+                      className="bb-results-button"
+                      href={`/schedule?game=${encodeURIComponent(item.game)}`}
+                      aria-label={`View ${item.name} schedule`}
+                    >
+                      VIEW SCHEDULE <span aria-hidden="true">↗</span>
+                    </a>
+                    <a
+                      className="bb-results-button is-result"
+                      href={`/results?game=${encodeURIComponent(item.game)}`}
+                      aria-label={`View ${item.name} results`}
+                      onClick={(event) => {
+                        event.preventDefault();
+                        // Open BBResult.jsx and pass the selected game's key.
+                        window.location.assign(
+                          `/results?game=${encodeURIComponent(item.game)}`
+                        );
+                      }}
+                    >
+                      RESULTS <span aria-hidden="true">↗</span>
+                    </a>
+                  </div>
+                </div>
+              </article>
             ))}
           </div>
         </div>
