@@ -50,6 +50,7 @@ const formatCountdown = (milliseconds) => {
 
 export default function BattleblazeHero({ onSelectEvent }) {
   const sceneMount = useRef(null);
+  const spaceshipMount = useRef(null);
   const islandFrontMount = useRef(null);
   const audioRef = useRef(null);
   const rootRef = useRef(null);
@@ -177,9 +178,10 @@ export default function BattleblazeHero({ onSelectEvent }) {
   // ─────────────── THREE.JS HERO SCENE ───────────────
   useEffect(() => {
     const host = sceneMount.current;
+    const spaceshipHost = spaceshipMount.current;
     const foregroundHost = islandFrontMount.current;
     const hero = rootRef.current;
-    if (!host || !foregroundHost || !hero) return undefined;
+    if (!host || !spaceshipHost || !foregroundHost || !hero) return undefined;
 
     let disposed = false;
     let raf = 0;
@@ -193,6 +195,7 @@ export default function BattleblazeHero({ onSelectEvent }) {
     const disposableTextures = [];
 
     const scene = new THREE.Scene();
+    const spaceshipScene = new THREE.Scene();
     const foregroundScene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(60, 1, 0.1, 1200);
     camera.position.z = 100;
@@ -207,6 +210,15 @@ export default function BattleblazeHero({ onSelectEvent }) {
     renderer.setPixelRatio(pixelRatio);
     renderer.setClearColor(0x000000, 0);
     host.appendChild(renderer.domElement);
+
+    const spaceshipRenderer = new THREE.WebGLRenderer({
+      alpha: true,
+      antialias: true,
+      powerPreference: "high-performance",
+    });
+    spaceshipRenderer.setPixelRatio(pixelRatio);
+    spaceshipRenderer.setClearColor(0x000000, 0);
+    spaceshipHost.appendChild(spaceshipRenderer.domElement);
 
     const foregroundRenderer = new THREE.WebGLRenderer({
       alpha: true,
@@ -337,7 +349,7 @@ export default function BattleblazeHero({ onSelectEvent }) {
             ? texture.image.width / texture.image.height
             : 2.5;
 
-        const shipCount = 2;
+        const shipCount = 3;
         const halfWidth = getVisibleWidth() / 2;
         const halfHeight = getVisibleHeight() / 2;
 
@@ -373,7 +385,9 @@ export default function BattleblazeHero({ onSelectEvent }) {
           };
 
           sprite.position.set(randomBetween(-halfWidth, halfWidth), ship.baseY, ship.depth);
-          scene.add(sprite);
+          // Keep spaceships on a dedicated canvas behind all landing PNG artwork.
+          sprite.renderOrder = -100;
+          spaceshipScene.add(sprite);
           spaceshipFleet.push(ship);
         }
       },
@@ -538,7 +552,7 @@ export default function BattleblazeHero({ onSelectEvent }) {
       const visibleWidth = getVisibleWidth();
       const visibleHeight = getVisibleHeight();
 
-      const islandScene = assetIndex === 2 ? foregroundScene : scene;
+      const islandScene = foregroundScene;
 
       islandLayout
         .filter((config) => config.asset === assetIndex)
@@ -628,6 +642,7 @@ export default function BattleblazeHero({ onSelectEvent }) {
       camera.updateProjectionMatrix();
 
       renderer.setSize(width, height, false);
+      spaceshipRenderer.setSize(width, height, false);
       foregroundRenderer.setSize(width, height, false);
 
       const visibleWidth = getVisibleWidth();
@@ -802,6 +817,7 @@ export default function BattleblazeHero({ onSelectEvent }) {
       });
 
       renderer.render(scene, camera);
+      spaceshipRenderer.render(spaceshipScene, camera);
       foregroundRenderer.render(foregroundScene, camera);
     };
 
@@ -815,7 +831,7 @@ export default function BattleblazeHero({ onSelectEvent }) {
       window.removeEventListener("scroll", handleScrollZoom);
 
       spaceshipFleet.forEach(({ sprite }) => {
-        scene.remove(sprite);
+        spaceshipScene.remove(sprite);
         sprite.material.dispose();
       });
 
@@ -839,10 +855,14 @@ export default function BattleblazeHero({ onSelectEvent }) {
       if (shipTexture) shipTexture.dispose();
       disposableTextures.forEach((texture) => texture.dispose());
       renderer.dispose();
+      spaceshipRenderer.dispose();
       foregroundRenderer.dispose();
 
       if (renderer.domElement.parentNode === host) {
         host.removeChild(renderer.domElement);
+      }
+      if (spaceshipRenderer.domElement.parentNode === spaceshipHost) {
+        spaceshipHost.removeChild(spaceshipRenderer.domElement);
       }
       if (foregroundRenderer.domElement.parentNode === foregroundHost) {
         foregroundHost.removeChild(foregroundRenderer.domElement);
@@ -991,6 +1011,8 @@ export default function BattleblazeHero({ onSelectEvent }) {
           "--bb-scroll-darkness": "0",
         }}
       >
+        <div className="bb-match-spaceships" ref={spaceshipMount} aria-hidden="true" />
+
         <div
           className="bb-match-art"
           aria-hidden="true"
@@ -1206,10 +1228,23 @@ export default function BattleblazeHero({ onSelectEvent }) {
             cursor: none;
           }
 
+          .bb-match-spaceships {
+            position: absolute;
+            inset: 0;
+            z-index: 3;
+            overflow: hidden;
+            pointer-events: none;
+          }
+          .bb-match-spaceships canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+          }
+
           .bb-match-art {
             position: absolute;
             inset: 0;
-            z-index: 1;
+            z-index: 0;
             display: block;
             width: 100%;
             height: 100%;
@@ -1229,7 +1264,7 @@ export default function BattleblazeHero({ onSelectEvent }) {
             position: absolute;
             top: clamp(108px, 13vh, 144px);
             left: clamp(-76px, -4.5vw, -34px);
-            z-index: 3;
+            z-index: 1;
             display: block;
             width: clamp(190px, 22vw, 320px);
             height: auto;
