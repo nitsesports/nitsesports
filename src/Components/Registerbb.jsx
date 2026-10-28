@@ -1019,7 +1019,7 @@ export default function Registerbb() {
 
     roundedRect(margin, 348, width - margin * 2, 92, 14, "#17102e", "#7656e8");
     text("EVENT VENUE", margin + 22, 379, 13, "#c4b5fd", 700);
-    text("NEW GALLERY G301", margin + 22, 415, 25, "#ffffff", 800);
+    text("NEW GALLERY G302", margin + 22, 415, 25, "#ffffff", 800);
 
     const detailY = 464;
     const detailW = (width - margin * 2 - 18) / 2;
