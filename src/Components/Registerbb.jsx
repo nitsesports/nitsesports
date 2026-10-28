@@ -159,7 +159,7 @@ const tournaments = {
 
     title: "FIFA",
 
-    subtitle: "EA SPORTS FC / FIFA • RAMPAGE 2026",
+    subtitle: "EA SPORTS FC / FIFA • BATTLEBLAZE 2026",
 
     fields: [
 
@@ -179,7 +179,7 @@ const tournaments = {
 
     title: "MOBILE LEGENDS",
 
-    subtitle: "MOBILE LEGENDS: BANG BANG • RAMPAGE 2026",
+    subtitle: "MOBILE LEGENDS: BANG BANG • BATTLEBLAZE 2026",
 
     fields: [
 
@@ -449,8 +449,8 @@ export default function Registerbb() {
     e.preventDefault();
 
     // BGMI registrations are closed. Block submissions even if a stale form is open.
-    if (game === "BGMI") {
-      setFormError("BGMI REGISTRATION IS CLOSED. FURTHER DETAILS WILL BE SHARED SOON.");
+    if (game === "BGMI" || game === "RC") {
+      setFormError(`${game} REGISTRATION IS CLOSED. FURTHER DETAILS WILL BE SHARED SOON.`);
       return;
     }
 
@@ -718,7 +718,7 @@ export default function Registerbb() {
 
           .insert({
 
-            event_name: "RAMPAGE 2026",
+            event_name: "BATTLEBLAZE2026",
 
             tournament: current.title,
 
@@ -2962,7 +2962,7 @@ export default function Registerbb() {
 
           <div className="reg-divider" />
 
-          {game === "BGMI" ? (
+          {game === "BGMI" || game === "RC" ? (
 
             <div
               role="status"
@@ -2992,7 +2992,7 @@ export default function Registerbb() {
               >
                 ×
               </div>
-              <span className="reg-eyebrow">BATTLEBLAZE 2026 • BGMI REGISTRATION STATUS</span>
+              <span className="reg-eyebrow">BATTLEBLAZE 2026 • {game} REGISTRATION STATUS</span>
               <h2 style={{ margin: "14px 0", color: "#fff", fontSize: "clamp(20px, 3vw, 30px)" }}>
                 REGISTRATION CLOSED
               </h2>
@@ -3540,7 +3540,7 @@ export default function Registerbb() {
                             <strong>PAYMENT QR — SLOT 1</strong>
                             <img
                               src={rampageQR}
-                              alt="Rampage payment QR code 1"
+                              alt="BattleBlaze payment QR code 1"
                               loading="lazy"
                               decoding="async"
                             />
@@ -3550,7 +3550,7 @@ export default function Registerbb() {
                             <strong>PAYMENT QR — SLOT 2</strong>
                             <img
                               src={rampageQR2}
-                              alt="Rampage payment QR code 2"
+                              alt="BattleBlaze payment QR code 2"
                               loading="lazy"
                               decoding="async"
                             />
