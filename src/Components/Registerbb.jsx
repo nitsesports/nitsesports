@@ -448,6 +448,12 @@ export default function Registerbb() {
 
     e.preventDefault();
 
+    // BGMI registrations are closed. Block submissions even if a stale form is open.
+    if (game === "BGMI") {
+      setFormError("BGMI REGISTRATION IS CLOSED. FURTHER DETAILS WILL BE SHARED SOON.");
+      return;
+    }
+
     setFormError("");
 
     if (game === "PS5_RUSH" || game === "VR_EXPERIENCE") {
@@ -1019,7 +1025,7 @@ export default function Registerbb() {
 
     roundedRect(margin, 348, width - margin * 2, 92, 14, "#17102e", "#7656e8");
     text("EVENT VENUE", margin + 22, 379, 13, "#c4b5fd", 700);
-    text("NEW GALLERY G302", margin + 22, 415, 25, "#ffffff", 800);
+    text("NEW GALLERY G301", margin + 22, 415, 25, "#ffffff", 800);
 
     const detailY = 464;
     const detailW = (width - margin * 2 - 18) / 2;
@@ -2956,7 +2962,46 @@ export default function Registerbb() {
 
           <div className="reg-divider" />
 
-          {success ? (
+          {game === "BGMI" ? (
+
+            <div
+              role="status"
+              aria-live="polite"
+              style={{
+                padding: "clamp(24px, 5vw, 48px) 20px",
+                textAlign: "center",
+                border: "1px solid rgba(196, 181, 253, 0.42)",
+                borderRadius: "14px",
+                background: "rgba(139, 92, 246, 0.09)",
+              }}
+            >
+              <div
+                aria-hidden="true"
+                style={{
+                  width: "64px",
+                  height: "64px",
+                  margin: "0 auto 20px",
+                  display: "grid",
+                  placeItems: "center",
+                  border: "1px solid #a78bfa",
+                  borderRadius: "50%",
+                  color: "#c4b5fd",
+                  fontSize: "30px",
+                  fontWeight: 800,
+                }}
+              >
+                ×
+              </div>
+              <span className="reg-eyebrow">BGMI · RAMPAGE 2026</span>
+              <h2 style={{ margin: "14px 0", color: "#fff", fontSize: "clamp(20px, 3vw, 30px)" }}>
+                REGISTRATION CLOSED
+              </h2>
+              <p style={{ margin: "0 auto", maxWidth: "620px", color: "rgba(255,255,255,.8)", lineHeight: 1.8, fontSize: "clamp(12px, 1.4vw, 15px)" }}>
+                Further details will be shared soon.
+              </p>
+            </div>
+
+          ) : success ? (
 
             <div className="reg-success">
 

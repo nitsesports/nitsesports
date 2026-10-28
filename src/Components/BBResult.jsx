@@ -64,7 +64,8 @@ export default function BBResult() {
 
         .bbr-page {
           min-height: 100vh;
-          padding: 24px clamp(16px, 4vw, 56px);
+          /* Leave room for the site's fixed navbar so the page header/logo never overlaps it. */
+          padding: clamp(150px, 18vh, 180px) clamp(16px, 4vw, 56px) 24px !important;
           color: #f8fafc;
           font-family: 'Orbitron', sans-serif;
           background:
@@ -103,6 +104,8 @@ export default function BBResult() {
           justify-content: center;
           gap: 12px;
           position: relative;
+          z-index: 100;
+          margin-top: 24px;
           padding: 12px 0 24px;
           text-align: center;
         }
@@ -328,7 +331,8 @@ export default function BBResult() {
 
         @media (max-width: 560px) {
           .bbr-page {
-            padding-top: 16px;
+            /* Keep the header clear of the centered navbar logo on mobile too. */
+            padding-top: 88px;
           }
 
           .bbr-header {
