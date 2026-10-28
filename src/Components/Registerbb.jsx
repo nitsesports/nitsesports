@@ -45,7 +45,7 @@ const tournaments = {
 
     title: "BGMI",
 
-    subtitle: "BATTLEGROUNDS MOBILE INDIA • RAMPAGE 2026",
+    subtitle: "BATTLEGROUNDS MOBILE INDIA • BATTLEBLAZE 2026",
 
     fields: [
 
@@ -2992,7 +2992,7 @@ export default function Registerbb() {
               >
                 ×
               </div>
-              <span className="reg-eyebrow">BGMI · RAMPAGE 2026</span>
+              <span className="reg-eyebrow">BATTLEBLAZE 2026 • BGMI REGISTRATION STATUS</span>
               <h2 style={{ margin: "14px 0", color: "#fff", fontSize: "clamp(20px, 3vw, 30px)" }}>
                 REGISTRATION CLOSED
               </h2>
