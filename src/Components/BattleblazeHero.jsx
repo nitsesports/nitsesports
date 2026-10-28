@@ -361,7 +361,7 @@ export default function BattleblazeHero({ onSelectEvent }) {
           const material = new THREE.SpriteMaterial({
             map: texture,
             transparent: true,
-            opacity: randomBetween(0.8, 0.96),
+            opacity: 1,
             depthWrite: false,
             depthTest: true,
             alphaTest: 0.03,
@@ -380,7 +380,7 @@ export default function BattleblazeHero({ onSelectEvent }) {
             baseWidth: width,
             width,
             aspect: Math.max(aspect, 0.1),
-            opacity: material.opacity,
+            opacity: 1,
             depth: i === 0 ? randomBetween(10, 14) : randomBetween(22, 26),
           };
 
@@ -2848,10 +2848,6 @@ export default function BattleblazeHero({ onSelectEvent }) {
       </section>
 
       <section id="modules" className="bb-modules-section" aria-label="Battleblaze modules">
-        <div className="bb-scroll-ships bb-scroll-ships-modules" style={{ "--bb-jet-url": `url(${jetUrl})` }} aria-hidden="true">
-          <span className="bb-scroll-ship bb-scroll-ship-one" />
-          <span className="bb-scroll-ship bb-scroll-ship-two" />
-        </div>
         <div className="bb-modules-inner">
           <header className="bb-modules-heading">
             <div className="bb-modules-logo-shell">
