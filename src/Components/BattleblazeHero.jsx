@@ -2359,6 +2359,37 @@ export default function BattleblazeHero({ onSelectEvent }) {
             background: linear-gradient(100deg, rgba(109, 40, 217, 0.18), rgba(59, 130, 246, 0.13));
             box-shadow: none;
           }
+          .bb-register-button.is-registration-closed {
+            justify-content: center;
+            min-height: 42px;
+            padding: 10px 8px;
+            border-color: rgba(255, 107, 107, 0.65);
+            color: #ffe4e6;
+            text-align: center;
+            background: linear-gradient(100deg, rgba(127, 29, 29, 0.32), rgba(88, 28, 135, 0.2));
+            cursor: not-allowed;
+          }
+          .bb-register-button.is-registration-closed:hover {
+            border-color: rgba(255, 107, 107, 0.65);
+            background: linear-gradient(100deg, rgba(127, 29, 29, 0.32), rgba(88, 28, 135, 0.2));
+            box-shadow: none;
+          }
+          .bb-registration-closed-label {
+            display: block;
+            width: 100%;
+            font-size: clamp(8px, 0.72vw, 10px);
+            line-height: 1.45;
+          }
+          .bb-registration-closed-label small {
+            display: block;
+            margin-top: 5px;
+            font-family: 'Rajdhani', sans-serif !important;
+            font-size: 10px;
+            font-weight: 600;
+            letter-spacing: 0.04em;
+            text-transform: none;
+            color: rgba(255, 255, 255, 0.82);
+          }
           .bb-coming-soon-label {
             display: block;
             width: 100%;
@@ -2826,22 +2857,28 @@ export default function BattleblazeHero({ onSelectEvent }) {
 
           <div className="bb-modules-grid">
             {[
-              { name: "BGMI", game: "BGMI", code: "01 // BATTLE ROYALE", icon: "⌖", description: "Squad up and fight for the final zone.", prize: "₹20,000", posterImage: bgmiPosterUrl },
+              { name: "BGMI", game: "BGMI", code: "01 // BATTLE ROYALE", icon: "⌖", description: "Squad up and fight for the final zone.", prize: "₹20,000", posterImage: bgmiPosterUrl, registrationClosed: true },
               { name: "VALORANT", game: "VALORANT", code: "02 // TACTICAL FPS", icon: "◈", description: "Teamwork win every round.", prize: "₹5,000", posterImage: valoPosterUrl },
               { name: "FIFA", game: "FIFA", code: "03 // FOOTBALL", icon: "⚽", description: "Control the pitch and score the win.", prize: "₹5,000", posterImage: fifaPosterUrl },
-              { name: "MOBILE LEGENDS", game: "MOBILE_LEGENDS", code: "04 // MOBA", icon: "⬡", description: "Pick your hero. Team up. Push to win.", prize: "₹5,000", posterImage: mlbbPosterUrl },
-              { name: "RC", game: "RC", code: "05 // REAL CRICKET", icon: "🏏", description: "Represent your side and compete for the win.", prize: "₹5,000", posterImage: rcPosterUrl },
+              { name: "MOBILE LEGENDS", game: "MOBILE_LEGENDS", code: "04 // MOBA", icon: "⬡", description: "Pick your hero. Team up. Push to win.", prize: "₹5,000", posterImage: mlbbPosterUrl, registrationClosed: true },
+              { name: "RC", game: "RC", code: "05 // REAL CRICKET", icon: "🏏", description: "Represent your side and compete for the win.", prize: "₹5,000", posterImage: rcPosterUrl, registrationClosed: true },
               { name: "VR EXPERIENCE", game: "VR_EXPERIENCE", code: "06 // IMMERSIVE", icon: "◎", description: "Enter an immersive virtual world.", posterImage: vrPosterUrl },
               { name: "PS5 RUSH", game: "PS5_RUSH", code: "07 // CONSOLE", icon: "△", description: "Grab a controller and challenge rivals.", posterImage: ps5PosterUrl },
             ].map((module, index) => (
               <a
-                className={`bb-module-card ${module.comingSoon ? "is-coming-soon" : ""}`}
+                className={`bb-module-card ${module.comingSoon ? "is-coming-soon" : ""} ${module.registrationClosed ? "is-registration-closed" : ""}`}
                 key={module.name}
-                href={module.comingSoon ? undefined : `/register?game=${encodeURIComponent(module.game)}`}
-                aria-label={module.comingSoon ? `${module.name} registration coming soon` : `Register for ${module.name}`}
-                aria-disabled={module.comingSoon ? "true" : undefined}
+                href={module.comingSoon || module.registrationClosed ? undefined : `/register?game=${encodeURIComponent(module.game)}`}
+                aria-label={
+                  module.registrationClosed
+                    ? `${module.name} registration closed. Further details will be shared soon.`
+                    : module.comingSoon
+                      ? `${module.name} registration coming soon`
+                      : `Register for ${module.name}`
+                }
+                aria-disabled={module.comingSoon || module.registrationClosed ? "true" : undefined}
                 onClick={(event) => {
-                  if (module.comingSoon) {
+                  if (module.comingSoon || module.registrationClosed) {
                     event.preventDefault();
                     return;
                   }
@@ -2885,8 +2922,16 @@ export default function BattleblazeHero({ onSelectEvent }) {
                       LIMITED SLOTS AVAILABLE — BOOK YOUR SLOTS NOW!
                     </p>
                   )}
-                  <span className={`bb-register-button ${module.comingSoon ? "is-coming-soon" : ""}`} aria-hidden="true">
-                    {module.comingSoon ? (
+                  <span
+                    className={`bb-register-button ${module.comingSoon ? "is-coming-soon" : ""} ${module.registrationClosed ? "is-registration-closed" : ""}`}
+                    aria-hidden="true"
+                  >
+                    {module.registrationClosed ? (
+                      <span className="bb-registration-closed-label">
+                        REGISTRATION CLOSED
+                        <small>Further details will be shared soon.</small>
+                      </span>
+                    ) : module.comingSoon ? (
                       <span className="bb-coming-soon-label">
                         REGISTRATION COMING SOON
                         <small className="bb-coming-soon-countdown">OPENS IN {registrationCountdown}</small>

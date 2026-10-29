@@ -448,8 +448,8 @@ export default function Registerbb() {
 
     e.preventDefault();
 
-    // BGMI registrations are closed. Block submissions even if a stale form is open.
-    if (game === "BGMI" || game === "RC") {
+    // BGMI, MLBB, and RC registrations are closed. Block submissions even if a stale form is open.
+    if (["BGMI", "MOBILE_LEGENDS", "RC"].includes(game)) {
       setFormError(`${game} REGISTRATION IS CLOSED. FURTHER DETAILS WILL BE SHARED SOON.`);
       return;
     }
@@ -2962,7 +2962,7 @@ export default function Registerbb() {
 
           <div className="reg-divider" />
 
-          {game === "BGMI" || game === "RC" ? (
+          {["BGMI", "MOBILE_LEGENDS", "RC"].includes(game) ? (
 
             <div
               role="status"
