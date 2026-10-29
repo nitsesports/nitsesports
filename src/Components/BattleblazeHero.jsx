@@ -50,7 +50,6 @@ const formatCountdown = (milliseconds) => {
 
 export default function BattleblazeHero({ onSelectEvent }) {
   const sceneMount = useRef(null);
-  const spaceshipMount = useRef(null);
   const islandFrontMount = useRef(null);
   const audioRef = useRef(null);
   const rootRef = useRef(null);
@@ -178,10 +177,9 @@ export default function BattleblazeHero({ onSelectEvent }) {
   // ─────────────── THREE.JS HERO SCENE ───────────────
   useEffect(() => {
     const host = sceneMount.current;
-    const spaceshipHost = spaceshipMount.current;
     const foregroundHost = islandFrontMount.current;
     const hero = rootRef.current;
-    if (!host || !spaceshipHost || !foregroundHost || !hero) return undefined;
+    if (!host || !foregroundHost || !hero) return undefined;
 
     let disposed = false;
     let raf = 0;
@@ -195,7 +193,6 @@ export default function BattleblazeHero({ onSelectEvent }) {
     const disposableTextures = [];
 
     const scene = new THREE.Scene();
-    const spaceshipScene = new THREE.Scene();
     const foregroundScene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(60, 1, 0.1, 1200);
     camera.position.z = 100;
@@ -210,15 +207,6 @@ export default function BattleblazeHero({ onSelectEvent }) {
     renderer.setPixelRatio(pixelRatio);
     renderer.setClearColor(0x000000, 0);
     host.appendChild(renderer.domElement);
-
-    const spaceshipRenderer = new THREE.WebGLRenderer({
-      alpha: true,
-      antialias: true,
-      powerPreference: "high-performance",
-    });
-    spaceshipRenderer.setPixelRatio(pixelRatio);
-    spaceshipRenderer.setClearColor(0x000000, 0);
-    spaceshipHost.appendChild(spaceshipRenderer.domElement);
 
     const foregroundRenderer = new THREE.WebGLRenderer({
       alpha: true,
@@ -349,7 +337,7 @@ export default function BattleblazeHero({ onSelectEvent }) {
             ? texture.image.width / texture.image.height
             : 2.5;
 
-        const shipCount = 3;
+        const shipCount = 2;
         const halfWidth = getVisibleWidth() / 2;
         const halfHeight = getVisibleHeight() / 2;
 
@@ -361,7 +349,7 @@ export default function BattleblazeHero({ onSelectEvent }) {
           const material = new THREE.SpriteMaterial({
             map: texture,
             transparent: true,
-            opacity: 1,
+            opacity: randomBetween(0.8, 0.96),
             depthWrite: false,
             depthTest: true,
             alphaTest: 0.03,
@@ -380,14 +368,12 @@ export default function BattleblazeHero({ onSelectEvent }) {
             baseWidth: width,
             width,
             aspect: Math.max(aspect, 0.1),
-            opacity: 1,
+            opacity: material.opacity,
             depth: i === 0 ? randomBetween(10, 14) : randomBetween(22, 26),
           };
 
           sprite.position.set(randomBetween(-halfWidth, halfWidth), ship.baseY, ship.depth);
-          // Keep spaceships on a dedicated canvas behind all landing PNG artwork.
-          sprite.renderOrder = -100;
-          spaceshipScene.add(sprite);
+          scene.add(sprite);
           spaceshipFleet.push(ship);
         }
       },
@@ -552,7 +538,7 @@ export default function BattleblazeHero({ onSelectEvent }) {
       const visibleWidth = getVisibleWidth();
       const visibleHeight = getVisibleHeight();
 
-      const islandScene = foregroundScene;
+      const islandScene = assetIndex === 2 ? foregroundScene : scene;
 
       islandLayout
         .filter((config) => config.asset === assetIndex)
@@ -642,7 +628,6 @@ export default function BattleblazeHero({ onSelectEvent }) {
       camera.updateProjectionMatrix();
 
       renderer.setSize(width, height, false);
-      spaceshipRenderer.setSize(width, height, false);
       foregroundRenderer.setSize(width, height, false);
 
       const visibleWidth = getVisibleWidth();
@@ -817,7 +802,6 @@ export default function BattleblazeHero({ onSelectEvent }) {
       });
 
       renderer.render(scene, camera);
-      spaceshipRenderer.render(spaceshipScene, camera);
       foregroundRenderer.render(foregroundScene, camera);
     };
 
@@ -831,7 +815,7 @@ export default function BattleblazeHero({ onSelectEvent }) {
       window.removeEventListener("scroll", handleScrollZoom);
 
       spaceshipFleet.forEach(({ sprite }) => {
-        spaceshipScene.remove(sprite);
+        scene.remove(sprite);
         sprite.material.dispose();
       });
 
@@ -855,14 +839,10 @@ export default function BattleblazeHero({ onSelectEvent }) {
       if (shipTexture) shipTexture.dispose();
       disposableTextures.forEach((texture) => texture.dispose());
       renderer.dispose();
-      spaceshipRenderer.dispose();
       foregroundRenderer.dispose();
 
       if (renderer.domElement.parentNode === host) {
         host.removeChild(renderer.domElement);
-      }
-      if (spaceshipRenderer.domElement.parentNode === spaceshipHost) {
-        spaceshipHost.removeChild(spaceshipRenderer.domElement);
       }
       if (foregroundRenderer.domElement.parentNode === foregroundHost) {
         foregroundHost.removeChild(foregroundRenderer.domElement);
@@ -1011,8 +991,6 @@ export default function BattleblazeHero({ onSelectEvent }) {
           "--bb-scroll-darkness": "0",
         }}
       >
-        <div className="bb-match-spaceships" ref={spaceshipMount} aria-hidden="true" />
-
         <div
           className="bb-match-art"
           aria-hidden="true"
@@ -1197,11 +1175,6 @@ export default function BattleblazeHero({ onSelectEvent }) {
             background: linear-gradient(180deg, #c4b5fd 0%, #8b5cf6 48%, #00cfe8 100%);
           }
 
-          .bb-module-card[aria-disabled="true"] { cursor: default; }
-          .bb-module-card[aria-disabled="true"] .bb-register-button { cursor: default; }
-          .bb-register-button .bb-coming-soon-label { display: flex; flex-direction: column; gap: 6px; align-items: center; text-align: center; }
-          .bb-register-button .bb-coming-soon-label small { font-size: 9px; line-height: 1.5; letter-spacing: .08em; }
-
           .bb-page, .bb-page *, .bb-page *::before, .bb-page *::after {
             box-sizing: border-box;
             font-family: 'Orbitron', sans-serif !important;
@@ -1228,23 +1201,10 @@ export default function BattleblazeHero({ onSelectEvent }) {
             cursor: none;
           }
 
-          .bb-match-spaceships {
-            position: absolute;
-            inset: 0;
-            z-index: 3;
-            overflow: hidden;
-            pointer-events: none;
-          }
-          .bb-match-spaceships canvas {
-            display: block;
-            width: 100%;
-            height: 100%;
-          }
-
           .bb-match-art {
             position: absolute;
             inset: 0;
-            z-index: 0;
+            z-index: 1;
             display: block;
             width: 100%;
             height: 100%;
@@ -1264,7 +1224,7 @@ export default function BattleblazeHero({ onSelectEvent }) {
             position: absolute;
             top: clamp(108px, 13vh, 144px);
             left: clamp(-76px, -4.5vw, -34px);
-            z-index: 1;
+            z-index: 3;
             display: block;
             width: clamp(190px, 22vw, 320px);
             height: auto;
@@ -2797,21 +2757,21 @@ export default function BattleblazeHero({ onSelectEvent }) {
               {[
                 { name: "FIFA", game: "FIFA", code: "ARENA 01 // FOOTBALL", color: "#45ffb0", icon: "⚽", prize: "₹5,000" },
                 { name: "VALORANT", game: "VALORANT", code: "ARENA 02 // TACTICAL FPS", color: "#8b5cf6", icon: "◈", prize: "₹5,000" },
-                { name: "BGMI", game: "BGMI", code: "ARENA 03 // BATTLE ROYALE", color: "#ffb347", icon: "⌖", prize: "₹20,000", registrationClosed: true },
+                { name: "BGMI", game: "BGMI", code: "ARENA 03 // BATTLE ROYALE", color: "#ffb347", icon: "⌖", prize: "₹20,000" },
                 { name: "MOBILE LEGENDS", game: "MOBILE_LEGENDS", code: "ARENA 04 // MOBA", color: "#ff4fa3", icon: "⬡", prize: "₹5,000" },
-                { name: "RC", game: "RC", code: "ARENA 05 // REAL CRICKET", color: "#00eaff", icon: "↗", prize: "₹5,000", registrationClosed: true },
+                { name: "RC", game: "RC", code: "ARENA 05 // REAL CRICKET", color: "#00eaff", icon: "↗", prize: "₹5,000" },
                 { name: "PS5 RUSH", game: "PS5_RUSH", code: "ARENA 06 // CONSOLE", color: "#5c8dff", icon: "△" },
                 { name: "VRXPERIENCE", game: "VR_EXPERIENCE", code: "ARENA 07 // IMMERSIVE", color: "#bf7bff", icon: "◎" },
               ].map((event) => (
                 <a
                   className={`bb-overview-event-card ${event.comingSoon ? "is-coming-soon" : ""}`}
                   key={event.name}
-                  href={event.comingSoon || event.registrationClosed ? undefined : `/register?game=${encodeURIComponent(event.game)}`}
+                  href={event.comingSoon ? undefined : `/register?game=${encodeURIComponent(event.game)}`}
                   style={{ "--event-accent": event.color }}
-                  aria-label={event.registrationClosed ? `${event.name} registration closed. Further details will be shared soon.` : event.comingSoon ? `${event.name} registration coming soon` : `Register for ${event.name}`}
-                  aria-disabled={event.comingSoon || event.registrationClosed ? "true" : undefined}
+                  aria-label={event.comingSoon ? `${event.name} registration coming soon` : `Register for ${event.name}`}
+                  aria-disabled={event.comingSoon ? "true" : undefined}
                   onClick={(e) => {
-                    if (event.comingSoon || event.registrationClosed) {
+                    if (event.comingSoon) {
                       e.preventDefault();
                       return;
                     }
@@ -2848,6 +2808,10 @@ export default function BattleblazeHero({ onSelectEvent }) {
       </section>
 
       <section id="modules" className="bb-modules-section" aria-label="Battleblaze modules">
+        <div className="bb-scroll-ships bb-scroll-ships-modules" style={{ "--bb-jet-url": `url(${jetUrl})` }} aria-hidden="true">
+          <span className="bb-scroll-ship bb-scroll-ship-one" />
+          <span className="bb-scroll-ship bb-scroll-ship-two" />
+        </div>
         <div className="bb-modules-inner">
           <header className="bb-modules-heading">
             <div className="bb-modules-logo-shell">
@@ -2862,22 +2826,22 @@ export default function BattleblazeHero({ onSelectEvent }) {
 
           <div className="bb-modules-grid">
             {[
-              { name: "BGMI", game: "BGMI", code: "01 // BATTLE ROYALE", icon: "⌖", description: "Squad up and fight for the final zone.", prize: "₹20,000", posterImage: bgmiPosterUrl, registrationClosed: true },
+              { name: "BGMI", game: "BGMI", code: "01 // BATTLE ROYALE", icon: "⌖", description: "Squad up and fight for the final zone.", prize: "₹20,000", posterImage: bgmiPosterUrl },
               { name: "VALORANT", game: "VALORANT", code: "02 // TACTICAL FPS", icon: "◈", description: "Teamwork win every round.", prize: "₹5,000", posterImage: valoPosterUrl },
               { name: "FIFA", game: "FIFA", code: "03 // FOOTBALL", icon: "⚽", description: "Control the pitch and score the win.", prize: "₹5,000", posterImage: fifaPosterUrl },
               { name: "MOBILE LEGENDS", game: "MOBILE_LEGENDS", code: "04 // MOBA", icon: "⬡", description: "Pick your hero. Team up. Push to win.", prize: "₹5,000", posterImage: mlbbPosterUrl },
-              { name: "RC", game: "RC", code: "05 // REAL CRICKET", icon: "🏏", description: "Represent your side and compete for the win.", prize: "₹5,000", posterImage: rcPosterUrl, registrationClosed: true },
+              { name: "RC", game: "RC", code: "05 // REAL CRICKET", icon: "🏏", description: "Represent your side and compete for the win.", prize: "₹5,000", posterImage: rcPosterUrl },
               { name: "VR EXPERIENCE", game: "VR_EXPERIENCE", code: "06 // IMMERSIVE", icon: "◎", description: "Enter an immersive virtual world.", posterImage: vrPosterUrl },
               { name: "PS5 RUSH", game: "PS5_RUSH", code: "07 // CONSOLE", icon: "△", description: "Grab a controller and challenge rivals.", posterImage: ps5PosterUrl },
             ].map((module, index) => (
               <a
                 className={`bb-module-card ${module.comingSoon ? "is-coming-soon" : ""}`}
                 key={module.name}
-                href={module.comingSoon || module.registrationClosed ? undefined : `/register?game=${encodeURIComponent(module.game)}`}
-                aria-label={module.registrationClosed ? `${module.name} registration closed. Further details will be shared soon.` : module.comingSoon ? `${module.name} registration coming soon` : `Register for ${module.name}`}
-                aria-disabled={module.comingSoon || module.registrationClosed ? "true" : undefined}
+                href={module.comingSoon ? undefined : `/register?game=${encodeURIComponent(module.game)}`}
+                aria-label={module.comingSoon ? `${module.name} registration coming soon` : `Register for ${module.name}`}
+                aria-disabled={module.comingSoon ? "true" : undefined}
                 onClick={(event) => {
-                  if (module.comingSoon || module.registrationClosed) {
+                  if (module.comingSoon) {
                     event.preventDefault();
                     return;
                   }
@@ -2922,12 +2886,7 @@ export default function BattleblazeHero({ onSelectEvent }) {
                     </p>
                   )}
                   <span className={`bb-register-button ${module.comingSoon ? "is-coming-soon" : ""}`} aria-hidden="true">
-                    {module.registrationClosed ? (
-                      <span className="bb-coming-soon-label">
-                        REGISTRATION CLOSED
-                        <small>FURTHER DETAILS WILL BE SHARED SOON</small>
-                      </span>
-                    ) : module.comingSoon ? (
+                    {module.comingSoon ? (
                       <span className="bb-coming-soon-label">
                         REGISTRATION COMING SOON
                         <small className="bb-coming-soon-countdown">OPENS IN {registrationCountdown}</small>
@@ -2981,7 +2940,7 @@ export default function BattleblazeHero({ onSelectEvent }) {
                   <div className="bb-results-actions">
                     <a
                       className="bb-results-button"
-                      href={`/schedule?game=${encodeURIComponent(item.game)}`}
+                      href={`/bbschedule?game=${encodeURIComponent(item.game)}`}
                       aria-label={`View ${item.name} schedule`}
                     >
                       VIEW SCHEDULE <span aria-hidden="true">↗</span>

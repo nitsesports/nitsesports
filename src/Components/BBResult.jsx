@@ -1,6 +1,57 @@
-import React from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { Link, useSearchParams, useNavigate } from "react-router-dom";
+import { createClient } from "@supabase/supabase-js";
 import battleblazeLogo from "../assets/logoo2.png";
+import cctImage from "../assets/cct.png";
+
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
+const SUPABASE_PUBLISHABLE_KEY =
+  import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY ||
+  import.meta.env.VITE_SUPABASE_ANON_KEY;
+
+const supabase =
+  SUPABASE_URL && SUPABASE_PUBLISHABLE_KEY
+    ? createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY)
+    : null;
+
+const BGMI_RESULTS_TABLE = "cct_bgmi_results";
+
+// Local fallback roster ensures all 25 teams per group remain visible at 0 points
+// until their rows have been seeded in Supabase. Supabase values override these defaults.
+const BGMI_GROUP_TEAMS = {
+  A: [
+    "SYNERGY OFFICIALS", "ZEROHP", "STORM BREAKERS", "APEX HUNTERS",
+    "LUCENTRA ESPORTS", "FURY GLADIATORS", "IRON FALCONS", "PLAYSTATION SILCHAR",
+    "LUNATIC GENZ", "VERSUS ESPORTS", "PHANTOM RAIDERS", "MUKIMA",
+    "ELITE HUNTERS", "OUR GLORY ESPORTS", "ZORTAX", "PEGASUS", "GOLDEN EAGLES",
+    "TASK FORCE ELITE", "BOOMBAM", "NIGHT WOLVES", "TEAM XEROX FARMING", "SHOGUNS",
+    "ZERO NATION", "CRIMSON TITANS", "OLD GOATS"
+  ],
+  B: [
+    "KYOS ESPORTS", "INSIDIOUS", "TITAN FURY", "TEAM MODI", "META 4",
+    "BOMBS AND GUNS", "FOXTROT SQUADRON", "7 DOPE FALCONS", "DARK PHOENIX",
+    "NOVA WARRIORS", "1KNOCKPUSH", "NOT SUSPICIOUS", "CHANKYA NITTI",
+    "TEAM POLO APP", "TEAM REXN", "OLD GENERATION", "4 BLOOD THIRSTY",
+    "SAVAGE REAPERS", "SHADOW STRIKERS", "VENOM SQUAD", "STEEL VIPERS",
+    "BILLA GANG", "VORTEX REIGN ESPORTS", "ROGUE LEGION", "TEAM JODD"
+  ],
+  C: [
+    "HANGUL ESPORTS", "HACKER ESPORTS", "GHOST RIDERS", "LONE SURVIVORS",
+    "SILENT SNIPERS", "CARNAGE ESPORTS", "4BOTS", "THE BOYS", "ONE RISE E-SPORTS",
+    "TEAM ESSENTIAL", "KACCHI UMAR", "LANGTA DON", "GHOULS ESPORTS",
+    "THUNDER HAWKS", "ALAKH KE ANDHBHAKT", "OCTANE XAVIER", "BLACKLIST ESPORTS",
+    "K4X ESPORTS", "RAVEN SQUAD", "RNTXXTAG", "COBRA CLAN", "BOMBASTIC",
+    "GGGGG", "ALPHA STRIKERS", "VIRTUAL_CARNAGE"
+  ],
+  D: [
+    "TEAM ALPHA", "TILLUBADMOS", "BLACK BEAST", "TEAM OVT", "TEAM BLANK",
+    "4M VENOM", "JAATXPARK", "4SEA", "TEAM W", "ECHO SQUAD", "HBA",
+    "TEAM KNIGHT WOLVES", "SOLAR FLARE", "FROST GIANTS", "V29 ESPORTS",
+    "TEAM RYZEN", "BLITZ BRIGADE", "ATLAS WARRIORS", "ZENITH LEGION",
+    "ROYAL ESPORTS", "RUTHLESS 4", "AVALANCHE ESPORTS", "TEAM VITALITY",
+    "NEON NINJAS", "VIRTUAL_CARNAGE"
+  ]
+};
 
 const GAMES = {
   BGMI: {
@@ -46,6 +97,10 @@ function normalizeGame(value = "") {
 export default function BBResult() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+  const [selectedGroup, setSelectedGroup] = useState("A");
+  const [bgmiRows, setBgmiRows] = useState([]);
+  const [bgmiLoading, setBgmiLoading] = useState(false);
+  const [bgmiError, setBgmiError] = useState("");
 
   const requestedGame = normalizeGame(
     searchParams.get("game") || "BGMI"
@@ -53,6 +108,107 @@ export default function BBResult() {
 
   const game = GAMES[requestedGame] ? requestedGame : "BGMI";
   const details = GAMES[game];
+
+  const fetchBgmiResults = useCallback(async () => {
+    if (!supabase) {
+      setBgmiError("Supabase is not configured. Check your VITE_SUPABASE_URL and public key environment variables.");
+      setBgmiRows([]);
+      return;
+    }
+
+    setBgmiLoading(true);
+    setBgmiError("");
+    // Select all available columns so an optional/missing updated_at column
+    // cannot cause the entire results request to fail.
+    const { data, error } = await supabase
+      .from(BGMI_RESULTS_TABLE)
+      .select("*");
+
+    if (error) {
+      setBgmiError(`${error.message || "Unable to load BGMI results."} (Table: public.${BGMI_RESULTS_TABLE})`);
+      setBgmiLoading(false);
+      return;
+    }
+
+    // Normalize Supabase values and calculate TP on the client as a safeguard.
+    setBgmiRows((data || []).map((row) => ({
+      ...row,
+      group_name: String(row.group_name || "").trim().toUpperCase().replace(/^GROUP\s+/, ""),
+      team_name: String(row.team_name || "").trim(),
+      kp: Number(row.kp || 0),
+      pp: Number(row.pp || 0),
+      tp: Number(row.kp || 0) + Number(row.pp || 0),
+    })));
+    setBgmiError("");
+    setBgmiLoading(false);
+  }, []);
+
+  useEffect(() => {
+    if (game !== "BGMI") return undefined;
+    fetchBgmiResults();
+
+    if (!supabase) return undefined;
+    const channel = supabase
+      .channel("cct-bgmi-results-live")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: BGMI_RESULTS_TABLE },
+        () => { void fetchBgmiResults(); }
+      )
+      .subscribe();
+
+    // Polling + focus refresh keeps the page current even if Realtime is not
+    // enabled for this table in the Supabase publication.
+    const pollId = window.setInterval(() => { void fetchBgmiResults(); }, 5000);
+    const handleFocus = () => { void fetchBgmiResults(); };
+    window.addEventListener("focus", handleFocus);
+
+    return () => {
+      window.clearInterval(pollId);
+      window.removeEventListener("focus", handleFocus);
+      supabase.removeChannel(channel);
+    };
+  }, [game, fetchBgmiResults]);
+
+  const visibleBgmiRows = useMemo(() => {
+    const groupRoster = BGMI_GROUP_TEAMS[selectedGroup] || [];
+    const databaseRows = bgmiRows.filter((row) =>
+      String(row.group_name || "").trim().toUpperCase().replace(/^GROUP\s+/, "") === selectedGroup
+    );
+    const usedIds = new Set();
+
+    // Start with the official 25-team roster; merge live Supabase points where available.
+    const mergedRows = groupRoster.map((teamName, rosterIndex) => {
+      const matchingRow = databaseRows.find(
+        (row) => String(row.team_name || "").trim().toLowerCase() === teamName.toLowerCase()
+      );
+      if (matchingRow) usedIds.add(matchingRow.id);
+      return matchingRow
+        ? { ...matchingRow, team_name: teamName, rosterIndex }
+        : {
+            id: `fallback-${selectedGroup}-${rosterIndex}`,
+            group_name: selectedGroup,
+            team_name: teamName,
+            kp: 0,
+            pp: 0,
+            tp: 0,
+            rosterIndex,
+          };
+    });
+
+    // Preserve any additional teams added directly in Supabase too.
+    databaseRows.forEach((row, extraIndex) => {
+      if (!usedIds.has(row.id) && !groupRoster.some(
+        (name) => name.toLowerCase() === String(row.team_name || "").trim().toLowerCase()
+      )) {
+        mergedRows.push({ ...row, rosterIndex: groupRoster.length + extraIndex });
+      }
+    });
+
+    return mergedRows
+      .sort((a, b) => Number(b.tp ?? (Number(b.kp || 0) + Number(b.pp || 0))) - Number(a.tp ?? (Number(a.kp || 0) + Number(a.pp || 0))) || a.rosterIndex - b.rosterIndex)
+      .map((row, index) => ({ ...row, displayRank: index + 1 }));
+  }, [bgmiRows, selectedGroup]);
 
   return (
     <main
@@ -259,6 +415,13 @@ export default function BBResult() {
           font-size: 36px;
         }
 
+        .bbr-game-icon img {
+          display: block;
+          width: 100%;
+          height: 100%;
+          object-fit: contain;
+        }
+
         .bbr-game-subtitle {
           margin: 0 0 4px;
           color: var(--accent);
@@ -327,6 +490,115 @@ export default function BBResult() {
           font-size: 9px;
           font-weight: 700;
           letter-spacing: .12em;
+        }
+
+        .bbr-group-tabs {
+          display: flex;
+          justify-content: center;
+          flex-wrap: wrap;
+          gap: 10px;
+          margin: 8px 0 24px;
+        }
+
+        .bbr-group-tab {
+          min-width: 112px;
+          padding: 12px 18px;
+          border: 1px solid rgba(167,139,250,.38);
+          color: #cbd5e1;
+          background: rgba(15,15,32,.92);
+          cursor: pointer;
+          font: 800 11px 'Orbitron', sans-serif;
+          letter-spacing: .08em;
+          transition: .2s ease;
+        }
+
+        .bbr-group-tab:hover,
+        .bbr-group-tab.active {
+          color: #fff;
+          border-color: var(--accent);
+          background: rgba(167,139,250,.18);
+          box-shadow: 0 0 18px rgba(167,139,250,.12), inset 0 -2px 0 var(--accent);
+        }
+
+        .bbr-table-wrap {
+          width: 100%;
+          overflow-x: auto;
+          margin-top: 22px;
+          border: 1px solid rgba(167,139,250,.22);
+        }
+
+        .bbr-results-table {
+          width: 100%;
+          min-width: 520px;
+          border-collapse: collapse;
+          text-align: left;
+          font-family: 'Orbitron', sans-serif;
+        }
+
+        .bbr-results-table th {
+          padding: 15px 16px;
+          color: #c4b5fd;
+          background: rgba(167,139,250,.10);
+          font-size: 10px;
+          letter-spacing: .1em;
+          white-space: nowrap;
+        }
+
+        .bbr-results-table td {
+          padding: 14px 16px;
+          border-top: 1px solid rgba(148,163,184,.12);
+          color: #e2e8f0;
+          font-size: 12px;
+        }
+
+        .bbr-results-table tbody tr:first-child td {
+          border-top-color: rgba(167,139,250,.35);
+        }
+
+        .bbr-results-table tbody tr:hover td {
+          background: rgba(167,139,250,.06);
+        }
+
+        .bbr-rank {
+          color: #c4b5fd !important;
+          font-weight: 900;
+        }
+
+        .bbr-team-name {
+          color: #fff !important;
+          font-weight: 700;
+        }
+
+        .bbr-zero-state {
+          padding: 28px 14px;
+          color: #94a3b8;
+          font-size: 12px;
+          line-height: 1.7;
+        }
+
+        .bbr-results-summary {
+          display: flex;
+          justify-content: space-between;
+          gap: 12px;
+          flex-wrap: wrap;
+          margin-top: 22px;
+          color: #94a3b8;
+          font-size: 10px;
+          letter-spacing: .06em;
+        }
+
+        .bbr-refresh-button {
+          border: 1px solid rgba(167,139,250,.45);
+          padding: 8px 12px;
+          color: #e9d5ff;
+          background: rgba(167,139,250,.08);
+          cursor: pointer;
+          font: 700 9px 'Orbitron', sans-serif;
+        }
+
+        .bbr-refresh-button:disabled {
+          opacity: .5;
+          cursor: wait;
         }
 
         @media (max-width: 560px) {
@@ -431,34 +703,110 @@ export default function BBResult() {
           </div>
 
           <div className="bbr-game-icon" aria-hidden="true">
-            {game === "BGMI"
-              ? "⌖"
-              : game === "VALORANT"
-              ? "◈"
-              : game === "FIFA"
-              ? "⚽"
-              : game === "MOBILE_LEGENDS"
-              ? "⬡"
-              : "↗"}
+            {game === "BGMI" ? (
+              <img src={cctImage} alt="" />
+            ) : game === "VALORANT" ? (
+              "◈"
+            ) : game === "FIFA" ? (
+              "⚽"
+            ) : game === "MOBILE_LEGENDS" ? (
+              "⬡"
+            ) : (
+              "↗"
+            )}
           </div>
 
           <p className="bbr-game-subtitle">{details.subtitle}</p>
           <h2 className="bbr-game-title">{details.title}</h2>
 
-          <div className="bbr-status">
-            <span className="bbr-status-icon" aria-hidden="true">◷</span>
-            <div>
-              <h3>RESULTS NOT UPLOADED YET</h3>
-              <p>
-                The {details.title} results have not been published.
-                Please check back here after the matches are completed.
+          {game === "BGMI" ? (
+            <section aria-label="BGMI group standings">
+              <p className="bbr-note" style={{ margin: "0 0 18px" }}>
+                LIVE GROUP STANDINGS · RANKED BY TOTAL POINTS
               </p>
-            </div>
-          </div>
 
-          <p className="bbr-note">
-            Official standings and match results will be displayed here once available.
-          </p>
+              <div className="bbr-group-tabs" role="tablist" aria-label="Choose BGMI group">
+                {["A", "B", "C", "D"].map((group) => (
+                  <button
+                    key={group}
+                    type="button"
+                    role="tab"
+                    aria-selected={selectedGroup === group}
+                    className={`bbr-group-tab ${selectedGroup === group ? "active" : ""}`}
+                    onClick={() => setSelectedGroup(group)}
+                  >
+                    GROUP {group}
+                  </button>
+                ))}
+              </div>
+
+              <div className="bbr-results-summary">
+                <span>GROUP {selectedGroup} · {visibleBgmiRows.length}/25 TEAMS</span>
+                <button
+                  type="button"
+                  className="bbr-refresh-button"
+                  onClick={fetchBgmiResults}
+                  disabled={bgmiLoading}
+                >
+                  {bgmiLoading ? "UPDATING..." : "↻ REFRESH"}
+                </button>
+              </div>
+
+              {bgmiError && (
+                <div className="bbr-zero-state" role="alert" style={{ marginBottom: 16 }}>
+                  <strong>LIVE SCORES UNAVAILABLE</strong>
+                  <p>{bgmiError}</p>
+                  <p>Official team names and zero-point standings are shown below. Configure the <code>cct_bgmi_results</code> table and public SELECT access to load live scores.</p>
+                </div>
+              )}
+
+              <div className="bbr-table-wrap">
+                <table className="bbr-results-table">
+                  <thead>
+                    <tr>
+                      <th>RANK</th>
+                      <th>TEAM NAME</th>
+                      <th>KP</th>
+                      <th>PP</th>
+                      <th>TP</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {visibleBgmiRows.map((row) => (
+                      <tr key={row.id}>
+                        <td className="bbr-rank">{String(row.displayRank).padStart(2, "0")}</td>
+                        <td className="bbr-team-name">{row.team_name}</td>
+                        <td>{Number(row.kp || 0)}</td>
+                        <td>{Number(row.pp || 0)}</td>
+                        <td style={{ color: "#c4b5fd", fontWeight: 900 }}>{Number(row.tp ?? Number(row.kp || 0) + Number(row.pp || 0))}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              <p className="bbr-note">
+                All 25 teams are shown from the official roster. TOTAL POINTS = KILL POINTS + PLACEMENT POINTS. Live scores are updated automatically when available.
+              </p>
+            </section>
+          ) : (
+            <>
+              <div className="bbr-status">
+                <span className="bbr-status-icon" aria-hidden="true">◷</span>
+                <div>
+                  <h3>RESULTS NOT UPLOADED YET</h3>
+                  <p>
+                    The {details.title} results have not been published.
+                    Please check back here after the matches are completed.
+                  </p>
+                </div>
+              </div>
+
+              <p className="bbr-note">
+                Official standings and match results will be displayed here once available.
+              </p>
+            </>
+          )}
         </article>
 
         <Link to="/schedule" className="bbr-link" style={{ marginTop: 24 }}>

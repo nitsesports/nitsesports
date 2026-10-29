@@ -49,6 +49,7 @@ import About from "./Components/About";
 import Merchandise from "./Components/Merchendise";
 
 import Schedule from "./Components/Schedule";
+import BBSchedule from "./Components/BBSchedule";
 
 
 
@@ -303,6 +304,17 @@ function App() {
 
           }
 
+        />
+
+
+        {/* BATTLEBLAZE SCHEDULE HUB */}
+        <Route
+          path="/bbschedule"
+          element={
+            <main className="relative min-h-screen w-full overflow-x-hidden bg-black">
+              {websiteReady && <BBSchedule />}
+            </main>
+          }
         />
 
 

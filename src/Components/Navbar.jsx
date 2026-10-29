@@ -198,8 +198,22 @@ const Navbar = () => {
     currentPath.endsWith("/adminpanel") ||
     currentPath.endsWith("/admin-panel");
 
+  // Apply the same special BattleBlaze navbar on the tournament schedule hub too.
+  const isBBSchedule =
+    currentPath === "/bbschedule" ||
+    currentPath === "/bb-schedule" ||
+    currentPath === "/battleblaze-schedule" ||
+    currentPath === "/battleblaze/schedule" ||
+    currentPath.startsWith("/battleblaze/schedule/");
+
   const isBattleblazeTheme =
-    isBattleblaze || isRegister || isAdminPanel || currentPath === "/admin/ps5-rush";
+    isBattleblaze ||
+    isRegister ||
+    isAdminPanel ||
+    isBBSchedule ||
+    currentPath === "/admin/ps5-rush" ||
+    currentPath === "/results" ||
+    currentPath.startsWith("/results/");
 
 
 

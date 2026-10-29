@@ -49,9 +49,13 @@ const LoadingScreen = ({
 
   const isBattleblazeMode =
     currentPath.includes("battleblaze") ||
+    currentPath === "/bbschedule" ||
+    currentPath.startsWith("/bbschedule/") ||
     currentPath.includes("register") ||
     currentPath.includes("ps5-rush") ||
     currentPath.includes("ps5rush") ||
+    currentPath === "/results" ||
+    currentPath.startsWith("/results/") ||
     isAdminPanelMode;
 
   const logoSrc = isBattleblazeMode ? battleblazeLogo : defaultLogo;
