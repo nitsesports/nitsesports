@@ -98,6 +98,8 @@ export default function BBResult() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const [selectedGroup, setSelectedGroup] = useState("A");
+  // Each group has Match 1, Match 2, Match 3, and Overall views.
+  const [selectedMatch, setSelectedMatch] = useState("overall");
   const [bgmiRows, setBgmiRows] = useState([]);
   const [bgmiLoading, setBgmiLoading] = useState(false);
   const [bgmiError, setBgmiError] = useState("");
@@ -130,14 +132,12 @@ export default function BBResult() {
       return;
     }
 
-    // Normalize Supabase values and calculate TP on the client as a safeguard.
+    // Keep the match-wise database columns intact. The selected view below
+    // derives KP/PP/TP from match1_*, match2_*, and match3_* columns.
     setBgmiRows((data || []).map((row) => ({
       ...row,
       group_name: String(row.group_name || "").trim().toUpperCase().replace(/^GROUP\s+/, ""),
       team_name: String(row.team_name || "").trim(),
-      kp: Number(row.kp || 0),
-      pp: Number(row.pp || 0),
-      tp: Number(row.kp || 0) + Number(row.pp || 0),
     })));
     setBgmiError("");
     setBgmiLoading(false);
@@ -177,7 +177,7 @@ export default function BBResult() {
     );
     const usedIds = new Set();
 
-    // Start with the official 25-team roster; merge live Supabase points where available.
+    // Keep every official roster team visible, even before its row is seeded in Supabase.
     const mergedRows = groupRoster.map((teamName, rosterIndex) => {
       const matchingRow = databaseRows.find(
         (row) => String(row.team_name || "").trim().toLowerCase() === teamName.toLowerCase()
@@ -189,14 +189,14 @@ export default function BBResult() {
             id: `fallback-${selectedGroup}-${rosterIndex}`,
             group_name: selectedGroup,
             team_name: teamName,
-            kp: 0,
-            pp: 0,
-            tp: 0,
+            match1_kp: 0, match1_pp: 0, match1_tp: 0,
+            match2_kp: 0, match2_pp: 0, match2_tp: 0,
+            match3_kp: 0, match3_pp: 0, match3_tp: 0,
             rosterIndex,
           };
     });
 
-    // Preserve any additional teams added directly in Supabase too.
+    // Also show extra teams inserted directly into the results table.
     databaseRows.forEach((row, extraIndex) => {
       if (!usedIds.has(row.id) && !groupRoster.some(
         (name) => name.toLowerCase() === String(row.team_name || "").trim().toLowerCase()
@@ -205,10 +205,36 @@ export default function BBResult() {
       }
     });
 
-    return mergedRows
-      .sort((a, b) => Number(b.tp ?? (Number(b.kp || 0) + Number(b.pp || 0))) - Number(a.tp ?? (Number(a.kp || 0) + Number(a.pp || 0))) || a.rosterIndex - b.rosterIndex)
+    // Table columns are match1_kp/match1_pp, match2_kp/match2_pp,
+    // match3_kp/match3_pp. TP is consistently calculated as KP + PP.
+    const scoredRows = mergedRows.map((row) => {
+      let kp = 0;
+      let pp = 0;
+
+      if (selectedMatch === "overall") {
+        for (let matchNo = 1; matchNo <= 3; matchNo += 1) {
+          kp += Number(row[`match${matchNo}_kp`] || 0);
+          pp += Number(row[`match${matchNo}_pp`] || 0);
+        }
+      } else {
+        const matchNo = Number(selectedMatch.replace("match", ""));
+        kp = Number(row[`match${matchNo}_kp`] || 0);
+        pp = Number(row[`match${matchNo}_pp`] || 0);
+      }
+
+      return { ...row, kp, pp, tp: kp + pp };
+    });
+
+    // Rank within the currently selected group and selected match/overall view.
+    return scoredRows
+      .sort((a, b) =>
+        b.tp - a.tp ||
+        b.kp - a.kp ||
+        b.pp - a.pp ||
+        a.rosterIndex - b.rosterIndex
+      )
       .map((row, index) => ({ ...row, displayRank: index + 1 }));
-  }, [bgmiRows, selectedGroup]);
+  }, [bgmiRows, selectedGroup, selectedMatch]);
 
   return (
     <main
@@ -520,6 +546,33 @@ export default function BBResult() {
           box-shadow: 0 0 18px rgba(167,139,250,.12), inset 0 -2px 0 var(--accent);
         }
 
+        .bbr-match-tabs {
+          display: grid;
+          grid-template-columns: repeat(4, minmax(0, 1fr));
+          gap: 9px;
+          margin: -8px 0 22px;
+        }
+
+        .bbr-match-tab {
+          min-width: 0;
+          padding: 12px 10px;
+          border: 1px solid rgba(34,211,238,.32);
+          color: #cbd5e1;
+          background: rgba(8,18,34,.9);
+          cursor: pointer;
+          font: 800 10px 'Orbitron', sans-serif;
+          letter-spacing: .06em;
+          transition: .2s ease;
+        }
+
+        .bbr-match-tab:hover,
+        .bbr-match-tab.active {
+          color: #fff;
+          border-color: #22d3ee;
+          background: rgba(34,211,238,.12);
+          box-shadow: inset 0 -2px 0 #22d3ee, 0 0 16px rgba(34,211,238,.08);
+        }
+
         .bbr-table-wrap {
           width: 100%;
           overflow-x: auto;
@@ -640,6 +693,16 @@ export default function BBResult() {
             font-size: 7px;
           }
 
+          .bbr-match-tabs {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 7px;
+          }
+
+          .bbr-match-tab {
+            padding: 11px 7px;
+            font-size: 8px;
+          }
+
           .bbr-status {
             padding: 15px;
           }
@@ -740,8 +803,28 @@ export default function BBResult() {
                 ))}
               </div>
 
+              <nav className="bbr-match-tabs" role="tablist" aria-label={`Choose match standings for Group ${selectedGroup}`}>
+                {[
+                  { key: "match1", label: "MATCH 1" },
+                  { key: "match2", label: "MATCH 2" },
+                  { key: "match3", label: "MATCH 3" },
+                  { key: "overall", label: "OVERALL RANKING" },
+                ].map((view) => (
+                  <button
+                    key={view.key}
+                    type="button"
+                    role="tab"
+                    aria-selected={selectedMatch === view.key}
+                    className={`bbr-match-tab ${selectedMatch === view.key ? "active" : ""}`}
+                    onClick={() => setSelectedMatch(view.key)}
+                  >
+                    {view.label}
+                  </button>
+                ))}
+              </nav>
+
               <div className="bbr-results-summary">
-                <span>GROUP {selectedGroup} · {visibleBgmiRows.length}/25 TEAMS</span>
+                <span>GROUP {selectedGroup} · {selectedMatch === "overall" ? "OVERALL RANKING" : selectedMatch.replace("match", "MATCH ").toUpperCase()} · {visibleBgmiRows.length} TEAMS</span>
                 <button
                   type="button"
                   className="bbr-refresh-button"
@@ -786,7 +869,7 @@ export default function BBResult() {
               </div>
 
               <p className="bbr-note">
-                All 25 teams are shown from the official roster. TOTAL POINTS = KILL POINTS + PLACEMENT POINTS. Live scores are updated automatically when available.
+                All official roster teams are shown. Match 1–3 views read their respective match columns from Supabase. Overall ranking sums KP and PP across all three matches; TP = KP + PP. Scores refresh automatically when Supabase data changes.
               </p>
             </section>
           ) : (

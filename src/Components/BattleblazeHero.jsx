@@ -943,6 +943,8 @@ export default function BattleblazeHero({ onSelectEvent }) {
     if (!game) return;
 
     const normalizedGame = String(game).trim().toUpperCase().replace(/[\s-]+/g, "_");
+    // Prevent navigation to registrations that are now closed.
+    if (["FIFA", "VALORANT"].includes(normalizedGame)) return;
     const registrationUrl =
       normalizedGame === "PS5_RUSH"
         ? "/register?game=PS5_RUSH"
@@ -1997,6 +1999,21 @@ export default function BattleblazeHero({ onSelectEvent }) {
             font-size: 9px;
             letter-spacing: 0.04em;
           }
+          .bb-overview-event-card.is-registration-closed {
+            cursor: not-allowed;
+            border-color: rgba(255, 107, 107, 0.65);
+          }
+          .bb-overview-event-card.is-registration-closed:hover,
+          .bb-overview-event-card.is-registration-closed:focus-visible {
+            transform: none;
+            border-color: rgba(255, 107, 107, 0.65);
+            box-shadow: 0 14px 32px rgba(0, 0, 0, 0.3), 0 0 16px rgba(168, 85, 247, 0.15);
+          }
+          .bb-overview-event-card.is-registration-closed .bb-overview-event-prize strong {
+            color: #fda4af;
+            font-size: 9px;
+            letter-spacing: 0.04em;
+          }
           .bb-overview-event-top {
             display: flex;
             align-items: center;
@@ -2146,6 +2163,16 @@ export default function BattleblazeHero({ onSelectEvent }) {
           .bb-module-card.is-coming-soon:focus-visible {
             transform: none;
             border-color: rgba(139, 92, 246, 0.72);
+            box-shadow: 0 18px 42px rgba(0, 0, 0, 0.3), 0 0 20px rgba(168, 85, 247, 0.2);
+          }
+          .bb-module-card.is-registration-closed {
+            cursor: not-allowed;
+            border-color: rgba(255, 107, 107, 0.55);
+          }
+          .bb-module-card.is-registration-closed:hover,
+          .bb-module-card.is-registration-closed:focus-visible {
+            transform: none;
+            border-color: rgba(255, 107, 107, 0.65);
             box-shadow: 0 18px 42px rgba(0, 0, 0, 0.3), 0 0 20px rgba(168, 85, 247, 0.2);
           }
           .bb-module-poster {
@@ -2786,8 +2813,8 @@ export default function BattleblazeHero({ onSelectEvent }) {
 
             <div className="bb-overview-events" aria-label="Battleblaze events">
               {[
-                { name: "FIFA", game: "FIFA", code: "ARENA 01 // FOOTBALL", color: "#45ffb0", icon: "⚽", prize: "₹5,000" },
-                { name: "VALORANT", game: "VALORANT", code: "ARENA 02 // TACTICAL FPS", color: "#8b5cf6", icon: "◈", prize: "₹5,000" },
+                { name: "FIFA", game: "FIFA", code: "ARENA 01 // FOOTBALL", color: "#45ffb0", icon: "⚽", prize: "₹5,000", registrationClosed: true },
+                { name: "VALORANT", game: "VALORANT", code: "ARENA 02 // TACTICAL FPS", color: "#8b5cf6", icon: "◈", prize: "₹5,000", registrationClosed: true },
                 { name: "BGMI", game: "BGMI", code: "ARENA 03 // BATTLE ROYALE", color: "#ffb347", icon: "⌖", prize: "₹20,000" },
                 { name: "MOBILE LEGENDS", game: "MOBILE_LEGENDS", code: "ARENA 04 // MOBA", color: "#ff4fa3", icon: "⬡", prize: "₹5,000" },
                 { name: "RC", game: "RC", code: "ARENA 05 // REAL CRICKET", color: "#00eaff", icon: "↗", prize: "₹5,000" },
@@ -2795,14 +2822,20 @@ export default function BattleblazeHero({ onSelectEvent }) {
                 { name: "VRXPERIENCE", game: "VR_EXPERIENCE", code: "ARENA 07 // IMMERSIVE", color: "#bf7bff", icon: "◎" },
               ].map((event) => (
                 <a
-                  className={`bb-overview-event-card ${event.comingSoon ? "is-coming-soon" : ""}`}
+                  className={`bb-overview-event-card ${event.comingSoon ? "is-coming-soon" : ""} ${event.registrationClosed ? "is-registration-closed" : ""}`}
                   key={event.name}
-                  href={event.comingSoon ? undefined : `/register?game=${encodeURIComponent(event.game)}`}
+                  href={event.comingSoon || event.registrationClosed ? undefined : `/register?game=${encodeURIComponent(event.game)}`}
                   style={{ "--event-accent": event.color }}
-                  aria-label={event.comingSoon ? `${event.name} registration coming soon` : `Register for ${event.name}`}
-                  aria-disabled={event.comingSoon ? "true" : undefined}
+                  aria-label={
+                    event.registrationClosed
+                      ? `${event.name} registration closed. Further details will be shared soon.`
+                      : event.comingSoon
+                        ? `${event.name} registration coming soon`
+                        : `Register for ${event.name}`
+                  }
+                  aria-disabled={event.comingSoon || event.registrationClosed ? "true" : undefined}
                   onClick={(e) => {
-                    if (event.comingSoon) {
+                    if (event.comingSoon || event.registrationClosed) {
                       e.preventDefault();
                       return;
                     }
@@ -2824,9 +2857,15 @@ export default function BattleblazeHero({ onSelectEvent }) {
                     </div>
                   ) : (
                     <div className="bb-overview-event-prize">
-                      <span>{event.comingSoon ? "REGISTRATION" : "PRIZE POOL"}</span>
-                      <strong>{event.comingSoon ? "COMING SOON" : event.prize}</strong>
-                      {event.comingSoon && (
+                      <span>{event.registrationClosed || event.comingSoon ? "REGISTRATION" : "PRIZE POOL"}</span>
+                      <strong>
+                        {event.registrationClosed
+                          ? "REGISTRATION CLOSED"
+                          : event.comingSoon
+                            ? "COMING SOON"
+                            : event.prize}
+                      </strong>
+                      {event.comingSoon && !event.registrationClosed && (
                         <small className="bb-coming-soon-countdown">OPENS IN {registrationCountdown}</small>
                       )}
                     </div>
@@ -2857,13 +2896,14 @@ export default function BattleblazeHero({ onSelectEvent }) {
 
           <div className="bb-modules-grid">
             {[
-              { name: "BGMI", game: "BGMI", code: "01 // BATTLE ROYALE", icon: "⌖", description: "Squad up and fight for the final zone.", prize: "₹20,000", posterImage: bgmiPosterUrl, registrationClosed: true },
-              { name: "VALORANT", game: "VALORANT", code: "02 // TACTICAL FPS", icon: "◈", description: "Teamwork win every round.", prize: "₹5,000", posterImage: valoPosterUrl },
-              { name: "FIFA", game: "FIFA", code: "03 // FOOTBALL", icon: "⚽", description: "Control the pitch and score the win.", prize: "₹5,000", posterImage: fifaPosterUrl },
-              { name: "MOBILE LEGENDS", game: "MOBILE_LEGENDS", code: "04 // MOBA", icon: "⬡", description: "Pick your hero. Team up. Push to win.", prize: "₹5,000", posterImage: mlbbPosterUrl, registrationClosed: true },
-              { name: "RC", game: "RC", code: "05 // REAL CRICKET", icon: "🏏", description: "Represent your side and compete for the win.", prize: "₹5,000", posterImage: rcPosterUrl, registrationClosed: true },
-              { name: "VR EXPERIENCE", game: "VR_EXPERIENCE", code: "06 // IMMERSIVE", icon: "◎", description: "Enter an immersive virtual world.", posterImage: vrPosterUrl },
-              { name: "PS5 RUSH", game: "PS5_RUSH", code: "07 // CONSOLE", icon: "△", description: "Grab a controller and challenge rivals.", posterImage: ps5PosterUrl },
+              // Active slot-booking modules appear first; closed-registration modules follow.
+              { name: "PS5 RUSH", game: "PS5_RUSH", code: "01 // CONSOLE", icon: "△", description: "Grab a controller and challenge rivals.", posterImage: ps5PosterUrl },
+              { name: "VR EXPERIENCE", game: "VR_EXPERIENCE", code: "02 // IMMERSIVE", icon: "◎", description: "Enter an immersive virtual world.", posterImage: vrPosterUrl },
+              { name: "BGMI", game: "BGMI", code: "03 // BATTLE ROYALE", icon: "⌖", description: "Squad up and fight for the final zone.", prize: "₹20,000", posterImage: bgmiPosterUrl, registrationClosed: true },
+              { name: "VALORANT", game: "VALORANT", code: "04 // TACTICAL FPS", icon: "◈", description: "Teamwork win every round.", prize: "₹5,000", posterImage: valoPosterUrl, registrationClosed: true },
+              { name: "FIFA", game: "FIFA", code: "05 // FOOTBALL", icon: "⚽", description: "Control the pitch and score the win.", prize: "₹5,000", posterImage: fifaPosterUrl, registrationClosed: true },
+              { name: "MOBILE LEGENDS", game: "MOBILE_LEGENDS", code: "06 // MOBA", icon: "⬡", description: "Pick your hero. Team up. Push to win.", prize: "₹5,000", posterImage: mlbbPosterUrl, registrationClosed: true },
+              { name: "RC", game: "RC", code: "07 // REAL CRICKET", icon: "🏏", description: "Represent your side and compete for the win.", prize: "₹5,000", posterImage: rcPosterUrl, registrationClosed: true },
             ].map((module, index) => (
               <a
                 className={`bb-module-card ${module.comingSoon ? "is-coming-soon" : ""} ${module.registrationClosed ? "is-registration-closed" : ""}`}
